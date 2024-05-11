@@ -2,7 +2,7 @@ import Versions from './components/Versions'
 import electronLogo from './assets/electron.svg'
 
 function App() {
-  const ipcHandle = () => window.electron.ipcRenderer.send('ping')
+  const ipcHandle = (message) => window.electron.ipcRenderer.send(message)
 
   return (
     <>
@@ -21,8 +21,13 @@ function App() {
           </a>
         </div>
         <div className="action">
-          <a target="_blank" rel="noreferrer" onClick={ipcHandle}>
+          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('ping')}>
             Send IPC
+          </a>
+        </div>
+        <div className="action">
+          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('send-message')}>
+            Send message to server
           </a>
         </div>
       </div>
@@ -32,4 +37,3 @@ function App() {
 }
 
 export default App
-
