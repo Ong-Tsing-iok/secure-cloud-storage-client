@@ -14,7 +14,7 @@ socket.on('message', (message) => {
 socket.on('connect_error', (error) => {
   if (socket.active) {
     // temporary failure, the socket will automatically try to reconnect
-    getLogger().info('temperal connection failure')
+    // getLogger().info('temperal connection failure')
   } else {
     // the connection was denied by the server
     // in that case, `socket.connect()` must be manually called in order to reconnect

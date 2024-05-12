@@ -26,8 +26,8 @@ function App() {
           </a>
         </div>
         <div className="action">
-          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('send-message')}>
-            Send message to server
+          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('get-keys')}>
+            get keys
           </a>
         </div>
       </div>
