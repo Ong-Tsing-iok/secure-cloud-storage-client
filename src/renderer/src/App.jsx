@@ -21,8 +21,8 @@ function App() {
           </a>
         </div>
         <div className="action">
-          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('ping')}>
-            Send IPC
+          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('send-message')}>
+            Send message
           </a>
         </div>
         <div className="action">

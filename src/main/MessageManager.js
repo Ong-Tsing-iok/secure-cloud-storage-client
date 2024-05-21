@@ -1,9 +1,10 @@
 import io from 'socket.io-client'
 import { getLogger } from './Logger'
 
-const url = 'http://localhost:3001'
+const url = 'https://localhost:3001'
 const socket = io(url, {
-  reconnectionAttempts: 10
+  reconnectionAttempts: 10,
+  rejectUnauthorized: false,
 })
 
 socket.on('message', (message) => {

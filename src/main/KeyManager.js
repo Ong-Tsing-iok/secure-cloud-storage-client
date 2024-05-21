@@ -2,7 +2,7 @@ import ElGamal from 'basic_simple_elgamal'
 import { getLogger } from './Logger'
 import { writeFile } from 'node:fs'
 import { readFile } from 'node:fs/promises'
-const bigInt = require('big-integer');
+const bigInt = require('big-integer')
 
 // The public modulus p
 //TODO: maybe should be stored and read from file
