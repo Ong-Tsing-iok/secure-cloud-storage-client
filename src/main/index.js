@@ -2,8 +2,8 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { sendMessage } from './MessageManager'
-import { getKeys } from './KeyManager'
+import { login, sendMessage } from './MessageManager'
+import { getKeyEngine } from './KeyManager'
 import { getLogger } from './Logger'
 
 console.log(process.version)
@@ -58,11 +58,12 @@ app.whenReady().then(() => {
   ipcMain.on('ping', () => console.log('pong'))
   ipcMain.on('send-message', () => sendMessage('test message'))
   ipcMain.on('get-keys', () =>
-    getKeys().then((result) => {
+    getKeyEngine().then((result) => {
       getLogger().info('key is get in index.js')
       console.log(result.export(false))
     })
   )
+  ipcMain.on('login', () => login())
 
   createWindow()
 

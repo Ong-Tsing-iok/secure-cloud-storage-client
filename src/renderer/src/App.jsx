@@ -30,6 +30,11 @@ function App() {
             get keys
           </a>
         </div>
+        <div className="action">
+          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('login')}>
+            login
+          </a>
+        </div>
       </div>
       <Versions></Versions>
     </>

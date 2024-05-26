@@ -1,15 +1,16 @@
 import io from 'socket.io-client'
 import { getLogger } from './Logger'
+import { decrypt, getKeyPublic } from './KeyManager'
 
 const url = 'https://localhost:3001'
 const socket = io(url, {
   reconnectionAttempts: 10,
-  rejectUnauthorized: false,
+  rejectUnauthorized: false
 })
 
 socket.on('message', (message) => {
   // console.log(message)
-  getLogger().log('info', `received message: ${message}`)
+  getLogger().log('info', `received message as client: ${message}`)
 })
 
 socket.on('connect_error', (error) => {
@@ -30,4 +31,35 @@ socket.io.on('reconnect_failed', () => {
 
 export function sendMessage(message) {
   socket.emit('message', message)
+}
+// Login part
+socket.on('login-res', async (c1, c2) => {
+  getLogger().info('Getting login response from server. Decrypting auth key...')
+  const decryptedValue = await decrypt(c1, c2)
+  getLogger().debug(`decryptedValue: ${decryptedValue}`)
+  getLogger().info('Finish decrypting. Sending response back to server')
+  socket.emit('login-auth', decryptedValue)
+})
+
+socket.on('login-auth-res', (message) => {
+  if (message == 'OK') {
+    getLogger().info('Login succeeded')
+    // TODO: store some variable indicating logged in
+  } else {
+    getLogger().warn('Login failed. There might be problem with your keys')
+  }
+})
+/**
+ * @todo First get the keys. Then emit login-ask to server with public key.
+ * Then wait for server to send back auth message, decode it and send back to server.
+ */
+export async function login() {
+  try {
+    const engine = await getKeyPublic()
+    getLogger().info('Asking to login...')
+    getLogger().debug(`p:${engine.p}, g:${engine.g}, y:${engine.y}`)
+    socket.emit('login-ask', engine.p, engine.g, engine.y)
+  } catch (error) {
+    getLogger().error(`login failed because of following error: ${error}`)
+  }
 }

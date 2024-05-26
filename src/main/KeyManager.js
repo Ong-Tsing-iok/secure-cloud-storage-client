@@ -12,29 +12,14 @@ const p =
 const g = '3'
 const keyFilePath = 'elgamal.keys'
 
-export async function getKeys() {
+// TODO: store engine somewhere
+export async function getKeyEngine() {
   return readFile(keyFilePath, 'utf-8')
     .then((data) => {
       // if key exist, load key
       getLogger().info('Keys found. Loading keys...')
-      const elgamal = new ElGamal()
       const parsedData = JSON.parse(data)
-      // Make the format suitable for engine import
-      const importData = {
-        security: parsedData.securityLevel,
-        x: bigInt(parsedData.x),
-        g: bigInt(parsedData.g),
-        p: bigInt(parsedData.p),
-        y: bigInt(parsedData.y)
-      }
-      elgamal.import(importData)
-      getLogger().debug(importData)
-      elgamal.setSecurityLevel('HIGH')
-      if (!elgamal.checkSecurity()) {
-        getLogger().error('Loaded keys are not secure.')
-        throw new Error('Keys not secure')
-      }
-      getLogger().info('Keys loaded successfully')
+      const elgamal = importElgamal(parsedData.p, parsedData.g, parsedData.y, parsedData.x)
       return elgamal
     })
     .catch(async (err) => {
@@ -74,4 +59,39 @@ export async function getKeys() {
   //   .catch((reason) => {
   //     getLogger().error(`Key initialization failed due to following reason: ${reason}`)
   //   })
+}
+/**
+ * Create an Elgamal engine with import data.
+ * @summary This is used because the import function in basic_simple_elgamal have bugs.
+ * @param {string} p The public modulus.
+ * @param {string} g The public generator.
+ * @param {string} y The public key.
+ * @param {string} x The private key.
+ * @return {ElGamal} The imported Elgamal engine.
+ */
+function importElgamal(p, g, y, x) {
+  const elgamal = new ElGamal(p, g, y, x)
+  elgamal.setSecurityLevel('HIGH')
+  if (!elgamal.checkSecurity()) {
+    getLogger().error('Loaded keys are not secure.')
+    throw new Error('Keys not secure')
+  }
+  getLogger().info('Keys loaded successfully')
+  return elgamal
+}
+
+/**
+ * Decrypt the cipher using Elgamal.
+ * @param {} c1
+ * @param {} c2
+ * @return {Promise<string>} The decrypted value.
+ */
+export async function decrypt(c1, c2) {
+  const elgamal = await getKeyEngine()
+  return (await elgamal.decrypt({ c1: bigInt(c1), c2: bigInt(c2) })).toString()
+}
+
+export async function getKeyPublic() {
+  return (await getKeyEngine()).export()
+  // return engine.p, engine.g, engine.y
 }
