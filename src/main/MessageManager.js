@@ -1,5 +1,5 @@
 import io from 'socket.io-client'
-import { getLogger } from './Logger'
+import { logger } from './Logger'
 import { decrypt, getKeyPublic } from './KeyManager'
 
 const url = 'https://localhost:3001'
@@ -10,23 +10,23 @@ const socket = io(url, {
 
 socket.on('message', (message) => {
   // console.log(message)
-  getLogger().log('info', `received message as client: ${message}`)
+  logger.log('info', `received message as client: ${message}`)
 })
 
 socket.on('connect_error', (error) => {
   if (socket.active) {
     // temporary failure, the socket will automatically try to reconnect
-    // getLogger().info('temperal connection failure')
+    // logger.info('temperal connection failure')
   } else {
     // the connection was denied by the server
     // in that case, `socket.connect()` must be manually called in order to reconnect
-    getLogger().error(`Connedction failed with following error: ${error.message}`)
+    logger.error(`Connedction failed with following error: ${error.message}`)
     // console.log(error.message);
   }
 })
 
 socket.io.on('reconnect_failed', () => {
-  getLogger().error('reconnection failed. The server might be down.')
+  logger.error('reconnection failed. The server might be down.')
 })
 
 export function sendMessage(message) {
@@ -34,32 +34,34 @@ export function sendMessage(message) {
 }
 // Login part
 socket.on('login-res', async (c1, c2) => {
-  getLogger().info('Getting login response from server. Decrypting auth key...')
+  logger.info('Getting login response from server. Decrypting auth key...')
   const decryptedValue = await decrypt(c1, c2)
-  getLogger().debug(`decryptedValue: ${decryptedValue}`)
-  getLogger().info('Finish decrypting. Sending response back to server')
+  logger.debug(`decryptedValue: ${decryptedValue}`)
+  logger.info('Finish decrypting. Sending response back to server')
   socket.emit('login-auth', decryptedValue)
 })
 
 socket.on('login-auth-res', (message) => {
   if (message == 'OK') {
-    getLogger().info('Login succeeded')
+    logger.info('Login succeeded')
     // TODO: store some variable indicating logged in
   } else {
-    getLogger().warn('Login failed. There might be problem with your keys')
+    logger.warn('Login failed. There might be problem with your keys')
   }
 })
 /**
  * @todo First get the keys. Then emit login-ask to server with public key.
  * Then wait for server to send back auth message, decode it and send back to server.
  */
-export async function login() {
+async function login() {
   try {
     const engine = await getKeyPublic()
-    getLogger().info('Asking to login...')
-    getLogger().debug(`p:${engine.p}, g:${engine.g}, y:${engine.y}`)
+    logger.info('Asking to login...')
+    logger.debug(`p:${engine.p}, g:${engine.g}, y:${engine.y}`)
     socket.emit('login-ask', engine.p, engine.g, engine.y)
   } catch (error) {
-    getLogger().error(`login failed because of following error: ${error}`)
+    logger.error(`login failed because of following error: ${error}`)
   }
 }
+
+export { login, socket }

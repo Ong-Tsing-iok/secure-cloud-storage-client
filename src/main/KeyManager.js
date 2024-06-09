@@ -1,5 +1,5 @@
 import ElGamal from 'basic_simple_elgamal'
-import { getLogger } from './Logger'
+import { logger } from './Logger'
 import { writeFile } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 const bigInt = require('big-integer')
@@ -17,7 +17,7 @@ export async function getKeyEngine() {
   return readFile(keyFilePath, 'utf-8')
     .then((data) => {
       // if key exist, load key
-      getLogger().info('Keys found. Loading keys...')
+      logger.info('Keys found. Loading keys...')
       const parsedData = JSON.parse(data)
       const elgamal = importElgamal(parsedData.p, parsedData.g, parsedData.y, parsedData.x)
       return elgamal
@@ -25,24 +25,24 @@ export async function getKeyEngine() {
     .catch(async (err) => {
       if (err.code === 'ENOENT') {
         // else create key
-        getLogger().info('Keys not found. Creating keys...')
+        logger.info('Keys not found. Creating keys...')
         const elgamal = new ElGamal(p, g)
         try {
           await elgamal.fillIn()
-          getLogger().info(`Keys successfully created. Keys are secure: ${elgamal.checkSecurity()}`)
-          getLogger().info('storing keys to file...')
+          logger.info(`Keys successfully created. Keys are secure: ${elgamal.checkSecurity()}`)
+          logger.info('storing keys to file...')
           elgamal.setSecurityLevel('LOW')
           const exportedEngine = elgamal.export()
           writeFile(keyFilePath, JSON.stringify(exportedEngine), 'utf-8', (err_1) => {
             if (err_1) {
               throw err_1
             }
-            getLogger().info('keys have been saved!')
+            logger.info('keys have been saved!')
           })
           elgamal.setSecurityLevel('HIGH')
           return elgamal
         } catch (err_2) {
-          getLogger().error(`Keys initialization failed due to following error: ${err_2}`)
+          logger.error(`Keys initialization failed due to following error: ${err_2}`)
           throw err_2
         }
       } else {
@@ -53,11 +53,11 @@ export async function getKeyEngine() {
   //   .initializeRemotely(2024)
   //   .then(() => {
   //     const secure = elgamal.checkSecurity()
-  //     getLogger().info(`Key successfully created. Key is secure: ${secure}`)
+  //     logger.info(`Key successfully created. Key is secure: ${secure}`)
   //     return elgamal
   //   })
   //   .catch((reason) => {
-  //     getLogger().error(`Key initialization failed due to following reason: ${reason}`)
+  //     logger.error(`Key initialization failed due to following reason: ${reason}`)
   //   })
 }
 /**
@@ -73,10 +73,10 @@ function importElgamal(p, g, y, x) {
   const elgamal = new ElGamal(p, g, y, x)
   elgamal.setSecurityLevel('HIGH')
   if (!elgamal.checkSecurity()) {
-    getLogger().error('Loaded keys are not secure.')
+    logger.error('Loaded keys are not secure.')
     throw new Error('Keys not secure')
   }
-  getLogger().info('Keys loaded successfully')
+  logger.info('Keys loaded successfully')
   return elgamal
 }
 

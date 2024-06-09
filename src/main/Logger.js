@@ -1,4 +1,7 @@
 import winston from 'winston'
+import ScreenTransport from './ScreenTransport'
+
+const screenTransport = new ScreenTransport()
 
 const logger = winston.createLogger({
   level: 'info',
@@ -10,7 +13,8 @@ const logger = winston.createLogger({
     // - Write all logs with importance level of `info` or less to `combined.log`
     //
     new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log' })
+    new winston.transports.File({ filename: 'combined.log' }),
+    screenTransport
   ]
 })
 
@@ -27,6 +31,8 @@ if (process.env.NODE_ENV !== 'production') {
   )
 }
 
-export function getLogger() {
-  return logger
-}
+// export function logger {
+//   return logger
+// }
+
+export { logger, screenTransport }

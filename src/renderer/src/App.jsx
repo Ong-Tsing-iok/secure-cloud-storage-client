@@ -1,5 +1,6 @@
 import Versions from './components/Versions'
 import electronLogo from './assets/electron.svg'
+import LogViewer from './components/LogViewer'
 
 function App() {
   const ipcHandle = (message) => window.electron.ipcRenderer.send(message)
@@ -36,6 +37,7 @@ function App() {
           </a>
         </div>
       </div>
+      <LogViewer></LogViewer>
       <Versions></Versions>
     </>
   )
