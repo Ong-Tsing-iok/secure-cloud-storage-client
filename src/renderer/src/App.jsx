@@ -17,11 +17,6 @@ function App() {
       </p>
       <div className="actions">
         <div className="action">
-          <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">
-            Documentation
-          </a>
-        </div>
-        <div className="action">
           <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('send-message')}>
             Send message
           </a>
@@ -34,6 +29,11 @@ function App() {
         <div className="action">
           <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('login')}>
             login
+          </a>
+        </div>
+        <div className="action">
+          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('upload')}>
+            upload a file
           </a>
         </div>
       </div>

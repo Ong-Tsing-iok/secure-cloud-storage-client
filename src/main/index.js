@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import { login, sendMessage } from './MessageManager'
 import { getKeyEngine } from './KeyManager'
 import { logger } from './Logger'
+import { uploadFileProcess } from './FileManager'
 
 console.log(process.version)
 
@@ -64,6 +65,7 @@ app.whenReady().then(() => {
     })
   )
   ipcMain.on('login', () => login())
+  ipcMain.on('upload', () => uploadFileProcess())
 
   createWindow()
 
@@ -85,3 +87,7 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+// TODO: might need to remove in production
+app.commandLine.appendSwitch('ignore-certificate-errors')
+app.commandLine.appendSwitch('allow-insecure-localhost', 'true')
