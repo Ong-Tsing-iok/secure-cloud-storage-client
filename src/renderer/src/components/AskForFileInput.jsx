@@ -1,0 +1,26 @@
+import { useState } from 'react'
+
+const AskForFileInput = () => {
+  const [input, setInput] = useState('')
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+        placeholder="Enter file uuid"
+      />
+      <button
+        onClick={() => {
+          window.electron.ipcRenderer.send('download', input)
+          setInput('')
+        }}
+      >
+        Ask
+      </button>
+    </div>
+  )
+}
+
+export default AskForFileInput

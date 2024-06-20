@@ -5,9 +5,10 @@ import icon from '../../resources/icon.png?asset'
 import { login, sendMessage } from './MessageManager'
 import { getKeyEngine } from './KeyManager'
 import { logger } from './Logger'
-import { uploadFileProcess } from './FileManager'
+import { uploadFileProcess, getFileListProcess, downloadFileProcess } from './FileManager'
 
 console.log(process.version)
+process.env.FILE_PROTOCOL = 'ftps'
 
 function createWindow() {
   // Create the browser window.
@@ -66,6 +67,8 @@ app.whenReady().then(() => {
   )
   ipcMain.on('login', () => login())
   ipcMain.on('upload', () => uploadFileProcess())
+  ipcMain.on('get-file-list', () => getFileListProcess())
+  ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
 
   createWindow()
 

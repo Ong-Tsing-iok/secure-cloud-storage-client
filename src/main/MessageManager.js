@@ -10,7 +10,7 @@ const socket = io(url, {
 
 socket.on('message', (message) => {
   // console.log(message)
-  logger.log('info', `received message as client: ${message}`)
+  logger.log('info', `received message from server: ${message}`)
 })
 
 socket.on('connect_error', (error) => {
