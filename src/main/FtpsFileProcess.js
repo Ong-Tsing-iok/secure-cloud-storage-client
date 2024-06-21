@@ -1,8 +1,15 @@
 import { socket } from './MessageManager'
 import { logger } from './Logger'
 import { Client } from 'basic-ftp'
+import { basename } from 'node:path'
 
 const ftpPort = 7002
+/**
+ * Uploads a file to an FTPS server.
+ *
+ * @param {ReadableStream} fileStream - The stream of the file to be uploaded.
+ * @return {Promise<void>} A promise that resolves when the upload is complete.
+ */
 const uploadFileProcessFtps = async (fileStream) => {
   const client = new Client()
   try {
@@ -16,7 +23,7 @@ const uploadFileProcessFtps = async (fileStream) => {
       secureOptions: { rejectUnauthorized: process.env.NODE_ENV !== 'production' ? false : true }
     })
     logger.info(`ftp upload access response: ${response.message}`)
-    response = await client.uploadFrom(fileStream, fileStream.path)
+    response = await client.uploadFrom(fileStream, basename(fileStream.path))
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
   } catch (error) {
@@ -25,7 +32,14 @@ const uploadFileProcessFtps = async (fileStream) => {
   client.close()
 }
 
-const downloadFileProcessFtps = async (uuid) => {
+/**
+ * Downloads a file from the FTPS server.
+ *
+ * @param {string} uuid - The unique identifier of the file.
+ * @param {string} filename - The name of the file to be stored.
+ * @return {Promise<void>} A promise that resolves when the download is complete.
+ */
+const downloadFileProcessFtps = async (uuid, filename) => {
   const client = new Client()
   try {
     let response = await client.access({
@@ -38,10 +52,10 @@ const downloadFileProcessFtps = async (uuid) => {
       secureOptions: { rejectUnauthorized: process.env.NODE_ENV !== 'production' ? false : true }
     })
     logger.info(`ftp download access response: ${response.message}`)
-    response = await client.downloadTo(`downloads/${uuid}`, uuid) // TODO: make sure the directory is created
+    response = await client.downloadTo(`downloads/${filename}`, uuid) // TODO: make sure the directory is created
     logger.info(`ftp download response: ${response.message}`)
     // TODO: get file name from server and replace uuid
-    logger.info(`download with ftps succeeded`)
+    logger.info(`download with ftps succeeded. File saved as ${filename}`)
   } catch (error) {
     logger.error(`download with ftps failed: ${error}`)
   }

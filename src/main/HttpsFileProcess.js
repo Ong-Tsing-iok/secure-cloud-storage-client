@@ -14,7 +14,6 @@ const uploadFileProcessHttps = (fileStream) => {
     headers: { ...form.getHeaders(), socketid: socket.id } // TODO: maybe change to other one-time token (remember is case insensitive)
   })
   form.pipe(request)
-
   request.on('response', (response) => {
     logger.info(`STATUS: ${response.statusCode}`)
     logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)

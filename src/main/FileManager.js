@@ -1,6 +1,6 @@
 import { dialog } from 'electron'
 import { socket } from './MessageManager'
-import { createReadStream } from 'node:fs'
+import { createReadStream, mkdirSync } from 'node:fs'
 import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
 import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
@@ -35,13 +35,25 @@ socket.on('file-list-res', (fileList) => {
 })
 
 const downloadFileProcess = (uuid) => {
-  logger.info(`Asking to download file ${uuid} with protocol ${process.env.FILE_PROTOCOL}`)
+  logger.info(`Getting filename for file ${uuid}...`)
+  socket.emit('download-file-pre', uuid)
+}
+socket.on('download-file-res', (uuid, filename) => {
+  try {
+    mkdirSync('downloads', { recursive: false })
+  } catch (error) {
+    if (error.code !== 'EEXIST') {
+      logger.error(`Failed to create downloads directory: ${error}. Download aborted.`)
+    }
+  }
   if (process.env.FILE_PROTOCOL === 'https') {
     downloadFileProcessHttps(uuid)
   } else if (process.env.FILE_PROTOCOL === 'ftps') {
-    downloadFileProcessFtps(uuid)
+    downloadFileProcessFtps(uuid, filename)
   } else {
     logger.error('Invalid file protocol')
   }
-}
+  logger.info(`Downloading file ${uuid} with protocol ${process.env.FILE_PROTOCOL}...`)
+})
+
 export { uploadFileProcess, getFileListProcess, downloadFileProcess }
