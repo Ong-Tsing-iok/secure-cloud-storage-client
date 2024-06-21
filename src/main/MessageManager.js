@@ -29,6 +29,10 @@ socket.io.on('reconnect_failed', () => {
   logger.error('reconnection failed. The server might be down.')
 })
 
+socket.io.on('close', () => {
+  logger.info('connection closed')
+})
+
 export function sendMessage(message) {
   socket.emit('message', message)
 }

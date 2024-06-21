@@ -3,6 +3,7 @@ import { socket } from './MessageManager'
 import { createReadStream } from 'node:fs'
 import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
+import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
 
 const uploadFileProcess = async () => {
   logger.info('Browsing file...')
@@ -14,10 +15,11 @@ const uploadFileProcess = async () => {
     const filePath = filePaths[0]
     const fileStream = createReadStream(filePath)
 
+    logger.info(`Uploading file ${filePath} with protocol ${process.env.FILE_PROTOCOL}`)
     if (process.env.FILE_PROTOCOL === 'https') {
       uploadFileProcessHttps(fileStream)
     } else if (process.env.FILE_PROTOCOL === 'ftps') {
-      throw new Error('Not implemented yet')
+      uploadFileProcessFtps(fileStream)
     } else {
       logger.error('Invalid file protocol')
     }
@@ -33,11 +35,11 @@ socket.on('file-list-res', (fileList) => {
 })
 
 const downloadFileProcess = (uuid) => {
-  logger.info(`Asking to download file: ${uuid}`)
+  logger.info(`Asking to download file ${uuid} with protocol ${process.env.FILE_PROTOCOL}`)
   if (process.env.FILE_PROTOCOL === 'https') {
     downloadFileProcessHttps(uuid)
   } else if (process.env.FILE_PROTOCOL === 'ftps') {
-    throw new Error('Not implemented yet')
+    downloadFileProcessFtps(uuid)
   } else {
     logger.error('Invalid file protocol')
   }

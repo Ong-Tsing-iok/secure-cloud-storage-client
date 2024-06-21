@@ -1,11 +1,10 @@
-import { dialog } from 'electron'
 import { socket } from './MessageManager'
-import { createReadStream, createWriteStream, unlink, mkdirSync } from 'node:fs'
+import { createWriteStream, unlink, mkdirSync } from 'node:fs'
 import { logger } from './Logger'
 import { net } from 'electron'
 import FormData from 'form-data'
 
-const uploadFileProcessHttps = async (fileStream) => {
+const uploadFileProcessHttps = (fileStream) => {
   const form = new FormData()
   // form.append('socketId', socket.id)
   form.append('file', fileStream)
