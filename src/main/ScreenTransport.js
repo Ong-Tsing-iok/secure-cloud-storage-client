@@ -5,12 +5,12 @@ const { BrowserWindow } = require('electron')
 class ScreenTransport extends Transport {
   constructor(opts) {
     super(opts)
-    this.logs = []
+    // this.logs = []
     // this.emitter = new EventEmitter()
   }
 
   log(info, callback) {
-    this.logs.push(info)
+    // this.logs.push(info)
     // this.emitter.emit('log', info)
     // TODO: this might need to be fixed by storing main window id
     BrowserWindow.getFocusedWindow()?.webContents.send('log', info)

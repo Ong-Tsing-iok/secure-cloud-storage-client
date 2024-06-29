@@ -16,6 +16,7 @@ const uploadFileProcess = async () => {
     const fileStream = createReadStream(filePath)
 
     logger.info(`Uploading file ${filePath} with protocol ${process.env.FILE_PROTOCOL}`)
+    console.log(`upload start: ${Date.now()}`)
     if (process.env.FILE_PROTOCOL === 'https') {
       uploadFileProcessHttps(fileStream)
     } else if (process.env.FILE_PROTOCOL === 'ftps') {
@@ -46,6 +47,8 @@ socket.on('download-file-res', (uuid, filename) => {
       logger.error(`Failed to create downloads directory: ${error}. Download aborted.`)
     }
   }
+  logger.info(`Downloading file ${uuid} with protocol ${process.env.FILE_PROTOCOL}...`)
+  console.log(`download start: ${Date.now()}`)
   if (process.env.FILE_PROTOCOL === 'https') {
     downloadFileProcessHttps(uuid)
   } else if (process.env.FILE_PROTOCOL === 'ftps') {
@@ -53,7 +56,11 @@ socket.on('download-file-res', (uuid, filename) => {
   } else {
     logger.error('Invalid file protocol')
   }
-  logger.info(`Downloading file ${uuid} with protocol ${process.env.FILE_PROTOCOL}...`)
 })
+
+const deleteFileProcess = (uuid) => {
+  logger.info(`Deleting file ${uuid}...`)
+  socket.emit('delete-file', uuid)
+}
 
 export { uploadFileProcess, getFileListProcess, downloadFileProcess }

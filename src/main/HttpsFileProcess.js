@@ -17,7 +17,7 @@ const uploadFileProcessHttps = (fileStream) => {
   request.on('response', (response) => {
     logger.info(`STATUS: ${response.statusCode}`)
     logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
-
+    console.log(`upload end: ${Date.now()}`)
     response.on('data', (chunk) => {
       logger.info(`BODY: ${chunk}`)
     })
@@ -44,7 +44,7 @@ const downloadFileProcessHttps = (uuid) => {
     logger.info(`STATUS: ${response.statusCode}`)
     logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
 
-    var file = null
+    let file = null
     if (response.statusCode === 200) {
       const filename = response.headers['content-disposition'].split('=')[1].split('"')[1]
       try {
@@ -76,6 +76,7 @@ const downloadFileProcessHttps = (uuid) => {
 
     response.on('end', () => {
       logger.info('No more data in response.')
+      console.log(`download end: ${Date.now()}`)
     })
   })
 

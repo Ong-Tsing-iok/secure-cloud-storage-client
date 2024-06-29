@@ -17,13 +17,14 @@ const uploadFileProcessFtps = async (fileStream) => {
       host: 'localhost',
       port: ftpPort,
       user: socket.id,
-      password: 'password',
       secure: true,
       // TODO: remove insecure option in production
-      secureOptions: { rejectUnauthorized: process.env.NODE_ENV !== 'production' ? false : true }
+      // secureOptions: { rejectUnauthorized: process.env.NODE_ENV !== 'production' ? false : true }
+      secureOptions: { rejectUnauthorized: false }
     })
     logger.info(`ftp upload access response: ${response.message}`)
     response = await client.uploadFrom(fileStream, basename(fileStream.path))
+    console.log(`upload end: ${Date.now()}`)
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
   } catch (error) {
@@ -46,16 +47,17 @@ const downloadFileProcessFtps = async (uuid, filename) => {
       host: 'localhost',
       port: ftpPort,
       user: socket.id,
-      password: 'password',
       secure: true,
       // TODO: remove insecure option in production
-      secureOptions: { rejectUnauthorized: process.env.NODE_ENV !== 'production' ? false : true }
+      // secureOptions: { rejectUnauthorized: process.env.NODE_ENV !== 'production' ? false : true }
+      secureOptions: { rejectUnauthorized: false }
     })
     logger.info(`ftp download access response: ${response.message}`)
     response = await client.downloadTo(`downloads/${filename}`, uuid) // TODO: make sure the directory is created
     logger.info(`ftp download response: ${response.message}`)
     // TODO: get file name from server and replace uuid
     logger.info(`download with ftps succeeded. File saved as ${filename}`)
+    console.log(`download end: ${Date.now()}`)
   } catch (error) {
     logger.error(`download with ftps failed: ${error}`)
   }
