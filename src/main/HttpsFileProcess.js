@@ -3,14 +3,16 @@ import { createWriteStream, unlink, mkdirSync } from 'node:fs'
 import { logger } from './Logger'
 import { net } from 'electron'
 import FormData from 'form-data'
+import { basename } from 'node:path'
 
-const uploadFileProcessHttps = (fileStream) => {
+const uploadFileProcessHttps = (fileStream, filePath) => {
   const form = new FormData()
   // form.append('socketId', socket.id)
-  form.append('file', fileStream)
+  form.append('file', fileStream, basename(filePath))
   const request = net.request({
     method: 'POST',
     url: 'https://localhost:3001/upload',
+    // url: 'https://ba96fc54-6a51-49c9-bba0-bc1060e0dd24.mock.pstmn.io/upload',
     headers: { ...form.getHeaders(), socketid: socket.id } // TODO: maybe change to other one-time token (remember is case insensitive)
   })
   form.pipe(request)
@@ -32,7 +34,7 @@ const uploadFileProcessHttps = (fileStream) => {
   })
 }
 
-const downloadFileProcessHttps = (uuid) => {
+const downloadFileProcessHttps = (uuid, writeStream, filePath) => {
   const request = net.request({
     method: 'GET',
     url: `https://localhost:3001/download`,
@@ -44,31 +46,9 @@ const downloadFileProcessHttps = (uuid) => {
     logger.info(`STATUS: ${response.statusCode}`)
     logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
 
-    let file = null
-    if (response.statusCode === 200) {
-      const filename = response.headers['content-disposition'].split('=')[1].split('"')[1]
-      try {
-        mkdirSync('downloads', { recursive: false })
-      } catch (error) {
-        if (error.code !== 'EEXIST') {
-          throw error
-        }
-      }
-
-      file = createWriteStream(`downloads/${filename}`)
-      file
-        .on('finish', () => {
-          logger.info('Download finished')
-          file.close()
-        })
-        .on('error', (err) => {
-          logger.error(`Error writing file: ${err}`)
-          unlink(file.path)
-        })
-    }
     response.on('data', (chunk) => {
-      if (file) {
-        file.write(chunk)
+      if (response.statusCode === 200) {
+        writeStream.write(chunk)
       } else {
         logger.info(`BODY: ${chunk}`)
       }
@@ -76,7 +56,7 @@ const downloadFileProcessHttps = (uuid) => {
 
     response.on('end', () => {
       logger.info('No more data in response.')
-      console.log(`download end: ${Date.now()}`)
+      writeStream.end()
     })
   })
 

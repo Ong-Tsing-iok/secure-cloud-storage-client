@@ -1,9 +1,12 @@
 import { dialog } from 'electron'
 import { socket } from './MessageManager'
-import { createReadStream, mkdirSync } from 'node:fs'
+import { createReadStream, mkdirSync, createWriteStream, unlink } from 'node:fs'
 import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
 import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
+import { encrypt, decrypt } from './AESModule'
+import { __dirname, __download_dir } from './Constants'
+import { join } from 'node:path'
 
 const uploadFileProcess = async () => {
   logger.info('Browsing file...')
@@ -12,15 +15,24 @@ const uploadFileProcess = async () => {
     properties: ['openFile']
   })
   if (filePaths.length > 0) {
+    let key = null
+    let iv = null
+    let encryptedStream = null
+    let fileStream = null
     const filePath = filePaths[0]
-    const fileStream = createReadStream(filePath)
-
+    try {
+      fileStream = createReadStream(filePath)
+      logger.info('Encrypting file...')
+      ;({ key, iv, encryptedStream } = encrypt(fileStream))
+    } catch (error) {
+      logger.error(`Failed to create stream or encrypt file: ${error}. Upload aborted.`)
+      return
+    }
     logger.info(`Uploading file ${filePath} with protocol ${process.env.FILE_PROTOCOL}`)
-    console.log(`upload start: ${Date.now()}`)
     if (process.env.FILE_PROTOCOL === 'https') {
-      uploadFileProcessHttps(fileStream)
+      uploadFileProcessHttps(encryptedStream, filePath)
     } else if (process.env.FILE_PROTOCOL === 'ftps') {
-      uploadFileProcessFtps(fileStream)
+      uploadFileProcessFtps(encryptedStream, filePath)
     } else {
       logger.error('Invalid file protocol')
     }
@@ -40,19 +52,29 @@ const downloadFileProcess = (uuid) => {
   socket.emit('download-file-pre', uuid)
 }
 socket.on('download-file-res', (uuid, filename) => {
+  // TODO: also get the aes keys
   try {
-    mkdirSync('downloads', { recursive: false })
+    mkdirSync(join(__dirname, __download_dir), { recursive: false })
   } catch (error) {
     if (error.code !== 'EEXIST') {
       logger.error(`Failed to create downloads directory: ${error}. Download aborted.`)
     }
   }
+  const filePath = join(__dirname, __download_dir, filename)
+  const writeStream = createWriteStream(filePath)
+  writeStream.on('error', (err) => {
+    logger.error(`Failed to write file ${filename}: ${err}. Download aborted.`)
+    unlink(filePath)
+  })
+  writeStream.on('finish', () => {
+    logger.info(`Downloaded file ${filename} to ${filePath}`)
+  })
+  const decipher = decrypt(/*key, iv*/ writeStream)
   logger.info(`Downloading file ${uuid} with protocol ${process.env.FILE_PROTOCOL}...`)
-  console.log(`download start: ${Date.now()}`)
   if (process.env.FILE_PROTOCOL === 'https') {
-    downloadFileProcessHttps(uuid)
+    downloadFileProcessHttps(uuid, decipher, filePath)
   } else if (process.env.FILE_PROTOCOL === 'ftps') {
-    downloadFileProcessFtps(uuid, filename)
+    downloadFileProcessFtps(uuid, decipher, filePath)
   } else {
     logger.error('Invalid file protocol')
   }

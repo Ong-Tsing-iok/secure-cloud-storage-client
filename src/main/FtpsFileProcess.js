@@ -4,13 +4,15 @@ import { Client } from 'basic-ftp'
 import { basename } from 'node:path'
 
 const ftpPort = 7002
+
 /**
  * Uploads a file to an FTPS server.
  *
  * @param {ReadableStream} fileStream - The stream of the file to be uploaded.
+ * @param {string} filePath - The path of the file to be uploaded (related to fileStream).
  * @return {Promise<void>} A promise that resolves when the upload is complete.
  */
-const uploadFileProcessFtps = async (fileStream) => {
+const uploadFileProcessFtps = async (fileStream, filePath) => {
   const client = new Client()
   try {
     let response = await client.access({
@@ -23,7 +25,7 @@ const uploadFileProcessFtps = async (fileStream) => {
       secureOptions: { rejectUnauthorized: false }
     })
     logger.info(`ftp upload access response: ${response.message}`)
-    response = await client.uploadFrom(fileStream, basename(fileStream.path))
+    response = await client.uploadFrom(fileStream, basename(filePath))
     console.log(`upload end: ${Date.now()}`)
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
@@ -37,10 +39,11 @@ const uploadFileProcessFtps = async (fileStream) => {
  * Downloads a file from the FTPS server.
  *
  * @param {string} uuid - The unique identifier of the file.
- * @param {string} filename - The name of the file to be stored.
+ * @param {WritableStream} writeStream - The stream to write the downloaded file to.
+ * @param {string} filePath - The path to save the downloaded file (related to writeStream).
  * @return {Promise<void>} A promise that resolves when the download is complete.
  */
-const downloadFileProcessFtps = async (uuid, filename) => {
+const downloadFileProcessFtps = async (uuid, writeStream, filePath) => {
   const client = new Client()
   try {
     let response = await client.access({
@@ -53,11 +56,10 @@ const downloadFileProcessFtps = async (uuid, filename) => {
       secureOptions: { rejectUnauthorized: false }
     })
     logger.info(`ftp download access response: ${response.message}`)
-    response = await client.downloadTo(`downloads/${filename}`, uuid) // TODO: make sure the directory is created
+    response = await client.downloadTo(writeStream, uuid) // TODO: make sure the directory is created
     logger.info(`ftp download response: ${response.message}`)
     // TODO: get file name from server and replace uuid
-    logger.info(`download with ftps succeeded. File saved as ${filename}`)
-    console.log(`download end: ${Date.now()}`)
+    // logger.info(`download with ftps succeeded. File saved at ${filePath}`)
   } catch (error) {
     logger.error(`download with ftps failed: ${error}`)
   }
