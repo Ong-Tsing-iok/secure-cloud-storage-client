@@ -12,13 +12,14 @@ const ftpPort = 7002
  * @param {string} filePath - The path of the file to be uploaded (related to fileStream).
  * @return {Promise<void>} A promise that resolves when the upload is complete.
  */
-const uploadFileProcessFtps = async (fileStream, filePath) => {
+const uploadFileProcessFtps = async (fileStream, filePath, uploadId) => {
   const client = new Client()
   try {
     let response = await client.access({
       host: 'localhost',
       port: ftpPort,
       user: socket.id,
+      password: uploadId,
       secure: true,
       // TODO: remove insecure option in production
       // secureOptions: { rejectUnauthorized: process.env.NODE_ENV !== 'production' ? false : true }

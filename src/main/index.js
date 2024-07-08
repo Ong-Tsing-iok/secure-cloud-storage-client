@@ -8,7 +8,7 @@ import { logger } from './Logger'
 import { uploadFileProcess, getFileListProcess, downloadFileProcess } from './FileManager'
 
 console.log(process.version)
-process.env.FILE_PROTOCOL = 'https'
+process.env.FILE_PROTOCOL = 'ftps'
 
 function createWindow() {
   // Create the browser window.

@@ -28,14 +28,21 @@ const uploadFileProcess = async () => {
       logger.error(`Failed to create stream or encrypt file: ${error}. Upload aborted.`)
       return
     }
-    logger.info(`Uploading file ${filePath} with protocol ${process.env.FILE_PROTOCOL}`)
-    if (process.env.FILE_PROTOCOL === 'https') {
-      uploadFileProcessHttps(encryptedStream, filePath)
-    } else if (process.env.FILE_PROTOCOL === 'ftps') {
-      uploadFileProcessFtps(encryptedStream, filePath)
-    } else {
-      logger.error('Invalid file protocol')
-    }
+    logger.info('Sending key and iv to server...')
+    socket.emit('upload-file-pre', key, iv, (error, uploadId) => {
+      if (error) {
+        logger.error(`Failed to upload file: ${error}. Upload aborted.`)
+        return
+      }
+      logger.info(`Uploading file ${filePath} with protocol ${process.env.FILE_PROTOCOL}`)
+      if (process.env.FILE_PROTOCOL === 'https') {
+        uploadFileProcessHttps(encryptedStream, filePath, uploadId)
+      } else if (process.env.FILE_PROTOCOL === 'ftps') {
+        uploadFileProcessFtps(encryptedStream, filePath, uploadId)
+      } else {
+        logger.error('Invalid file protocol')
+      }
+    })
   }
 }
 
@@ -51,8 +58,7 @@ const downloadFileProcess = (uuid) => {
   logger.info(`Getting filename for file ${uuid}...`)
   socket.emit('download-file-pre', uuid)
 }
-socket.on('download-file-res', (uuid, filename) => {
-  // TODO: also get the aes keys
+socket.on('download-file-res', (uuid, filename, key, iv) => {
   try {
     mkdirSync(join(__dirname, __download_dir), { recursive: false })
   } catch (error) {
@@ -69,7 +75,7 @@ socket.on('download-file-res', (uuid, filename) => {
   writeStream.on('finish', () => {
     logger.info(`Downloaded file ${filename} to ${filePath}`)
   })
-  const decipher = decrypt(/*key, iv*/ writeStream)
+  const decipher = decrypt(Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'), writeStream)
   logger.info(`Downloading file ${uuid} with protocol ${process.env.FILE_PROTOCOL}...`)
   if (process.env.FILE_PROTOCOL === 'https') {
     downloadFileProcessHttps(uuid, decipher, filePath)

@@ -5,7 +5,7 @@ import { net } from 'electron'
 import FormData from 'form-data'
 import { basename } from 'node:path'
 
-const uploadFileProcessHttps = (fileStream, filePath) => {
+const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
   const form = new FormData()
   // form.append('socketId', socket.id)
   form.append('file', fileStream, basename(filePath))
@@ -13,7 +13,7 @@ const uploadFileProcessHttps = (fileStream, filePath) => {
     method: 'POST',
     url: 'https://localhost:3001/upload',
     // url: 'https://ba96fc54-6a51-49c9-bba0-bc1060e0dd24.mock.pstmn.io/upload',
-    headers: { ...form.getHeaders(), socketid: socket.id } // TODO: maybe change to other one-time token (remember is case insensitive)
+    headers: { ...form.getHeaders(), socketid: socket.id, uploadid: uploadId } // TODO: maybe change to other one-time token (remember is case insensitive)
   })
   form.pipe(request)
   request.on('response', (response) => {
