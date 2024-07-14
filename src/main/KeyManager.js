@@ -13,7 +13,7 @@ const g = '3'
 const keyFilePath = 'elgamal.keys'
 
 // TODO: store engine somewhere
-export async function getKeyEngine() {
+async function getKeyEngine() {
   return readFile(keyFilePath, 'utf-8')
     .then((data) => {
       // if key exist, load key
@@ -84,11 +84,16 @@ function importElgamal(p, g, y, x) {
  * Decrypt the cipher using Elgamal.
  * @param {} c1
  * @param {} c2
- * @return {Promise<string>} The decrypted value.
+ * @return {Promise<bigInt.BigInteger>} The decrypted value.
  */
 export async function decrypt(c1, c2) {
   const elgamal = await getKeyEngine()
-  return (await elgamal.decrypt({ c1: bigInt(c1), c2: bigInt(c2) })).toString()
+  return elgamal.decrypt({ c1: bigInt(c1), c2: bigInt(c2) })
+}
+
+export async function encrypt(message) {
+  const elgamal = await getKeyEngine()
+  return elgamal.encrypt(bigInt(message))
 }
 
 export async function getKeyPublic() {

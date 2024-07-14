@@ -23,7 +23,7 @@ const uploadFileProcess = async () => {
     try {
       fileStream = createReadStream(filePath)
       logger.info('Encrypting file...')
-      ;({ key, iv, encryptedStream } = encrypt(fileStream))
+      ;({ key, iv, encryptedStream } = await encrypt(fileStream))
     } catch (error) {
       logger.error(`Failed to create stream or encrypt file: ${error}. Upload aborted.`)
       return
@@ -55,10 +55,10 @@ socket.on('file-list-res', (fileList) => {
 })
 
 const downloadFileProcess = (uuid) => {
-  logger.info(`Getting filename for file ${uuid}...`)
+  logger.info(`Getting file info for file ${uuid}...`)
   socket.emit('download-file-pre', uuid)
 }
-socket.on('download-file-res', (uuid, filename, key, iv) => {
+socket.on('download-file-res', async (uuid, filename, key, iv) => {
   try {
     mkdirSync(join(__dirname, __download_dir), { recursive: false })
   } catch (error) {
@@ -75,7 +75,7 @@ socket.on('download-file-res', (uuid, filename, key, iv) => {
   writeStream.on('finish', () => {
     logger.info(`Downloaded file ${filename} to ${filePath}`)
   })
-  const decipher = decrypt(Buffer.from(key, 'hex'), Buffer.from(iv, 'hex'), writeStream)
+  const decipher = await decrypt(key, iv, writeStream)
   logger.info(`Downloading file ${uuid} with protocol ${process.env.FILE_PROTOCOL}...`)
   if (process.env.FILE_PROTOCOL === 'https') {
     downloadFileProcessHttps(uuid, decipher, filePath)

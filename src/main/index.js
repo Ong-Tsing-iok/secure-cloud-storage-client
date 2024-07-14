@@ -59,12 +59,12 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
   ipcMain.on('send-message', () => sendMessage('test message'))
-  ipcMain.on('get-keys', () =>
-    getKeyEngine().then((result) => {
-      logger.info('key is get in index.js')
-      console.log(result.export(false))
-    })
-  )
+  // ipcMain.on('get-keys', () =>
+  //   getKeyEngine().then((result) => {
+  //     logger.info('key is get in index.js')
+  //     console.log(result.export(false))
+  //   })
+  // )
   ipcMain.on('login', () => login())
   ipcMain.on('upload', () => uploadFileProcess())
   ipcMain.on('get-file-list', () => getFileListProcess())
