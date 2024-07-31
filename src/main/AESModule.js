@@ -18,17 +18,16 @@ const encrypt = async (readstream) => {
   return { key: keyCipherPair, iv: ivCipherPair, encryptedStream }
 }
 
-const decrypt = async (keyCipherPair, ivCipherPair, writestream) => {
+const decrypt = async (keyCipherPair, ivCipherPair) => {
   // decode key and iv with elgamal
   const keyDecipher = await KeyManager.decrypt(keyCipherPair.c1, keyCipherPair.c2)
   const ivDecipher = await KeyManager.decrypt(ivCipherPair.c1, ivCipherPair.c2)
-  // console.log(keyDecipher.toString(16), ivDecipher.toString(16))
+  // console.log(keyDecipher.toString(16).length, ivDecipher.toString(16).length)
   const decipher = crypto.createDecipheriv(
     'aes-256-cbc',
-    Buffer.from(keyDecipher.toString(16), 'hex'),
-    Buffer.from(ivDecipher.toString(16), 'hex')
+    Buffer.from(keyDecipher.toString(16).padStart(64, '0'), 'hex'),
+    Buffer.from(ivDecipher.toString(16).padStart(32, '0'), 'hex')
   )
-  decipher.pipe(writestream)
   return decipher
 }
 

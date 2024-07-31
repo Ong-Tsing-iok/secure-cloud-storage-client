@@ -1,12 +1,13 @@
 import { dialog } from 'electron'
 import { socket } from './MessageManager'
-import { createReadStream, mkdirSync, createWriteStream, unlink } from 'node:fs'
+import { createReadStream, mkdirSync, createWriteStream, unlink, statSync } from 'node:fs'
 import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
 import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
 import { encrypt, decrypt } from './AESModule'
 import { __dirname, __download_dir } from './Constants'
 import { join } from 'node:path'
+import { createPipeProgress } from './util/PipeProgress'
 
 const uploadFileProcess = async () => {
   logger.info('Browsing file...')
@@ -35,8 +36,11 @@ const uploadFileProcess = async () => {
         return
       }
       logger.info(`Uploading file ${filePath} with protocol ${process.env.FILE_PROTOCOL}`)
+      // upload progress
       if (process.env.FILE_PROTOCOL === 'https') {
-        uploadFileProcessHttps(encryptedStream, filePath, uploadId)
+        const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
+        encryptedStream.pipe(PipeProgress)
+        uploadFileProcessHttps(PipeProgress, filePath, uploadId)
       } else if (process.env.FILE_PROTOCOL === 'ftps') {
         uploadFileProcessFtps(encryptedStream, filePath, uploadId)
       } else {
@@ -58,7 +62,7 @@ const downloadFileProcess = (uuid) => {
   logger.info(`Getting file info for file ${uuid}...`)
   socket.emit('download-file-pre', uuid)
 }
-socket.on('download-file-res', async (uuid, filename, key, iv) => {
+socket.on('download-file-res', async (uuid, filename, key, iv, size) => {
   try {
     mkdirSync(join(__dirname, __download_dir), { recursive: false })
   } catch (error) {
@@ -77,10 +81,14 @@ socket.on('download-file-res', async (uuid, filename, key, iv) => {
   })
   const decipher = await decrypt(key, iv, writeStream)
   logger.info(`Downloading file ${uuid} with protocol ${process.env.FILE_PROTOCOL}...`)
+  // download progress
+  const PipeProgress = createPipeProgress({ total: size }, logger)
+  PipeProgress.pipe(decipher)
+  decipher.pipe(writeStream)
   if (process.env.FILE_PROTOCOL === 'https') {
-    downloadFileProcessHttps(uuid, decipher, filePath)
+    downloadFileProcessHttps(uuid, PipeProgress, filePath)
   } else if (process.env.FILE_PROTOCOL === 'ftps') {
-    downloadFileProcessFtps(uuid, decipher, filePath)
+    downloadFileProcessFtps(uuid, PipeProgress, filePath)
   } else {
     logger.error('Invalid file protocol')
   }
@@ -91,4 +99,4 @@ const deleteFileProcess = (uuid) => {
   socket.emit('delete-file', uuid)
 }
 
-export { uploadFileProcess, getFileListProcess, downloadFileProcess }
+export { uploadFileProcess, getFileListProcess, downloadFileProcess, deleteFileProcess }

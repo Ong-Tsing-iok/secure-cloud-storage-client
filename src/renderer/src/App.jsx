@@ -18,7 +18,7 @@ function App() {
       </p> */}
       <AskForFileInput></AskForFileInput>
       <div className="actions">
-        <div className="action">
+        {/* <div className="action">
           <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('send-message')}>
             Send message
           </a>
@@ -27,7 +27,7 @@ function App() {
           <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('get-keys')}>
             get keys
           </a>
-        </div>
+        </div> */}
         <div className="action">
           <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('login')}>
             login

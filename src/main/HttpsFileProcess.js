@@ -1,9 +1,10 @@
 import { socket } from './MessageManager'
-import { createWriteStream, unlink, mkdirSync } from 'node:fs'
+import { statSync } from 'node:fs'
 import { logger } from './Logger'
 import { net } from 'electron'
 import FormData from 'form-data'
 import { basename } from 'node:path'
+import { createPipeProgress } from './util/PipeProgress'
 
 const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
   const form = new FormData()
@@ -15,7 +16,14 @@ const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
     // url: 'https://ba96fc54-6a51-49c9-bba0-bc1060e0dd24.mock.pstmn.io/upload',
     headers: { ...form.getHeaders(), socketid: socket.id, uploadid: uploadId } // TODO: maybe change to other one-time token (remember is case insensitive)
   })
+  request.chunkedEncoding = true
+
+  // const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
+  // form.pipe(PipeProgress)
+  // PipeProgress.pipe(request)
+
   form.pipe(request)
+
   request.on('response', (response) => {
     logger.info(`STATUS: ${response.statusCode}`)
     logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)

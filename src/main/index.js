@@ -5,7 +5,12 @@ import icon from '../../resources/icon.png?asset'
 import { login, sendMessage } from './MessageManager'
 import { getKeyEngine } from './KeyManager'
 import { logger } from './Logger'
-import { uploadFileProcess, getFileListProcess, downloadFileProcess } from './FileManager'
+import {
+  uploadFileProcess,
+  getFileListProcess,
+  downloadFileProcess,
+  deleteFileProcess
+} from './FileManager'
 
 console.log(process.version)
 process.env.FILE_PROTOCOL = 'ftps'
@@ -69,6 +74,7 @@ app.whenReady().then(() => {
   ipcMain.on('upload', () => uploadFileProcess())
   ipcMain.on('get-file-list', () => getFileListProcess())
   ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
+  ipcMain.on('delete', (_event, uuid) => deleteFileProcess(uuid))
 
   createWindow()
 
