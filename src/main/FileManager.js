@@ -8,19 +8,17 @@ import { encrypt, decrypt } from './AESModule'
 import { __dirname, __download_dir } from './Constants'
 import { join } from 'node:path'
 import { createPipeProgress } from './util/PipeProgress'
+import cq from 'concurrent-queue'
 
-const uploadFileProcess = async () => {
-  logger.info('Browsing file...')
-  // TODO: may need to store and use main window id
-  const { filePaths } = await dialog.showOpenDialog({
-    properties: ['openFile']
-  })
-  if (filePaths.length > 0) {
+// upload queue
+// can return promise, but not needed
+const uploadQueue = cq()
+  .limit({ concurrency: 1 })
+  .process(async (filePath) => {
     let key = null
     let iv = null
     let encryptedStream = null
     let fileStream = null
-    const filePath = filePaths[0]
     try {
       fileStream = createReadStream(filePath)
       logger.info('Encrypting file...')
@@ -47,6 +45,18 @@ const uploadFileProcess = async () => {
         logger.error('Invalid file protocol')
       }
     })
+  })
+
+const uploadFileProcess = async () => {
+  logger.info('Browsing file...')
+  // TODO: may need to store and use main window id
+  const { filePaths } = await dialog.showOpenDialog({
+    properties: ['openFile', 'multiSelections']
+  })
+  if (filePaths.length > 0) {
+    for (const filePath of filePaths) {
+      uploadQueue(filePath)
+    }
   }
 }
 
