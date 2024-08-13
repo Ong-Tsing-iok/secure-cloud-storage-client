@@ -69,7 +69,7 @@ socket.on('file-list-res', (fileList) => {
 })
 
 const downloadFileProcess = (uuid) => {
-  logger.info(`Getting file info for file ${uuid}...`)
+  logger.info(`Asking for file ${uuid}...`)
   socket.emit('download-file-pre', uuid)
 }
 socket.on('download-file-res', async (uuid, filename, key, iv, size) => {

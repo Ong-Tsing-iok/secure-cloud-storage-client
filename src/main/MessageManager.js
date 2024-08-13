@@ -4,7 +4,7 @@ import { decrypt, getKeyPublic } from './KeyManager'
 
 const url = 'https://localhost:3001'
 const socket = io(url, {
-  reconnectionAttempts: 10,
+  // reconnectionAttempts: 10,
   rejectUnauthorized: false
 })
 

@@ -25,7 +25,15 @@ const AskForFileInput = () => {
           setInput('')
         }}
       >
-        delete
+        delete file
+      </button>
+      <button
+        onClick={() => {
+          window.electron.ipcRenderer.send('delete-request', input)
+          setInput('')
+        }}
+      >
+        delete request
       </button>
     </div>
   )

@@ -22,12 +22,12 @@ function App() {
           <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('send-message')}>
             Send message
           </a>
-        </div>
-        <div className="action">
-          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('get-keys')}>
-            get keys
-          </a>
         </div> */}
+        <div className="action">
+          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('change-protocol')}>
+            change protocol
+          </a>
+        </div>
         <div className="action">
           <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('login')}>
             login
@@ -35,12 +35,22 @@ function App() {
         </div>
         <div className="action">
           <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('upload')}>
-            upload a file
+            upload files
           </a>
         </div>
         <div className="action">
           <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('get-file-list')}>
             get file list
+          </a>
+        </div>
+        <div className="action">
+          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('get-request-list')}>
+            get request list
+          </a>
+        </div>
+        <div className="action">
+          <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('get-requested-list')}>
+            get requested list
           </a>
         </div>
       </div>

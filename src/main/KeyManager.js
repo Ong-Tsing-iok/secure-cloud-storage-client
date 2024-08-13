@@ -11,44 +11,51 @@ const p =
 // The public generator. Maybe these should all be random for each people?
 const g = '3'
 const keyFilePath = 'elgamal.keys'
+let keyEngine = null
 
 // TODO: store engine somewhere
 async function getKeyEngine() {
-  return readFile(keyFilePath, 'utf-8')
-    .then((data) => {
-      // if key exist, load key
-      logger.info('Keys found. Loading keys...')
-      const parsedData = JSON.parse(data)
-      const elgamal = importElgamal(parsedData.p, parsedData.g, parsedData.y, parsedData.x)
-      return elgamal
-    })
-    .catch(async (err) => {
-      if (err.code === 'ENOENT') {
-        // else create key
-        logger.info('Keys not found. Creating keys...')
-        const elgamal = new ElGamal(p, g)
-        try {
-          await elgamal.fillIn()
-          logger.info(`Keys successfully created. Keys are secure: ${elgamal.checkSecurity()}`)
-          logger.info('storing keys to file...')
-          elgamal.setSecurityLevel('LOW')
-          const exportedEngine = elgamal.export()
-          writeFile(keyFilePath, JSON.stringify(exportedEngine), 'utf-8', (err_1) => {
-            if (err_1) {
-              throw err_1
-            }
-            logger.info('keys have been saved!')
-          })
-          elgamal.setSecurityLevel('HIGH')
-          return elgamal
-        } catch (err_2) {
-          logger.error(`Keys initialization failed due to following error: ${err_2}`)
-          throw err_2
+  if (keyEngine) {
+    return new Promise((resolve) => resolve(keyEngine))
+  } else {
+    return readFile(keyFilePath, 'utf-8')
+      .then((data) => {
+        // if key exist, load key
+        logger.info('Keys found. Loading keys...')
+        const parsedData = JSON.parse(data)
+        const elgamal = importElgamal(parsedData.p, parsedData.g, parsedData.y, parsedData.x)
+        keyEngine = elgamal
+        return elgamal
+      })
+      .catch(async (err) => {
+        if (err.code === 'ENOENT') {
+          // else create key
+          logger.info('Keys not found. Creating keys...')
+          const elgamal = new ElGamal(p, g)
+          try {
+            await elgamal.fillIn()
+            logger.info(`Keys successfully created. Keys are secure: ${elgamal.checkSecurity()}`)
+            logger.info('storing keys to file...')
+            elgamal.setSecurityLevel('LOW')
+            const exportedEngine = elgamal.export()
+            writeFile(keyFilePath, JSON.stringify(exportedEngine), 'utf-8', (err_1) => {
+              if (err_1) {
+                throw err_1
+              }
+              logger.info('keys have been saved!')
+            })
+            elgamal.setSecurityLevel('HIGH')
+            keyEngine = elgamal
+            return elgamal
+          } catch (err_2) {
+            logger.error(`Keys initialization failed due to following error: ${err_2}`)
+            throw err_2
+          }
+        } else {
+          throw err
         }
-      } else {
-        throw err
-      }
-    })
+      })
+  }
   // elgamal
   //   .initializeRemotely(2024)
   //   .then(() => {

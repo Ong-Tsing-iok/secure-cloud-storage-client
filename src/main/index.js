@@ -11,9 +11,14 @@ import {
   downloadFileProcess,
   deleteFileProcess
 } from './FileManager'
+import {
+  deleteRequestProcess,
+  getRequestListProcess,
+  getRequestedListProcess
+} from './RequestManager'
 
 console.log(process.version)
-process.env.FILE_PROTOCOL = 'ftps'
+process.env.FILE_PROTOCOL = 'https' // maybe can be save in setting file
 
 function createWindow() {
   // Create the browser window.
@@ -75,6 +80,19 @@ app.whenReady().then(() => {
   ipcMain.on('get-file-list', () => getFileListProcess())
   ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
   ipcMain.on('delete', (_event, uuid) => deleteFileProcess(uuid))
+  ipcMain.on('change-protocol', () => {
+    if (process.env.FILE_PROTOCOL === 'https') {
+      process.env.FILE_PROTOCOL = 'ftps'
+    } else {
+      process.env.FILE_PROTOCOL = 'https'
+    }
+    logger.info(`File protocol changed to ${process.env.FILE_PROTOCOL}`)
+  })
+  ipcMain.on('get-request-list', () => getRequestListProcess())
+  ipcMain.on('get-requested-list', () => getRequestedListProcess())
+  ipcMain.on('delete-request', (_event, uuid) => {
+    deleteRequestProcess(uuid)
+  })
 
   createWindow()
 
