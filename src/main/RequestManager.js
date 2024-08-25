@@ -24,4 +24,20 @@ const deleteRequestProcess = (uuid) => {
   logger.info(`Deleting request for ${uuid}...`)
 }
 
-export { getRequestListProcess, getRequestedListProcess, deleteRequestProcess }
+const agreeRequestProcess = (uuid) => {
+  socket.emit('request-agree', uuid)
+  logger.info(`Agree request for ${uuid}...`)
+}
+
+const rejectRequestProcess = (uuid) => {
+  socket.emit('request-reject', uuid)
+  logger.info(`Reject request for ${uuid}...`)
+}
+
+export {
+  getRequestListProcess,
+  getRequestedListProcess,
+  deleteRequestProcess,
+  agreeRequestProcess,
+  rejectRequestProcess
+}

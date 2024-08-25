@@ -1,7 +1,7 @@
 import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
 import LogViewer from './components/LogViewer'
 import AskForFileInput from './components/AskForFileInput'
+import RequestResponse from './components/RequestResponse'
 
 function App() {
   const ipcHandle = (message) => window.electron.ipcRenderer.send(message)
@@ -17,6 +17,7 @@ function App() {
         Please try pressing <code>F12</code> to open the devTool
       </p> */}
       <AskForFileInput></AskForFileInput>
+      <RequestResponse></RequestResponse>
       <div className="actions">
         {/* <div className="action">
           <a target="_blank" rel="noreferrer" onClick={() => ipcHandle('send-message')}>

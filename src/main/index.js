@@ -3,7 +3,6 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { login, sendMessage } from './MessageManager'
-import { getKeyEngine } from './KeyManager'
 import { logger } from './Logger'
 import {
   uploadFileProcess,
@@ -12,9 +11,11 @@ import {
   deleteFileProcess
 } from './FileManager'
 import {
+  agreeRequestProcess,
   deleteRequestProcess,
   getRequestListProcess,
-  getRequestedListProcess
+  getRequestedListProcess,
+  rejectRequestProcess
 } from './RequestManager'
 
 console.log(process.version)
@@ -92,6 +93,12 @@ app.whenReady().then(() => {
   ipcMain.on('get-requested-list', () => getRequestedListProcess())
   ipcMain.on('delete-request', (_event, uuid) => {
     deleteRequestProcess(uuid)
+  })
+  ipcMain.on('request-agree', (_event, uuid) => {
+    agreeRequestProcess(uuid)
+  })
+  ipcMain.on('request-reject', (_event, uuid) => {
+    rejectRequestProcess(uuid)
   })
 
   createWindow()
