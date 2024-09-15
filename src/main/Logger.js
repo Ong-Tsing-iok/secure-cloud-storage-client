@@ -1,21 +1,25 @@
-import winston, { format } from 'winston'
+import winston from 'winston'
 import ScreenTransport from './ScreenTransport'
-
-const screenTransport = new ScreenTransport()
 
 const logger = winston.createLogger({
   level: 'info',
   format: winston.format.json(),
   // defaultMeta: { service: 'user-service' },
-  transports: [
-    //
-    // - Write all logs with importance level of `error` or less to `error.log`
-    // - Write all logs with importance level of `info` or less to `combined.log`
-    //
-    new winston.transports.File({ filename: 'error.log', level: 'error' }),
-    new winston.transports.File({ filename: 'combined.log', format: winston.format.timestamp() }),
-    screenTransport
-  ]
+  transports:
+    process.env.NODE_ENV === 'test'
+      ? []
+      : [
+          //
+          // - Write all logs with importance level of `error` or less to `error.log`
+          // - Write all logs with importance level of `info` or less to `combined.log`
+          //
+          new winston.transports.File({ filename: 'error.log', level: 'error' }),
+          new winston.transports.File({
+            filename: 'combined.log',
+            format: winston.format.timestamp()
+          }),
+          new ScreenTransport()
+        ]
 })
 
 //
@@ -35,4 +39,4 @@ if (process.env.NODE_ENV !== 'production') {
 //   return logger
 // }
 
-export { logger, screenTransport }
+export { logger }
