@@ -64,7 +64,7 @@ const encrypt = async (message) => {
 /**
  *
  * @param {string} cipher
- * @param {boolean} proxied proxied by server or not
+ * @param {boolean} proxied proxied by server or not, default as false
  * @returns {Promise<string>} decrypted message
  */
 const decrypt = async (cipher, proxied = false) => {

@@ -1,27 +1,23 @@
 import crypto from 'crypto'
 import { Readable } from 'stream'
-import { toBufferBE, toBigIntBE } from 'bigint-buffer'
 import * as KeyManager from './KeyManager'
-
-// const key = crypto.randomBytes(32)
-// const iv = crypto.randomBytes(16)
 
 const encrypt = async (readstream) => {
   const key = crypto.randomBytes(32)
   const iv = crypto.randomBytes(16)
   const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
   const encryptedStream = Readable.from(readstream.pipe(cipher))
-  // encode key and iv with elgamal
-  const keyCipherPair = await KeyManager.encrypt(toBigIntBE(key))
-  const ivCipherPair = await KeyManager.encrypt(toBigIntBE(iv))
+  // encode key and iv
+  const keyCipher = await KeyManager.encrypt(key.toString('hex'))
+  const ivCipher = await KeyManager.encrypt(iv.toString('hex'))
   // console.log(key.toString('hex'), iv.toString('hex'))
-  return { key: keyCipherPair, iv: ivCipherPair, encryptedStream }
+  return { key: keyCipher, iv: ivCipher, encryptedStream }
 }
 
-const decrypt = async (keyCipherPair, ivCipherPair) => {
-  // decode key and iv with elgamal
-  const keyDecipher = await KeyManager.decrypt(keyCipherPair.c1, keyCipherPair.c2)
-  const ivDecipher = await KeyManager.decrypt(ivCipherPair.c1, ivCipherPair.c2)
+const decrypt = async (keyCipher, ivCipher) => {
+  // decode key and iv
+  const keyDecipher = await KeyManager.decrypt(keyCipher)
+  const ivDecipher = await KeyManager.decrypt(ivCipher)
   // console.log(keyDecipher.toString(16).length, ivDecipher.toString(16).length)
   const decipher = crypto.createDecipheriv(
     'aes-256-cbc',

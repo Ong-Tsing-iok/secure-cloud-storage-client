@@ -1,6 +1,6 @@
 import io from 'socket.io-client'
 import { logger } from './Logger'
-import { decrypt, getKeyPublic } from './KeyManager'
+import { initKeys, decrypt, getPublicKey } from './KeyManager'
 
 const url = 'https://localhost:3001'
 const socket = io(url, {
@@ -37,9 +37,10 @@ export function sendMessage(message) {
   socket.emit('message', message)
 }
 // Login part
-socket.on('login-res', async (c1, c2) => {
+socket.on('login-res', async (cipher) => {
   logger.info('Getting login response from server. Decrypting auth key...')
-  const decryptedValue = await decrypt(c1, c2)
+
+  const decryptedValue = await decrypt(cipher)
   logger.debug(`decryptedValue: ${decryptedValue}`)
   logger.info('Finish decrypting. Sending response back to server')
   socket.emit('login-auth', decryptedValue)
@@ -53,16 +54,13 @@ socket.on('login-auth-res', (message) => {
     logger.warn('Login failed. There might be problem with your keys')
   }
 })
-/**
- * @todo First get the keys. Then emit login-ask to server with public key.
- * Then wait for server to send back auth message, decode it and send back to server.
- */
+
 async function login() {
   try {
-    const engine = await getKeyPublic()
+    await initKeys()
+    const publicKey = getPublicKey()
     logger.info('Asking to login...')
-    logger.debug(`p:${engine.p}, g:${engine.g}, y:${engine.y}`)
-    socket.emit('login-ask', engine.p, engine.g, engine.y)
+    socket.emit('login-ask', publicKey)
   } catch (error) {
     logger.error(`login failed because of following error: ${error}`)
   }
