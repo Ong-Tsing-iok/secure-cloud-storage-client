@@ -1,109 +1,114 @@
-import ElGamal from 'basic_simple_elgamal'
 import { logger } from './Logger'
-import { writeFile } from 'node:fs'
-import { readFile } from 'node:fs/promises'
-const bigInt = require('big-integer')
+import { readFile, writeFile } from 'node:fs/promises'
+import { PythonShell } from 'python-shell'
+import { join } from 'node:path'
 
-// The public modulus p
+//TODO: check argument format before executing PythonShell
 //TODO: maybe should be stored and read from file
-const p =
-  '30149118678593113953869704012498360554612003819643110369489470362770343716433650400386190474466049787676436459959134922944058349480731627770175877708588659263118765013612864271373877928494736976380129060850938098146039580900080564510390377944300560035578891449907697779649384875353345486952026067992903623992417321033421067657276513073634064655183781646560676934552854404646818155979036855037083798194111546111897340914366232128270587235855720236132033149586010103195511819702390982686683593192285895037699459375835272832460605256802131576813114192528398143047090247007627513281085152643954792373928662301060519185187'
-// The public generator. Maybe these should all be random for each people?
-const g = '3'
-const keyFilePath = 'elgamal.keys'
-let keyEngine = null
+const params =
+  '{"g": "eJw9UEsOQjEIvErTdRel/3oVY5qneTt3T02M8e4y0LoooTMwA3zsGLf7dhxj2JOx1/djP6wzjL62+3MX9Jy6M7k5U7IzyFtxhrx3pgJkoDBQ+eXEBHHolT9Bq4mYaZEfoQ2lFQmEhPazqYqscNOMqCEIRCqfoMxU91OjiiqMAzKCa5wjQSJ4baAQQGelyePns+6A6dSPZmhizPKpaUn22thh2XVD5HqHOPdfoutKWDn9tw06luriphiE4L3WbGkdMc46CZit0OX7A0m4Upk=", "u": "eJw1UEEOAjEI/ErTcw/QbQvrV4xpVrO3va2aGOPfhUIPbWCAmYFv7P1xbOfZe7yEeP889zOmIOh7O177QK9lTaFyCm21N/KSAiKlQEsKDJLkLImioIhWqrasXtIBEpJ1PikQGa7dtQn5mCiWIMjHmiwuxRJQ1kSCIhycbUa5EASog0DV8nQkrVXNNJNHoKkDFjAKgS4AxdURcK4xhaqtYwzodNnOMQBuvg64WXM8jWGWnsYuUNjdKS+CntQvQX67Mai3U4cNb78/0oxR1A==", "v": "eJxNUEEOwjAM+8q08w5J1zQpX0GoGmi33QZICPF30iRDXNLUdhy377G127bse2vjaRivr/u6j9Og6HPZHquh51yngWQaWE9MoAW1UOlN6oW0gHaskBivyirRIIpTfzcOHsrhloKypptV+PGqLjXg3Mdn1c2HYUqO1OprMvsdgdyuWD5FSS2FXeGglqIjDL6PbWcO5zy7FAEjhSW0F3Y76Qs7BRAx7CuIPC5FWkTVELu2xlyu4cspvpHFx6S4WiKBRelpC14+X9yjUuI=", "Z": "eJxNUstOxDAM/JWo5x7itI4TfgWtqgXtbW8FJIT4dzx+VBzcJrE9npnkZzmO9+f9PI9jeSnL2/fH41zWoqdf9+fnw05fmdbCYy1Up34aYbWvZehutLWIaLD/Lcu6GVogFZWbZ1E5ugbjMNp2CVSJqgnM6pVEmuXNcQamUndwSQo2Vv+cOIY8RpDT3s6RmRlgC5wabSTB0hFtYWJr7Mi4BO5EG8RfrVQd0IShdgcPmkmzOYyp0pjDiRGZIr7GgZc2sSL0Hk6w93Yt4IYiQ+wunCl7baoupKVR2+VHwPZIw0uMcP49LkqcLGaaN5gpjoW5KLaYSZn2i/fIm5IAkLiBGuOhAoimLL0xKemFJPb1tmCzOwSEnnNBBg/A1Ey3wS7ApfSA8Eu051hDXU1XWsvnwv+d2F0xnkun2+8fa8GTVA=="}'
 
-// TODO: store engine somewhere
-async function getKeyEngine() {
-  if (keyEngine) {
-    return new Promise((resolve) => resolve(keyEngine))
-  } else {
-    return readFile(keyFilePath, 'utf-8')
-      .then((data) => {
-        // if key exist, load key
-        logger.info('Keys found. Loading keys...')
-        const parsedData = JSON.parse(data)
-        const elgamal = importElgamal(parsedData.p, parsedData.g, parsedData.y, parsedData.x)
-        keyEngine = elgamal
-        return elgamal
-      })
-      .catch(async (err) => {
-        if (err.code === 'ENOENT') {
-          // else create key
-          logger.info('Keys not found. Creating keys...')
-          const elgamal = new ElGamal(p, g)
-          try {
-            await elgamal.fillIn()
-            logger.info(`Keys successfully created. Keys are secure: ${elgamal.checkSecurity()}`)
-            logger.info('storing keys to file...')
-            elgamal.setSecurityLevel('LOW')
-            const exportedEngine = elgamal.export()
-            writeFile(keyFilePath, JSON.stringify(exportedEngine), 'utf-8', (err_1) => {
-              if (err_1) {
-                throw err_1
-              }
-              logger.info('keys have been saved!')
-            })
-            elgamal.setSecurityLevel('HIGH')
-            keyEngine = elgamal
-            return elgamal
-          } catch (err_2) {
-            logger.error(`Keys initialization failed due to following error: ${err_2}`)
-            throw err_2
-          }
-        } else {
-          throw err
-        }
-      })
+const keyFilePath = 'nal16.keys'
+const keys = {}
+
+const checkInit = () => {
+  if (!keys['p'] || !keys['s']) {
+    throw new Error('Keys are not initialized')
   }
-  // elgamal
-  //   .initializeRemotely(2024)
-  //   .then(() => {
-  //     const secure = elgamal.checkSecurity()
-  //     logger.info(`Key successfully created. Key is secure: ${secure}`)
-  //     return elgamal
-  //   })
-  //   .catch((reason) => {
-  //     logger.error(`Key initialization failed due to following reason: ${reason}`)
-  //   })
+}
+
+const initKeys = async () => {
+  if (keys['p'] && keys['s']) {
+    return
+  }
+  logger.info('Initializing keys...')
+  try {
+    const content = (await readFile(keyFilePath, 'utf-8')).split('\n')
+    keys['p'] = content[0]
+    keys['s'] = content[1]
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      logger.info('Keys not found. Creating keys...')
+      const genKeys = await PythonShell.run(join(__dirname, 'py', 'crypto.py'), {
+        args: ['--keygen', '-P', `${params}`]
+      })
+      await writeFile(keyFilePath, genKeys.join('\n'))
+      keys['p'] = genKeys[0]
+      keys['s'] = genKeys[1]
+    } else {
+      throw error
+    }
+  }
+  const keyFormatRe = /^[a-zA-Z0-9+/=]+$/
+  if (!(keys['p'] && keys['s']) || !keyFormatRe.test(keys['p']) || !keyFormatRe.test(keys['s'])) {
+    throw new Error('Keys are not in correct format')
+  }
+
+  logger.info('Keys initialized.')
 }
 /**
- * Create an Elgamal engine with import data.
- * @summary This is used because the import function in basic_simple_elgamal have bugs.
- * @param {string} p The public modulus.
- * @param {string} g The public generator.
- * @param {string} y The public key.
- * @param {string} x The private key.
- * @return {ElGamal} The imported Elgamal engine.
+ *
+ * @param {string} message
+ * @returns {Promise<string>} encrypted cipher
  */
-function importElgamal(p, g, y, x) {
-  const elgamal = new ElGamal(p, g, y, x)
-  elgamal.setSecurityLevel('HIGH')
-  if (!elgamal.checkSecurity()) {
-    logger.error('Loaded keys are not secure.')
-    throw new Error('Keys not secure')
-  }
-  logger.info('Keys loaded successfully')
-  return elgamal
+const encrypt = async (message) => {
+  checkInit()
+  logger.info('Encrypting message...')
+  const cipher = await PythonShell.run(join(__dirname, 'py', 'crypto.py'), {
+    args: ['--encrypt', '-P', `${params}`, '-p', `${keys['p']}`, '-m', `${message}`]
+  })
+  logger.info('Message encrypted.')
+  return cipher[0]
 }
 
 /**
- * Decrypt the cipher using Elgamal.
- * @param {} c1
- * @param {} c2
- * @return {Promise<bigInt.BigInteger>} The decrypted value.
+ *
+ * @param {string} cipher
+ * @param {boolean} proxied proxied by server or not
+ * @returns {Promise<string>} decrypted message
  */
-export async function decrypt(c1, c2) {
-  const elgamal = await getKeyEngine()
-  return elgamal.decrypt({ c1: bigInt(c1), c2: bigInt(c2) })
+const decrypt = async (cipher, proxied = false) => {
+  checkInit()
+  logger.info('Decrypting message...')
+  const message = await PythonShell.run(join(__dirname, 'py', 'crypto.py'), {
+    args: [
+      '--decrypt',
+      '-P',
+      `${params}`,
+      '-p',
+      `${keys['p']}`,
+      '-s',
+      `${keys['s']}`,
+      '-c',
+      `${cipher}`,
+      ...(proxied ? [] : ['--owned'])
+    ]
+  })
+  logger.info('Message decrypted.')
+  return message[0]
 }
 
-export async function encrypt(message) {
-  const elgamal = await getKeyEngine()
-  return elgamal.encrypt(bigInt(message))
+/**
+ *
+ * @param {string} requesterPublicKey
+ * @returns {Promise<string>} rekey
+ */
+const rekeyGen = async (requesterPublicKey) => {
+  checkInit()
+  logger.info('Generating rekey...')
+  const rekey = await PythonShell.run(join(__dirname, 'py', 'crypto.py'), {
+    args: ['--rekeygen', '-p', `${requesterPublicKey}`, '-s', `${keys['s']}`]
+  })
+  logger.info('Rekey generated.')
+  return rekey[0]
+}
+/**
+ *
+ * @returns {string} public key
+ */
+const getPublicKey = () => {
+  checkInit()
+  return keys['p']
 }
 
-export async function getKeyPublic() {
-  return (await getKeyEngine()).export()
-  // return engine.p, engine.g, engine.y
-}
+export { initKeys, encrypt, decrypt, rekeyGen, getPublicKey }
