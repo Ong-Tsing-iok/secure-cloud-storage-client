@@ -1,5 +1,6 @@
 import { socket } from './MessageManager'
 import { logger } from './Logger'
+import { rekeyGen } from './KeyManager'
 
 const getRequestListProcess = () => {
   socket.emit('get-request-list')
@@ -28,6 +29,11 @@ const agreeRequestProcess = (uuid) => {
   socket.emit('request-agree', uuid)
   logger.info(`Agree request for ${uuid}...`)
 }
+
+socket.on('rekey-ask', async (pk, cb) => {
+  const rekey = await rekeyGen(pk)
+  cb(rekey)
+})
 
 const rejectRequestProcess = (uuid) => {
   socket.emit('request-reject', uuid)

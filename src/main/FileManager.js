@@ -5,7 +5,7 @@ import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
 import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
 import { encrypt, decrypt } from './AESModule'
-import { __download_dir } from './Constants'
+import { __download_dir_path } from './Constants'
 import { join } from 'node:path'
 import { createPipeProgress } from './util/PipeProgress'
 import cq from 'concurrent-queue'
@@ -74,13 +74,13 @@ const downloadFileProcess = (uuid) => {
 }
 socket.on('download-file-res', async (uuid, filename, key, iv, size) => {
   try {
-    mkdirSync(join(__dirname, __download_dir), { recursive: false })
+    mkdirSync(__download_dir_path, { recursive: false })
   } catch (error) {
     if (error.code !== 'EEXIST') {
       logger.error(`Failed to create downloads directory: ${error}. Download aborted.`)
     }
   }
-  const filePath = join(__dirname, __download_dir, filename)
+  const filePath = join(__download_dir_path, filename)
   const writeStream = createWriteStream(filePath)
   writeStream.on('error', (err) => {
     logger.error(`Failed to write file ${filename}: ${err}. Download aborted.`)
