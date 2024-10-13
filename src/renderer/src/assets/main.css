@@ -1,6 +1,14 @@
 @import './base.css';
 
-body {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: 'Noto Sans TC';
+  src: local('Noto Sans TC'), url('./NotoSansTC-VariableFont_wght.ttf') format('truetype');
+}
+/* body {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8,9 +16,9 @@ body {
   background-image: url('./wavy-lines.svg');
   background-size: cover;
   user-select: none;
-}
+} */
 
-code {
+/* code {
   font-weight: 600;
   padding: 3px 5px;
   border-radius: 2px;
@@ -24,17 +32,17 @@ code {
     Liberation Mono,
     monospace;
   font-size: 85%;
-}
+} */
 
-#root {
+/* #root {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   margin-bottom: 80px;
-}
+} */
 
-.logo {
+/* .logo {
   margin-bottom: 20px;
   -webkit-user-drag: none;
   height: 128px;
@@ -160,4 +168,4 @@ code {
   .actions {
     display: none;
   }
-}
+} */

@@ -24,8 +24,8 @@ process.env.FILE_PROTOCOL = 'https' // maybe can be save in setting file
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 900,
-    height: 670,
+    width: 1024,
+    height: 768,
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
