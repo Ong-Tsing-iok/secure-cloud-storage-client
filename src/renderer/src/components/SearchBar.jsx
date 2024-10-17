@@ -19,7 +19,7 @@ function SearchBar() {
           <Button
             ripple={false}
             variant="text"
-            className="rounded-r-none h-full min-w-24 !px-0 justify-center"
+            className="rounded-r-none h-full min-w-24 !px-0 justify-center border border-gray-400"
           >
             {type}
           </Button>
@@ -39,6 +39,7 @@ function SearchBar() {
         onChange={(e) => {
           setSearchTerm(e.target.value)
         }}
+        size="lg"
         className="grow rounded-none focus:!border-t-gray-900"
       ></Input>
       <Button

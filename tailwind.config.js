@@ -7,7 +7,8 @@ module.exports = withMT({
       fontFamily: {
         sans: ['Noto Sans TC'],
         serif: ['Noto Serif TC'],
-        mono: ['Noto Sans TC']
+        mono: ['Noto Sans TC'],
+        display: ['Noto Sans TC']
       }
     }
   },

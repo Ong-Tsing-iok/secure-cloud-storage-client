@@ -61,11 +61,11 @@ function WhiteListDialog({ open, setOpen }) {
         白名單
       </DialogHeader>
       <DialogBody className="flex flex-col w-full gap-2 grow overflow-auto">
-        <div className="flex flex-row w-full h-fit justify-center items-center">
+        <div className="flex flex-row w-full h-fit px-4 justify-center items-center">
           <Input
             label="使用者ID"
             labelProps={{ className: 'peer-focus:hidden' }}
-            size="md"
+            size="lg"
             value={text}
             onChange={(e) => {
               setText(e.target.value)
