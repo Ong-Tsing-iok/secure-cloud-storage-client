@@ -34,6 +34,7 @@ function createWindow() {
       sandbox: false
     }
   })
+  mainWindow.setBackgroundColor('#fff')
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()

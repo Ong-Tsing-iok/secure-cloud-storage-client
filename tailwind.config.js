@@ -5,7 +5,9 @@ module.exports = withMT({
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Noto Sans TC', 'sans-serif']
+        sans: ['Noto Sans TC'],
+        serif: ['Noto Serif TC'],
+        mono: ['Noto Sans TC']
       }
     }
   },
