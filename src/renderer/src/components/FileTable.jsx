@@ -153,18 +153,24 @@ const testFileList = [
 const testFolderList = [{ name: 'folder1' }, { name: 'folder2' }]
 
 function FileTable({ curPath, setCurPath }) {
-  const [tableContent, setTableContent] = useState([...testFileList])
-  const [folders, setFolders] = useState([...testFolderList])
+  const [fileList, setFileList] = useState([])
+  const [tableContent, setTableContent] = useState([])
+  const [folders, setFolders] = useState([])
   const {
     searchTypeC: [searchType],
     searchTermC: [searchTerm]
   } = useContext(SearchContext)
 
   useEffect(() => {
+    window.electronAPI.getFileList()
+    window.electronAPI.onFileListRes((result) => {
+      setFileList(JSON.parse(result))
+    })
+  }, [])
+
+  useEffect(() => {
     setTableContent(
-      testFileList.filter((file) =>
-        file[searchType].toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      fileList.filter((file) => file[searchType].toLowerCase().includes(searchTerm.toLowerCase()))
     )
     setFolders(
       testFolderList.filter(
@@ -173,7 +179,7 @@ function FileTable({ curPath, setCurPath }) {
           folder[searchType].toLowerCase().includes(searchTerm.toLowerCase())
       )
     )
-  }, [searchTerm, searchType])
+  }, [searchTerm, searchType, fileList])
 
   return (
     <TableView tableHead={TABLE_HEAD}>

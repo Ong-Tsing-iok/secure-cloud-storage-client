@@ -1,4 +1,4 @@
-import { dialog } from 'electron'
+import { dialog, BrowserWindow } from 'electron'
 import { socket } from './MessageManager'
 import { createReadStream, mkdirSync, createWriteStream, unlink, statSync } from 'node:fs'
 import { logger } from './Logger'
@@ -65,7 +65,8 @@ const getFileListProcess = () => {
   socket.emit('get-file-list')
 }
 socket.on('file-list-res', (fileList) => {
-  logger.info(`File list: ${fileList}`)
+  BrowserWindow.getAllWindows()[0]?.webContents.send('file-list-res', fileList)
+  // logger.info(`File list: ${fileList}`)
 })
 
 const downloadFileProcess = (uuid) => {

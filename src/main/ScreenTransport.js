@@ -13,7 +13,8 @@ class ScreenTransport extends Transport {
     // this.logs.push(info)
     // this.emitter.emit('log', info)
     // TODO: this might need to be fixed by storing main window id
-    BrowserWindow.getFocusedWindow()?.webContents.send('log', info)
+    BrowserWindow.getAllWindows()[0]?.webContents.send('log', info)
+
     // console.log(`current log transport: ${info}`)
     // console.log(info)
     callback()

@@ -6,3 +6,5 @@ out
 *.key*
 downloads
 .scannerwork
+/config
+assets

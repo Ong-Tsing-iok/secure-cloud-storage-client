@@ -17,8 +17,10 @@ import {
   getRequestedListProcess,
   rejectRequestProcess
 } from './RequestManager'
+import config from 'config'
 
-console.log(process.version)
+// console.log(config.get('keys'))
+// console.log(process.version)
 process.env.FILE_PROTOCOL = 'https' // maybe can be save in setting file
 
 function createWindow() {
@@ -38,6 +40,7 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    login()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
