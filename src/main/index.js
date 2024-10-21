@@ -17,9 +17,7 @@ import {
   getRequestedListProcess,
   rejectRequestProcess
 } from './RequestManager'
-import config from 'config'
 
-// console.log(config.get('keys'))
 // console.log(process.version)
 process.env.FILE_PROTOCOL = 'https' // maybe can be save in setting file
 
@@ -81,7 +79,7 @@ app.whenReady().then(() => {
   //   })
   // )
   ipcMain.on('login', () => login())
-  ipcMain.on('upload', () => uploadFileProcess())
+  ipcMain.on('upload', (_event, curPath) => uploadFileProcess(curPath))
   ipcMain.on('get-file-list', () => getFileListProcess())
   ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
   ipcMain.on('delete', (_event, uuid) => deleteFileProcess(uuid))

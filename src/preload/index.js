@@ -12,10 +12,11 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
     contextBridge.exposeInMainWorld('electronAPI', {
-      getFileList: () => ipcRenderer.send('get-file-list'),
+      askFileList: () => ipcRenderer.send('get-file-list'),
       onFileListRes: (callback) =>
         ipcRenderer.on('file-list-res', (_event, result) => callback(result)),
-      onLog: (callback) => ipcRenderer.on('log', (_event, result) => callback(result))
+      onLog: (callback) => ipcRenderer.on('log', (_event, result) => callback(result)),
+      askUploadFile: (curPath) => ipcRenderer.send('upload', curPath)
     })
   } catch (error) {
     console.error(error)

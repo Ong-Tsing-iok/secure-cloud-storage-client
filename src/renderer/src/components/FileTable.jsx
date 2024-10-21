@@ -162,7 +162,7 @@ function FileTable({ curPath, setCurPath }) {
   } = useContext(SearchContext)
 
   useEffect(() => {
-    window.electronAPI.getFileList()
+    window.electronAPI.askFileList()
     window.electronAPI.onFileListRes((result) => {
       setFileList(JSON.parse(result))
     })

@@ -1,8 +1,9 @@
 import io from 'socket.io-client'
 import { logger } from './Logger'
 import { initKeys, decrypt, getPublicKey } from './KeyManager'
+import { serverConfig } from './ConfigManager'
 
-const url = 'https://localhost:3001'
+const url = `https://${serverConfig.host}:${serverConfig.port}`
 const socket = io(url, {
   // reconnectionAttempts: 10,
   rejectUnauthorized: false
@@ -27,6 +28,11 @@ socket.on('connect_error', (error) => {
 
 socket.io.on('reconnect_failed', () => {
   logger.error('reconnection failed. The server might be down.')
+})
+
+socket.io.on('reconnect', () => {
+  logger.info('server reconnected')
+  login()
 })
 
 socket.io.on('close', () => {

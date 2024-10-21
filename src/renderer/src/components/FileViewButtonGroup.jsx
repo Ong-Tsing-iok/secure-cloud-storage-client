@@ -2,14 +2,16 @@ import { ButtonGroup, Button, Typography } from '@material-tailwind/react'
 import AddFolderDialog from './AddFolderDialog'
 import { ArrowUpTrayIcon, FolderPlusIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 import toast from 'react-hot-toast'
 
-function FileViewButtonGroup() {
+function FileViewButtonGroup({ curPath }) {
   const [open, setOpen] = useState(false)
 
   function uploadHandler() {
-    toast('上傳檔案')
-    // TODO: call upload api
+    // toast('上傳檔案')
+    // console.log(curPath)
+    window.electronAPI.askUploadFile(curPath)
   }
 
   return (
@@ -33,6 +35,10 @@ function FileViewButtonGroup() {
       <AddFolderDialog open={open} setOpen={setOpen} />
     </>
   )
+}
+
+FileViewButtonGroup.propTypes = {
+  curPath: PropTypes.string.isRequired
 }
 
 export default FileViewButtonGroup

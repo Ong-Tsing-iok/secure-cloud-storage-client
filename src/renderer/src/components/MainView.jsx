@@ -12,9 +12,7 @@ import CurPathBreadcrumbs from './CurPathBreadcrumbs'
 import RequestTable from './RequestTable'
 
 function MainView() {
-  const [curPath, setCurPath] = useState(
-    '/folder1/folder2/folder3/folder1/folder2/folder3/folder1/folder2/folder3/folder1/folder2/folder3/folder1/folder2/folder3/folder1/folder2/folder3'
-  )
+  const [curPath, setCurPath] = useState('/')
 
   const [pageType] = useContext(PageContext)
 
@@ -37,7 +35,7 @@ function MainView() {
     <Card className="flex grow gap-2 pt-2 items-start overflow-auto">
       <div className="flex flex-row w-full gap-4 px-2">
         <SearchBar />
-        {pageType === PageType.file && <FileViewButtonGroup />}
+        {pageType === PageType.file && <FileViewButtonGroup curPath={curPath} />}
         {pageType === PageType.request && <RequestViewButtonGroup />}
       </div>
 

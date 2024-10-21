@@ -6,15 +6,16 @@ import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFilePro
 import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
 import { encrypt, decrypt } from './AESModule'
 import { __download_dir_path } from './Constants'
-import { join } from 'node:path'
+import path, { join } from 'node:path'
 import { createPipeProgress } from './util/PipeProgress'
 import cq from 'concurrent-queue'
+import { serverConfig } from './ConfigManager'
 
 // upload queue
 // can return promise, but not needed
 const uploadQueue = cq()
   .limit({ concurrency: 1 })
-  .process(async (filePath) => {
+  .process(async ({ filePath, curPath }) => {
     let key = null
     let iv = null
     let encryptedStream = null
@@ -28,18 +29,18 @@ const uploadQueue = cq()
       return
     }
     logger.info('Sending key and iv to server...')
-    socket.emit('upload-file-pre', key, iv, (error, uploadId) => {
+    socket.emit('upload-file-pre', key, iv, curPath, (error, uploadId) => {
       if (error) {
         logger.error(`Failed to upload file: ${error}. Upload aborted.`)
         return
       }
-      logger.info(`Uploading file ${filePath} with protocol ${process.env.FILE_PROTOCOL}`)
+      logger.info(`Uploading file ${filePath} with protocol ${serverConfig.protocol}`)
       // upload progress
-      if (process.env.FILE_PROTOCOL === 'https') {
+      if (serverConfig.protocol === 'https') {
         const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
         encryptedStream.pipe(PipeProgress)
         uploadFileProcessHttps(PipeProgress, filePath, uploadId)
-      } else if (process.env.FILE_PROTOCOL === 'ftps') {
+      } else if (serverConfig.protocol === 'ftps') {
         uploadFileProcessFtps(encryptedStream, filePath, uploadId)
       } else {
         logger.error('Invalid file protocol')
@@ -47,7 +48,7 @@ const uploadQueue = cq()
     })
   })
 
-const uploadFileProcess = async () => {
+const uploadFileProcess = async (curPath) => {
   logger.info('Browsing file...')
   // TODO: may need to store and use main window id
   const { filePaths } = await dialog.showOpenDialog({
@@ -55,7 +56,7 @@ const uploadFileProcess = async () => {
   })
   if (filePaths.length > 0) {
     for (const filePath of filePaths) {
-      uploadQueue(filePath)
+      uploadQueue({ filePath, curPath })
     }
   }
 }
@@ -91,14 +92,14 @@ socket.on('download-file-res', async (uuid, filename, key, iv, size) => {
     logger.info(`Downloaded file ${filename} to ${filePath}`)
   })
   const decipher = await decrypt(key, iv, writeStream)
-  logger.info(`Downloading file ${uuid} with protocol ${process.env.FILE_PROTOCOL}...`)
+  logger.info(`Downloading file ${uuid} with protocol ${serverConfig.protocol}...`)
   // download progress
   const PipeProgress = createPipeProgress({ total: size }, logger)
   PipeProgress.pipe(decipher)
   decipher.pipe(writeStream)
-  if (process.env.FILE_PROTOCOL === 'https') {
+  if (serverConfig.protocol === 'https') {
     downloadFileProcessHttps(uuid, PipeProgress, filePath)
-  } else if (process.env.FILE_PROTOCOL === 'ftps') {
+  } else if (serverConfig.protocol === 'ftps') {
     downloadFileProcessFtps(uuid, PipeProgress, filePath)
   } else {
     logger.error('Invalid file protocol')
