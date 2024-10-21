@@ -13,12 +13,17 @@ import { useState } from 'react'
 function CurPathBreadcrumbs({ curPath, setCurPath }) {
   const [open, setOpen] = useState(false)
   function setPathHandler(index) {
+    // if (index === 0) {
+    //   setCurPath('/')
+    //   return
+    // }
     setCurPath(
       curPath
         .split('/')
         .slice(0, index + 1)
-        .join('/')
+        .join('/') + '/'
     )
+    console.log(curPath)
   }
   function renderItem(item, index) {
     return (
@@ -28,7 +33,7 @@ function CurPathBreadcrumbs({ curPath, setCurPath }) {
     )
   }
   //   function renderBreadcrumbs(curPath) {
-  const pathItems = curPath.split('/')
+  const pathItems = curPath.split('/').slice(0, -1)
   if (pathItems.length <= 6) {
     return (
       <Breadcrumbs>

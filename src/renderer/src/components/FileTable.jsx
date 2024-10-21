@@ -186,7 +186,7 @@ function FileTable({ curPath, setCurPath }) {
       {folders.map((row, index) => (
         <tr
           key={index}
-          onDoubleClick={() => setCurPath(curPath + `/${row.name}`)}
+          onDoubleClick={() => setCurPath(curPath + `${row.name}/`)}
           className="border-t"
         >
           <td>
