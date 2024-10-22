@@ -38,7 +38,6 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
-    login()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -104,6 +103,7 @@ app.whenReady().then(() => {
   })
 
   createWindow()
+  login()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
