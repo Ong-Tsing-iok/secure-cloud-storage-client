@@ -12,9 +12,9 @@ export const ResponseType = Object.freeze({
 })
 
 export const PermissionType = Object.freeze({
-  public: '公開',
-  private: '私人',
-  unlisted: '不公開'
+  0: '私人', // private
+  1: '公開', // public
+  2: '不公開' // unlisted
 })
 
 export const SearchType = Object.freeze({
@@ -40,3 +40,12 @@ export const HeadText = Object.freeze({
   status: '狀態',
   userName: '姓名'
 })
+
+export function bytesToSize(byteString) {
+  const bytes = parseInt(byteString)
+  if (bytes === 0) return '0 Bytes'
+  const k = 1000
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}

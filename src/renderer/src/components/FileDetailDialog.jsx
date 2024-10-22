@@ -10,7 +10,7 @@ import {
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
 import { PageContext } from './Contexts'
-import { PageType } from './Types'
+import { PageType, PermissionType, bytesToSize } from './Types'
 import toast from 'react-hot-toast'
 
 function FileDetailDialog({ open, setOpen, fileData }) {
@@ -47,7 +47,7 @@ function FileDetailDialog({ open, setOpen, fileData }) {
         <Typography variant="h5" className="pt-4">
           大小
         </Typography>
-        <Typography variant="small">{fileData.size}</Typography>
+        <Typography variant="small">{bytesToSize(fileData.size)}</Typography>
 
         <Typography variant="h5" className="pt-4">
           上傳日期
@@ -64,7 +64,7 @@ function FileDetailDialog({ open, setOpen, fileData }) {
         <Typography variant="h5" className="pt-4">
           權限
         </Typography>
-        <Typography variant="small">{fileData.perm}</Typography>
+        <Typography variant="small">{PermissionType[fileData.perm]}</Typography>
 
         <Typography variant="h5" className="pt-4">
           檔案說明

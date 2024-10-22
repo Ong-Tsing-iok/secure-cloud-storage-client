@@ -4,152 +4,11 @@ import FileOptionMenu from './FileOptionMenu'
 import TableView, { TableHeadContent } from './TableView'
 import { useContext, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { PageType, PermissionType } from './Types'
+import { PageType, PermissionType, bytesToSize } from './Types'
 import { PageContext, SearchContext } from './Contexts'
 
 const TABLE_HEAD = ['icon', 'name', 'size', 'date', 'perm', 'end']
-const testFileList = [
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'def.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'def.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.public,
-    desc: ''
-  },
-  {
-    name: 'def.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.unlisted,
-    desc: ''
-  },
-  {
-    name: 'def.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: PermissionType.private,
-    desc: ''
-  }
-]
+
 const testFolderList = [{ name: 'folder1' }, { name: 'folder2' }]
 
 function FileTable({ curPath, setCurPath }) {
@@ -164,7 +23,15 @@ function FileTable({ curPath, setCurPath }) {
   useEffect(() => {
     window.electronAPI.askFileList()
     window.electronAPI.onFileListRes((result) => {
-      setFileList(JSON.parse(result))
+      const fileList = JSON.parse(result)
+      fileList.forEach((element) => {
+        element.fileId = element.id
+        element.owner = element.ownerId
+        element.date = element.timestamp.split(' ')[0]
+        element.perm = element.permissions
+        delete element.id, element.ownerId, element.timestamp, element.permissions
+      })
+      setFileList(fileList)
     })
   }, [])
 
@@ -218,13 +85,13 @@ function FileTable({ curPath, setCurPath }) {
             <Typography className="truncate pr-4">{row.name}</Typography>
           </td>
           <td>
-            <Typography>{row.size}</Typography>
+            <Typography>{bytesToSize(row.size)}</Typography>
           </td>
           <td>
             <Typography>{row.date}</Typography>
           </td>
           <td>
-            <Typography>{row.perm}</Typography>
+            <Typography>{PermissionType[row.perm]}</Typography>
           </td>
           <td>
             <FileOptionMenu fileData={row} haveDetail haveDelete haveDownload haveMove />
