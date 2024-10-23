@@ -29,7 +29,8 @@ function FileOptionMenu({
   haveDetail = false,
   haveDownload = false,
   haveDelete = false,
-  haveMove = false
+  haveMove = false,
+  isFolder = false
 }) {
   const [requestOpen, setRequestOpen] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
@@ -88,7 +89,12 @@ function FileOptionMenu({
         <FileDetailDialog open={detailOpen} setOpen={setDetailOpen} fileData={fileData} />
       )}
       {haveDelete && (
-        <DeleteDialog open={deleteOpen} setOpen={setDeleteOpen} name={fileData.name} />
+        <DeleteDialog
+          open={deleteOpen}
+          setOpen={setDeleteOpen}
+          fileData={fileData}
+          isFolder={isFolder}
+        />
       )}
       {haveMove && <MoveDialog open={moveOpen} setOpen={setMoveOpen} fileId={fileData.fileId} />}
     </Menu>

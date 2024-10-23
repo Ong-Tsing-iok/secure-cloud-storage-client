@@ -11,7 +11,7 @@ function FileViewButtonGroup({ curPath }) {
   function uploadHandler() {
     // toast('上傳檔案')
     // console.log(curPath)
-    window.electronAPI.askUploadFile(curPath)
+    window.electronAPI.askUploadFile(curPath.slice(-1).folderId)
   }
 
   return (
@@ -38,7 +38,7 @@ function FileViewButtonGroup({ curPath }) {
 }
 
 FileViewButtonGroup.propTypes = {
-  curPath: PropTypes.string.isRequired
+  curPath: PropTypes.array.isRequired
 }
 
 export default FileViewButtonGroup

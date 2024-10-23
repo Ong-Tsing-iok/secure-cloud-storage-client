@@ -12,7 +12,7 @@ import CurPathBreadcrumbs from './CurPathBreadcrumbs'
 import RequestTable from './RequestTable'
 
 function MainView() {
-  const [curPath, setCurPath] = useState('/')
+  const [curPath, setCurPath] = useState([{ name: '', folderId: null }])
 
   const [pageType] = useContext(PageContext)
 

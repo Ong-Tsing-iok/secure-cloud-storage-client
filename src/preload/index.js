@@ -16,7 +16,8 @@ if (process.contextIsolated) {
       onFileListRes: (callback) =>
         ipcRenderer.on('file-list-res', (_event, result) => callback(result)),
       onLog: (callback) => ipcRenderer.on('log', (_event, result) => callback(result)),
-      askUploadFile: (curPath) => ipcRenderer.send('upload', curPath)
+      askUploadFile: (curPath) => ipcRenderer.send('upload', curPath),
+      askDeleteFile: (uuid) => ipcRenderer.send('delete', uuid)
     })
   } catch (error) {
     console.error(error)

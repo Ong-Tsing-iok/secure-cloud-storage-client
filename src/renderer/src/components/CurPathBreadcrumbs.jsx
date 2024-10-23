@@ -17,27 +17,22 @@ function CurPathBreadcrumbs({ curPath, setCurPath }) {
     //   setCurPath('/')
     //   return
     // }
-    setCurPath(
-      curPath
-        .split('/')
-        .slice(0, index + 1)
-        .join('/') + '/'
-    )
-    console.log(curPath)
+    setCurPath(curPath.slice(0, index + 1))
+    // console.log(curPath)
   }
   function renderItem(item, index) {
     return (
       <Typography key={index} onClick={() => setPathHandler(index)}>
-        {item}
+        {item.name}
       </Typography>
     )
   }
   //   function renderBreadcrumbs(curPath) {
-  const pathItems = curPath.split('/').slice(0, -1)
-  if (pathItems.length <= 6) {
+  // const pathItems = curPath.split('/').slice(0, -1)
+  if (curPath.length <= 6) {
     return (
       <Breadcrumbs>
-        {pathItems.map((item, index) => {
+        {curPath.map((item, index) => {
           return index === 0 ? (
             <HomeIcon key={index} onClick={() => setPathHandler(index)} className="size-6" />
           ) : (
@@ -51,24 +46,24 @@ function CurPathBreadcrumbs({ curPath, setCurPath }) {
   return (
     <Breadcrumbs>
       <HomeIcon onClick={() => setPathHandler(0)} className="size-6" />
-      {renderItem(pathItems[1], 1)}
-      {renderItem(pathItems[2], 2)}
+      {renderItem(curPath[1], 1)}
+      {renderItem(curPath[2], 2)}
       <Menu placement="bottom">
         <MenuHandler onClick={() => setOpen(!open)}>
           <Typography>...</Typography>
         </MenuHandler>
         <MenuList className="max-h-96 overflow-auto">
-          {pathItems.slice(3, -2).map((item, index) => {
+          {curPath.slice(3, -2).map((item, index) => {
             return (
               <MenuItem key={index} onClick={() => setPathHandler(index + 3)}>
-                {item}
+                {item.name}
               </MenuItem>
             )
           })}
         </MenuList>
       </Menu>
-      {renderItem(pathItems.slice(-2, -1), pathItems.length - 2)}
-      {renderItem(pathItems.slice(-1), pathItems.length - 1)}
+      {renderItem(curPath.at(-2), curPath.length - 2)}
+      {renderItem(curPath.at(-1), curPath.length - 1)}
     </Breadcrumbs>
   )
   //   }
@@ -76,7 +71,7 @@ function CurPathBreadcrumbs({ curPath, setCurPath }) {
   //   return renderBreadcrumbs(curPath);
 }
 CurPathBreadcrumbs.propTypes = {
-  curPath: PropTypes.string.isRequired,
+  curPath: PropTypes.array.isRequired,
   setCurPath: PropTypes.func.isRequired
 }
 

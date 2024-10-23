@@ -9,7 +9,10 @@ import { PageContext, SearchContext } from './Contexts'
 
 const TABLE_HEAD = ['icon', 'name', 'size', 'date', 'perm', 'end']
 
-const testFolderList = [{ name: 'folder1' }, { name: 'folder2' }]
+const testFolderList = [
+  { name: 'folder1', folderId: '1' },
+  { name: 'folder2', folderId: '2' }
+]
 
 function FileTable({ curPath, setCurPath }) {
   const [fileList, setFileList] = useState([])
@@ -27,9 +30,14 @@ function FileTable({ curPath, setCurPath }) {
       fileList.forEach((element) => {
         element.fileId = element.id
         element.owner = element.ownerId
+        element.originOwner = element.originOwnerId
         element.date = element.timestamp.split(' ')[0]
         element.perm = element.permissions
-        delete element.id, element.ownerId, element.timestamp, element.permissions
+        delete element.id,
+          element.ownerId,
+          element.timestamp,
+          element.permissions,
+          element.originOwnerId
       })
       setFileList(fileList)
     })
@@ -53,7 +61,7 @@ function FileTable({ curPath, setCurPath }) {
       {folders.map((row, index) => (
         <tr
           key={index}
-          onDoubleClick={() => setCurPath(curPath + `${row.name}/`)}
+          onDoubleClick={() => setCurPath([...curPath, { name: row.name, folderId: row.folderId }])}
           className="border-t"
         >
           <td>
@@ -72,7 +80,7 @@ function FileTable({ curPath, setCurPath }) {
             <Typography>--</Typography>
           </td>
           <td>
-            <FileOptionMenu fileData={row} haveDelete />
+            <FileOptionMenu fileData={row} haveDelete isFolder />
           </td>
         </tr>
       ))}
@@ -103,7 +111,7 @@ function FileTable({ curPath, setCurPath }) {
 }
 
 FileTable.propTypes = {
-  curPath: PropTypes.string.isRequired,
+  curPath: PropTypes.array.isRequired,
   setCurPath: PropTypes.func.isRequired
 }
 
