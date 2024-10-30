@@ -7,17 +7,19 @@ import {
   Input
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import toast from 'react-hot-toast'
+import { CurPathContext } from './Contexts'
 
 function AddFolderDialog({ open, setOpen }) {
   const [folderName, setFolderName] = useState('')
+  const [curPath] = useContext(CurPathContext)
   function addFolderHandler() {
-    toast.success('成功新增資料夾')
-    setOpen(!open)
+    // toast.success('成功新增資料夾')
     // TODO: check folder name format and length
-    // TODO: check if same name exist
     // TODO: call add folder api
+    window.electronAPI.askAddFolder(curPath, folderName)
+    setOpen(!open)
   }
 
   return (

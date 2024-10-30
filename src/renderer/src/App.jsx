@@ -1,6 +1,6 @@
 // import Versions from './components/Versions'
 import LogViewer from './components/LogViewer'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import NavBar, { PageType } from './components/NavBar.jsx'
 import MainView from './components/MainView.jsx'
 import ProgressView from './components/ProgressView.jsx'
@@ -8,6 +8,7 @@ import Console from './components/Console.jsx'
 import { ProfileContext, PageContext, SearchContext } from './components/Contexts.jsx'
 import { Toaster } from 'react-hot-toast'
 import { SearchType } from './components/Types.jsx'
+import toast from 'react-hot-toast'
 
 function App() {
   const [pageType, setPageType] = useState(PageType.file)
@@ -15,6 +16,18 @@ function App() {
   const [storedEmail, setStoredEmail] = useState('lO3Zg@example.com')
   const [searchType, setSearchType] = useState(SearchType.name)
   const [searchTerm, setSearchTerm] = useState('')
+
+  useEffect(() => {
+    window.electronAPI.onNotice((result, level) => {
+      if (level === 'error') {
+        toast.error(result)
+      } else if (level === 'success') {
+        toast.success(result)
+      } else {
+        toast(result)
+      }
+    })
+  })
 
   function swapPageHandler(pageType) {
     setSearchTerm('')

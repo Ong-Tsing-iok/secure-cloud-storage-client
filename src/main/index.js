@@ -82,6 +82,8 @@ app.whenReady().then(() => {
   ipcMain.on('get-file-list', () => getFileListProcess())
   ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
   ipcMain.on('delete', (_event, uuid) => deleteFileProcess(uuid))
+  ipcMain.on('add-folder', (_event, curPath, folderName) => {
+})
   ipcMain.on('change-protocol', () => {
     if (process.env.FILE_PROTOCOL === 'https') {
       process.env.FILE_PROTOCOL = 'ftps'

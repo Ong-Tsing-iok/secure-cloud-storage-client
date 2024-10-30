@@ -10,6 +10,7 @@ import FileViewButtonGroup from './FileViewButtonGroup'
 import RequestViewButtonGroup from './RequestViewButtonGroup'
 import CurPathBreadcrumbs from './CurPathBreadcrumbs'
 import RequestTable from './RequestTable'
+import { CurPathContext } from './Contexts'
 
 function MainView() {
   const [curPath, setCurPath] = useState([{ name: '', folderId: null }])
@@ -32,21 +33,23 @@ function MainView() {
   }
 
   return (
-    <Card className="flex grow gap-2 pt-2 items-start overflow-auto">
-      <div className="flex flex-row w-full gap-4 px-2">
-        <SearchBar />
-        {pageType === PageType.file && <FileViewButtonGroup curPath={curPath} />}
-        {pageType === PageType.request && <RequestViewButtonGroup />}
-      </div>
-
-      {pageType === PageType.file && (
-        <div className="px-2">
-          <CurPathBreadcrumbs curPath={curPath} setCurPath={setCurPath} />
+    <CurPathContext.Provider value={{ curPath, setCurPath }}>
+      <Card className="flex grow gap-2 pt-2 items-start overflow-auto">
+        <div className="flex flex-row w-full gap-4 px-2">
+          <SearchBar />
+          {pageType === PageType.file && <FileViewButtonGroup curPath={curPath} />}
+          {pageType === PageType.request && <RequestViewButtonGroup />}
         </div>
-      )}
 
-      {renderTableView(pageType, curPath, setCurPath)}
-    </Card>
+        {pageType === PageType.file && (
+          <div className="px-2">
+            <CurPathBreadcrumbs curPath={curPath} setCurPath={setCurPath} />
+          </div>
+        )}
+
+        {renderTableView(pageType, curPath, setCurPath)}
+      </Card>
+    </CurPathContext.Provider>
   )
 }
 

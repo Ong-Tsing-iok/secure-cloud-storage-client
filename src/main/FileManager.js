@@ -111,4 +111,16 @@ const deleteFileProcess = (uuid) => {
   socket.emit('delete-file', uuid)
 }
 
+const addFolderProcess = (curPath, folderName) => {
+  logger.info(`Adding folder ${folderName}...`)
+  socket.emit('add-folder', curPath, folderName, (error) => {
+    if (error) {
+      logger.error(`Failed to add folder ${folderName}: ${error}`)
+      BrowserWindow.getAllWindows()[0]?.webContents.send('notice', 'Failed to add folder')
+    } else {
+      BrowserWindow.getAllWindows()[0]?.webContents.send('notice', 'Success to add folder')
+    }
+  })
+}
+
 export { uploadFileProcess, getFileListProcess, downloadFileProcess, deleteFileProcess }

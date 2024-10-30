@@ -9,3 +9,4 @@ export const SearchContext = createContext({
   searchTypeC: ['', null],
   searchTermC: ['', null]
 })
+export const CurPathContext = createContext([[], null])
