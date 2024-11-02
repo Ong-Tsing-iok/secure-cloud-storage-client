@@ -8,7 +8,9 @@ import {
   uploadFileProcess,
   getFileListProcess,
   downloadFileProcess,
-  deleteFileProcess
+  deleteFileProcess,
+  addFolderProcess,
+  deleteFolderProcess
 } from './FileManager'
 import {
   agreeRequestProcess,
@@ -20,10 +22,11 @@ import {
 
 // console.log(process.version)
 process.env.FILE_PROTOCOL = 'https' // maybe can be save in setting file
+export let mainWindow = null
 
 function createWindow() {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
     show: false,
@@ -82,8 +85,8 @@ app.whenReady().then(() => {
   ipcMain.on('get-file-list', () => getFileListProcess())
   ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
   ipcMain.on('delete', (_event, uuid) => deleteFileProcess(uuid))
-  ipcMain.on('add-folder', (_event, curPath, folderName) => {
-})
+  ipcMain.on('add-folder', (_event, curPath, folderName) => addFolderProcess(curPath, folderName))
+  ipcMain.on('delete-folder', (_event, folderId) => deleteFolderProcess(folderId))
   ipcMain.on('change-protocol', () => {
     if (process.env.FILE_PROTOCOL === 'https') {
       process.env.FILE_PROTOCOL = 'ftps'

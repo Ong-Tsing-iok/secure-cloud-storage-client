@@ -10,6 +10,7 @@ import path, { join } from 'node:path'
 import { createPipeProgress } from './util/PipeProgress'
 import cq from 'concurrent-queue'
 import { serverConfig } from './ConfigManager'
+import { mainWindow } from '.'
 
 // upload queue
 // can return promise, but not needed
@@ -66,7 +67,7 @@ const getFileListProcess = () => {
   socket.emit('get-file-list')
 }
 socket.on('file-list-res', (fileList) => {
-  BrowserWindow.getAllWindows()[0]?.webContents.send('file-list-res', fileList)
+  mainWindow?.webContents.send('file-list-res', fileList)
   // logger.info(`File list: ${fileList}`)
 })
 
@@ -112,15 +113,34 @@ const deleteFileProcess = (uuid) => {
 }
 
 const addFolderProcess = (curPath, folderName) => {
-  logger.info(`Adding folder ${folderName}...`)
+  logger.info(`Asking to add folder ${folderName}...`)
   socket.emit('add-folder', curPath, folderName, (error) => {
     if (error) {
       logger.error(`Failed to add folder ${folderName}: ${error}`)
-      BrowserWindow.getAllWindows()[0]?.webContents.send('notice', 'Failed to add folder')
+      mainWindow?.webContents.send('notice', 'Failed to add folder', 'error')
     } else {
-      BrowserWindow.getAllWindows()[0]?.webContents.send('notice', 'Success to add folder')
+      mainWindow?.webContents.send('notice', 'Success to add folder', 'success')
     }
   })
 }
 
-export { uploadFileProcess, getFileListProcess, downloadFileProcess, deleteFileProcess }
+const deleteFolderProcess = (folderId) => {
+  logger.info(`Asking to delete folder...`)
+  socket.emit('delete-folder', folderId, (error) => {
+    if (error) {
+      logger.error(`Failed to delete folder: ${error}`)
+      mainWindow?.webContents.send('notice', 'Failed to delete folder', 'error')
+    } else {
+      mainWindow?.webContents.send('notice', 'Success to delete folder', 'success')
+    }
+  })
+}
+
+export {
+  uploadFileProcess,
+  getFileListProcess,
+  downloadFileProcess,
+  deleteFileProcess,
+  addFolderProcess,
+  deleteFolderProcess
+}

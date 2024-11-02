@@ -13,6 +13,8 @@ function DeleteDialog({ open, setOpen, fileData, isFolder = false }) {
   function deleteHandler(isFolder) {
     if (!isFolder) {
       window.electronAPI.askDeleteFile(fileData.fileId)
+    } else {
+      window.electronAPI.askDeleteFolder(fileData.folderId)
     }
 
     setOpen(!open)

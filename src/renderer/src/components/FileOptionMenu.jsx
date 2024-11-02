@@ -107,7 +107,8 @@ FileOptionMenu.propTypes = {
   haveDetail: PropTypes.bool,
   haveDownload: PropTypes.bool,
   haveDelete: PropTypes.bool,
-  haveMove: PropTypes.bool
+  haveMove: PropTypes.bool,
+  isFolder: PropTypes.bool
 }
 
 export default FileOptionMenu

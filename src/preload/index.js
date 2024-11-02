@@ -16,10 +16,12 @@ if (process.contextIsolated) {
       onFileListRes: (callback) =>
         ipcRenderer.on('file-list-res', (_event, result) => callback(result)),
       onLog: (callback) => ipcRenderer.on('log', (_event, result) => callback(result)),
-      onNotice: (callback) => ipcRenderer.on('notice', (_event, result, level) => callback(result, level)),
+      onNotice: (callback) =>
+        ipcRenderer.on('notice', (_event, result, level) => callback(result, level)),
       askUploadFile: (curPath) => ipcRenderer.send('upload', curPath),
       askDeleteFile: (uuid) => ipcRenderer.send('delete', uuid),
-      askAddFolder: (curPath, folderName) => ipcRenderer.send('add-folder', curPath, folderName)
+      askAddFolder: (curPath, folderName) => ipcRenderer.send('add-folder', curPath, folderName),
+      askDeleteFolder: (folderId) => ipcRenderer.send('delete-folder', folderId)
     })
   } catch (error) {
     console.error(error)
