@@ -5,7 +5,7 @@ import TableView, { TableHeadContent } from './TableView'
 import { useContext, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { PageType, PermissionType, bytesToSize } from './Types'
-import { PageContext, SearchContext } from './Contexts'
+import { CurPathContext, SearchContext } from './Contexts'
 
 const TABLE_HEAD = ['icon', 'name', 'size', 'date', 'perm', 'end']
 
@@ -14,7 +14,8 @@ const testFolderList = [
   { name: 'folder2', folderId: '2' }
 ]
 
-function FileTable({ curPath, setCurPath }) {
+function FileTable() {
+  const { curPath, setCurPath } = useContext(CurPathContext)
   const [fileList, setFileList] = useState([])
   const [tableContent, setTableContent] = useState([])
   const [folders, setFolders] = useState([])
@@ -24,20 +25,20 @@ function FileTable({ curPath, setCurPath }) {
   } = useContext(SearchContext)
 
   useEffect(() => {
-    window.electronAPI.askFileList()
     window.electronAPI.onFileListRes((result) => {
       const fileList = JSON.parse(result)
+      console.log(fileList)
       fileList.forEach((element) => {
         element.fileId = element.id
         element.owner = element.ownerId
         element.originOwner = element.originOwnerId
         element.date = element.timestamp.split(' ')[0]
         element.perm = element.permissions
-        delete element.id,
-          element.ownerId,
-          element.timestamp,
-          element.permissions,
-          element.originOwnerId
+        delete element.id
+        delete element.ownerId
+        delete element.timestamp
+        delete element.permissions
+        delete element.originOwnerId
       })
       setFileList(fileList)
     })
@@ -108,11 +109,6 @@ function FileTable({ curPath, setCurPath }) {
       ))}
     </TableView>
   )
-}
-
-FileTable.propTypes = {
-  curPath: PropTypes.array.isRequired,
-  setCurPath: PropTypes.func.isRequired
 }
 
 export default FileTable

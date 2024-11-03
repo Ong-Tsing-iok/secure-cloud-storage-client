@@ -1,9 +1,9 @@
 import io from 'socket.io-client'
 import { logger } from './Logger'
 import { initKeys, decrypt, getPublicKey } from './KeyManager'
-import { serverConfig } from './ConfigManager'
+import GlobalValueManager from './GlobalValueManager'
 
-const url = `https://${serverConfig.host}:${serverConfig.port}`
+const url = `https://${GlobalValueManager.serverConfig.host}:${GlobalValueManager.serverConfig.port}`
 const socket = io(url, {
   // reconnectionAttempts: 10,
   rejectUnauthorized: false

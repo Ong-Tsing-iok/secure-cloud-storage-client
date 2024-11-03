@@ -19,14 +19,14 @@ import {
   getRequestedListProcess,
   rejectRequestProcess
 } from './RequestManager'
+import GlobalValueManager from './GlobalValueManager'
 
 // console.log(process.version)
 process.env.FILE_PROTOCOL = 'https' // maybe can be save in setting file
-export let mainWindow = null
 
 function createWindow() {
   // Create the browser window.
-  mainWindow = new BrowserWindow({
+  const mainWindow = new BrowserWindow({
     width: 1024,
     height: 768,
     show: false,
@@ -37,10 +37,16 @@ function createWindow() {
       sandbox: false
     }
   })
+  GlobalValueManager.mainWindow = mainWindow
   mainWindow.setBackgroundColor('#fff')
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    // TODO: invoke all process of getting list
+    // TODO: make it a function so that it can be called when login/reconnect
+    getFileListProcess(null)
+    getRequestListProcess()
+    getRequestedListProcess()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -81,8 +87,11 @@ app.whenReady().then(() => {
   //   })
   // )
   ipcMain.on('login', () => login())
-  ipcMain.on('upload', (_event, curPath) => uploadFileProcess(curPath))
-  ipcMain.on('get-file-list', () => getFileListProcess())
+  ipcMain.on('upload', (_event, parentFolderId) => uploadFileProcess(parentFolderId))
+  ipcMain.on('change-cur-folder', (_event, curFolderId) => {
+    GlobalValueManager.curFolderId = curFolderId
+    getFileListProcess(curFolderId)
+  })
   ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
   ipcMain.on('delete', (_event, uuid) => deleteFileProcess(uuid))
   ipcMain.on('add-folder', (_event, curPath, folderName) => addFolderProcess(curPath, folderName))

@@ -12,7 +12,7 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
     contextBridge.exposeInMainWorld('electronAPI', {
-      askFileList: () => ipcRenderer.send('get-file-list'),
+      changeCurFolder: (curFolderId) => ipcRenderer.send('change-cur-folder', curFolderId),
       onFileListRes: (callback) =>
         ipcRenderer.on('file-list-res', (_event, result) => callback(result)),
       onLog: (callback) => ipcRenderer.on('log', (_event, result) => callback(result)),

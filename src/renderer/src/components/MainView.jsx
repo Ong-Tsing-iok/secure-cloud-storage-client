@@ -22,7 +22,7 @@ function MainView() {
       case PageType.public:
         return <PublicTable />
       case PageType.file:
-        return <FileTable curPath={curPath} setCurPath={setCurPath} />
+        return <FileTable />
       case PageType.reply:
         return <ReplyTable />
       case PageType.request:

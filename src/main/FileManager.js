@@ -9,14 +9,13 @@ import { __download_dir_path } from './Constants'
 import path, { join } from 'node:path'
 import { createPipeProgress } from './util/PipeProgress'
 import cq from 'concurrent-queue'
-import { serverConfig } from './ConfigManager'
-import { mainWindow } from '.'
+import GlobalValueManager from './GlobalValueManager'
 
 // upload queue
 // can return promise, but not needed
 const uploadQueue = cq()
   .limit({ concurrency: 1 })
-  .process(async ({ filePath, curPath }) => {
+  .process(async ({ filePath, parentFolderId }) => {
     let key = null
     let iv = null
     let encryptedStream = null
@@ -30,18 +29,20 @@ const uploadQueue = cq()
       return
     }
     logger.info('Sending key and iv to server...')
-    socket.emit('upload-file-pre', key, iv, curPath, (error, uploadId) => {
+    socket.emit('upload-file-pre', key, iv, parentFolderId, (error, uploadId) => {
       if (error) {
         logger.error(`Failed to upload file: ${error}. Upload aborted.`)
         return
       }
-      logger.info(`Uploading file ${filePath} with protocol ${serverConfig.protocol}`)
+      logger.info(
+        `Uploading file ${filePath} with protocol ${GlobalValueManager.serverConfig.protocol}`
+      )
       // upload progress
-      if (serverConfig.protocol === 'https') {
+      if (GlobalValueManager.serverConfig.protocol === 'https') {
         const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
         encryptedStream.pipe(PipeProgress)
         uploadFileProcessHttps(PipeProgress, filePath, uploadId)
-      } else if (serverConfig.protocol === 'ftps') {
+      } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
         uploadFileProcessFtps(encryptedStream, filePath, uploadId)
       } else {
         logger.error('Invalid file protocol')
@@ -49,7 +50,7 @@ const uploadQueue = cq()
     })
   })
 
-const uploadFileProcess = async (curPath) => {
+const uploadFileProcess = async (parentFolderId) => {
   logger.info('Browsing file...')
   // TODO: may need to store and use main window id
   const { filePaths } = await dialog.showOpenDialog({
@@ -57,17 +58,19 @@ const uploadFileProcess = async (curPath) => {
   })
   if (filePaths.length > 0) {
     for (const filePath of filePaths) {
-      uploadQueue({ filePath, curPath })
+      uploadQueue({ filePath, parentFolderId })
     }
   }
 }
 
-const getFileListProcess = () => {
-  logger.info('Getting file list...')
-  socket.emit('get-file-list')
+const getFileListProcess = (parentFolderId) => {
+  logger.info(`Getting file list for ${parentFolderId || 'root'}...`)
+  socket.emit('get-file-list', parentFolderId, (fileList) => {
+    GlobalValueManager.mainWindow?.webContents.send('file-list-res', fileList)
+  })
 }
 socket.on('file-list-res', (fileList) => {
-  mainWindow?.webContents.send('file-list-res', fileList)
+  GlobalValueManager.mainWindow?.webContents.send('file-list-res', fileList)
   // logger.info(`File list: ${fileList}`)
 })
 
@@ -93,14 +96,16 @@ socket.on('download-file-res', async (uuid, filename, key, iv, size) => {
     logger.info(`Downloaded file ${filename} to ${filePath}`)
   })
   const decipher = await decrypt(key, iv, writeStream)
-  logger.info(`Downloading file ${uuid} with protocol ${serverConfig.protocol}...`)
+  logger.info(
+    `Downloading file ${uuid} with protocol ${GlobalValueManager.serverConfig.protocol}...`
+  )
   // download progress
   const PipeProgress = createPipeProgress({ total: size }, logger)
   PipeProgress.pipe(decipher)
   decipher.pipe(writeStream)
-  if (serverConfig.protocol === 'https') {
+  if (GlobalValueManager.serverConfig.protocol === 'https') {
     downloadFileProcessHttps(uuid, PipeProgress, filePath)
-  } else if (serverConfig.protocol === 'ftps') {
+  } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
     downloadFileProcessFtps(uuid, PipeProgress, filePath)
   } else {
     logger.error('Invalid file protocol')
@@ -108,8 +113,16 @@ socket.on('download-file-res', async (uuid, filename, key, iv, size) => {
 })
 
 const deleteFileProcess = (uuid) => {
-  logger.info(`Deleting file ${uuid}...`)
-  socket.emit('delete-file', uuid)
+  logger.info(`Asking to delete file ${uuid}...`)
+  socket.emit('delete-file', uuid, (error) => {
+    if (error) {
+      logger.error(`Failed to delete file ${uuid}: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to delete file', 'error')
+    } else {
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to delete file', 'success')
+      getFileListProcess(GlobalValueManager.curFolderId)
+    }
+  })
 }
 
 const addFolderProcess = (curPath, folderName) => {
@@ -117,21 +130,21 @@ const addFolderProcess = (curPath, folderName) => {
   socket.emit('add-folder', curPath, folderName, (error) => {
     if (error) {
       logger.error(`Failed to add folder ${folderName}: ${error}`)
-      mainWindow?.webContents.send('notice', 'Failed to add folder', 'error')
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to add folder', 'error')
     } else {
-      mainWindow?.webContents.send('notice', 'Success to add folder', 'success')
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to add folder', 'success')
     }
   })
 }
 
 const deleteFolderProcess = (folderId) => {
-  logger.info(`Asking to delete folder...`)
+  logger.info(`Asking to delete folder ${folderId}...`)
   socket.emit('delete-folder', folderId, (error) => {
     if (error) {
       logger.error(`Failed to delete folder: ${error}`)
-      mainWindow?.webContents.send('notice', 'Failed to delete folder', 'error')
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to delete folder', 'error')
     } else {
-      mainWindow?.webContents.send('notice', 'Success to delete folder', 'success')
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to delete folder', 'success')
     }
   })
 }
