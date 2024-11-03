@@ -7,28 +7,32 @@ import {
   Button
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
-import { useState, useContext } from 'react'
+import { useState, useContext, useEffect } from 'react'
 import toast from 'react-hot-toast'
 import { ProfileContext } from './Contexts'
 
 function ProfileDialog({ open, setOpen }) {
-  const { storedNameC, storedEmailC } = useContext(ProfileContext)
+  const { storedNameC, storedEmailC, userIdC: userId } = useContext(ProfileContext)
   const [storedName, setStoredName] = storedNameC
   const [storedEmail, setStoredEmail] = storedEmailC
-  const [name, setName] = useState(storedName)
-  const [email, setEmail] = useState(storedEmail)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
 
-  function dialogHandler() {
+  useEffect(() => {
     setName(storedName)
     setEmail(storedEmail)
+  }, [storedName, storedEmail])
+
+  function dialogHandler() {
     setOpen(!open)
   }
 
   function updateHandler() {
     setStoredName(name)
     setStoredEmail(email)
+    window.electronAPI.updateUserConfig({ name, email })
     setOpen(!open)
-    toast.success('更新成功')
+    // toast.success('更新成功')
   }
   // TODO: add name and email validation
   // TODO: add notice about storing only in local storage
@@ -36,13 +40,7 @@ function ProfileDialog({ open, setOpen }) {
     <Dialog open={open} handler={dialogHandler}>
       <DialogHeader>使用者資料</DialogHeader>
       <DialogBody className="space-y-2">
-        <Input
-          label="使用者ID"
-          size="lg"
-          readOnly
-          value={'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0'}
-          tabIndex={-1}
-        />
+        <Input label="使用者ID" size="lg" readOnly value={userId} tabIndex={-1} />
         <Input label="名字" size="lg" value={name} onChange={(e) => setName(e.target.value)} />
         <Input
           label="電子信箱"

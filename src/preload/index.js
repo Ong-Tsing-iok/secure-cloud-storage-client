@@ -24,7 +24,9 @@ if (process.contextIsolated) {
       askDeleteFolder: (folderId) => ipcRenderer.send('delete-folder', folderId),
       askAllFolder: () => ipcRenderer.invoke('get-folders'),
       askMoveFile: (uuid, targetFolderId) => ipcRenderer.send('move-file', uuid, targetFolderId),
-      askAllPublicFile: () => ipcRenderer.invoke('get-public-files')
+      askAllPublicFile: () => ipcRenderer.invoke('get-public-files'),
+      onUserConfig: (callback) => ipcRenderer.on('user-info', (_event, result) => callback(result)),
+      updateUserConfig: (config) => ipcRenderer.send('update-user-config', config)
     })
   } catch (error) {
     console.error(error)

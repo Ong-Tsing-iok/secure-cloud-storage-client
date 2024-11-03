@@ -47,9 +47,16 @@ function createWindow() {
     mainWindow.show()
     // TODO: invoke all process of getting list
     // TODO: make it a function so that it can be called when login/reconnect
+    //? can we ensure we logged in first?
     getFileListProcess(null)
     getRequestListProcess()
     getRequestedListProcess()
+    // TODO: send userId and other stored name, email to renderer
+    GlobalValueManager.mainWindow?.webContents.send('user-info', {
+      name: GlobalValueManager.userConfig.name,
+      email: GlobalValueManager.userConfig.email,
+      userId: GlobalValueManager.userId
+    })
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -124,6 +131,9 @@ app.whenReady().then(() => {
   ipcMain.on('move-file', (_event, uuid, targetFolderId) => moveFileProcess(uuid, targetFolderId))
   ipcMain.handle('get-public-files', async () => {
     return await getAllPublicFilesProcess()
+  })
+  ipcMain.on('update-user-config', (_event, config) => {
+    GlobalValueManager.updateUser(config)
   })
 
   createWindow()

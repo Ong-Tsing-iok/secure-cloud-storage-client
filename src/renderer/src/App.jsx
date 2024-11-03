@@ -12,8 +12,9 @@ import toast from 'react-hot-toast'
 
 function App() {
   const [pageType, setPageType] = useState(PageType.file)
-  const [storedName, setStoredName] = useState('Jane Doe')
-  const [storedEmail, setStoredEmail] = useState('lO3Zg@example.com')
+  const [storedName, setStoredName] = useState('')
+  const [storedEmail, setStoredEmail] = useState('')
+  const [userId, setUserId] = useState('')
   const [searchType, setSearchType] = useState(SearchType.name)
   const [searchTerm, setSearchTerm] = useState('')
 
@@ -27,7 +28,13 @@ function App() {
         toast(result)
       }
     })
-  })
+    window.electronAPI.onUserConfig(({ name, email, userId }) => {
+      console.log(name, email, userId)
+      setStoredName(name)
+      setStoredEmail(email)
+      setUserId(userId)
+    })
+  }, [])
 
   function swapPageHandler(pageType) {
     setSearchTerm('')
@@ -56,7 +63,8 @@ function App() {
       <ProfileContext.Provider
         value={{
           storedNameC: [storedName, setStoredName],
-          storedEmailC: [storedEmail, setStoredEmail]
+          storedEmailC: [storedEmail, setStoredEmail],
+          userIdC: userId
         }}
       >
         <PageContext.Provider value={[pageType, swapPageHandler]}>
