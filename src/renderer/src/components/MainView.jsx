@@ -47,6 +47,12 @@ function MainView() {
     })
   }, [])
 
+  useEffect(() => {
+    if (pageType === PageType.file) {
+      window.electronAPI.changeCurFolder(curPath.at(-1).folderId)
+    }
+  }, [pageType])
+
   function setPathHandler(curPath) {
     setCurPath(curPath)
     window.electronAPI.changeCurFolder(curPath.at(-1).folderId)
@@ -57,7 +63,6 @@ function MainView() {
       case PageType.public:
         return <PublicTable />
       case PageType.file:
-        window.electronAPI.changeCurFolder(curPath.at(-1).folderId)
         return <FileTable fileList={fileList} folderList={folderList} />
       case PageType.reply:
         return <ReplyTable />

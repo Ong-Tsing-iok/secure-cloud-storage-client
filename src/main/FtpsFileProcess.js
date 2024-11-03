@@ -27,7 +27,7 @@ const uploadFileProcessFtps = async (fileStream, filePath, uploadId) => {
     })
     logger.info(`ftp upload access response: ${response.message}`)
     response = await client.uploadFrom(fileStream, basename(filePath))
-    console.log(`upload end: ${Date.now()}`)
+    // console.log(`upload end: ${Date.now()}`)
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
   } catch (error) {
