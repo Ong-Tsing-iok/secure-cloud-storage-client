@@ -52,10 +52,10 @@ socket.on('login-res', async (cipher) => {
   socket.emit('login-auth', decryptedValue)
 })
 
-socket.on('login-auth-res', (message) => {
-  if (message == 'OK') {
+socket.on('login-auth-res', (userId) => {
+  if (userId) {
     logger.info('Login succeeded')
-    // TODO: store some variable indicating logged in
+    GlobalValueManager.userId = userId
   } else {
     logger.warn('Login failed. There might be problem with your keys')
   }

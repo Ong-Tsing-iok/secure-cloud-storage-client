@@ -15,6 +15,7 @@ class GlobalValueManager {
     // global values
     this.mainWindow = null
     this.curFolderId = null
+    this.userId = null
   }
 }
 
