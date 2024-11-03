@@ -1,14 +1,21 @@
 import { Card, Textarea, Typography } from '@material-tailwind/react'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 function Console() {
   const [logs, setLogs] = useState([])
+  const logsRef = useRef([])
 
   useEffect(() => {
     window.electronAPI.onLog((result) => {
       setLogs((prevLogs) => [...prevLogs, result])
     })
   }, [])
+
+  useEffect(() => {
+    if (logsRef.current.length > 0) {
+      logsRef.current.at(-1).scrollIntoView({ block: 'end', behavior: 'smooth' })
+    }
+  }, [logs])
 
   const getColorForLevel = (level) => {
     switch (level) {
@@ -28,6 +35,7 @@ function Console() {
       {/* <Typography className="w-full h-full text-left whitespace-pre-wrap break-all"> */}
       {logs.map((log, index) => (
         <Typography
+          ref={(el) => (logsRef.current[index] = el)}
           className="w-full h-full text-left whitespace-pre-wrap break-all"
           key={index}
           color={getColorForLevel(log.level)}
