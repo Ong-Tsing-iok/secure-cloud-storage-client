@@ -167,11 +167,45 @@ const deleteFolderProcess = (folderId) => {
   })
 }
 
+const getAllFoldersProcess = () => {
+  logger.info('Asking for all folders...')
+  return new Promise((resolve, reject) => {
+    socket.emit('get-all-folders', (folders, error) => {
+      if (error) {
+        logger.error(`Failed to get all folders: ${error}`)
+        GlobalValueManager.mainWindow?.webContents.send(
+          'notice',
+          'Failed to get all folders',
+          'error'
+        )
+        resolve(null)
+      } else {
+        resolve(folders)
+      }
+    })
+  })
+}
+
+const moveFileProcess = (uuid, targetFolderId) => {
+  logger.info(`Asking to move file ${uuid} to ${targetFolderId}...`)
+  socket.emit('move-file', uuid, targetFolderId, (error) => {
+    if (error) {
+      logger.error(`Failed to move file ${uuid} to ${targetFolderId}: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to move file', 'error')
+    } else {
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to move file', 'success')
+      getFileListProcess(GlobalValueManager.curFolderId)
+    }
+  })
+}
+
 export {
   uploadFileProcess,
   getFileListProcess,
   downloadFileProcess,
   deleteFileProcess,
   addFolderProcess,
-  deleteFolderProcess
+  deleteFolderProcess,
+  getAllFoldersProcess,
+  moveFileProcess
 }

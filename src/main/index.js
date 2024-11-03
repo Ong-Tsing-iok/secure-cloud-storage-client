@@ -10,7 +10,9 @@ import {
   downloadFileProcess,
   deleteFileProcess,
   addFolderProcess,
-  deleteFolderProcess
+  deleteFolderProcess,
+  getAllFoldersProcess,
+  moveFileProcess
 } from './FileManager'
 import {
   agreeRequestProcess,
@@ -115,6 +117,10 @@ app.whenReady().then(() => {
   ipcMain.on('request-reject', (_event, uuid) => {
     rejectRequestProcess(uuid)
   })
+  ipcMain.handle('get-folders', async () => {
+    return await getAllFoldersProcess()
+  })
+  ipcMain.on('move-file', (_event, uuid, targetFolderId) => moveFileProcess(uuid, targetFolderId))
 
   createWindow()
   login()

@@ -96,7 +96,7 @@ function FileOptionMenu({
           isFolder={isFolder}
         />
       )}
-      {haveMove && <MoveDialog open={moveOpen} setOpen={setMoveOpen} fileId={fileData.fileId} />}
+      {haveMove && <MoveDialog open={moveOpen} setOpen={setMoveOpen} fileData={fileData} />}
     </Menu>
   )
 }

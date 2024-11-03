@@ -8,6 +8,7 @@ function Console() {
   useEffect(() => {
     window.electronAPI.onLog((result) => {
       setLogs((prevLogs) => [...prevLogs, result])
+      // TODO: limit the total number of logs? (remove the oldest one)
     })
   }, [])
 

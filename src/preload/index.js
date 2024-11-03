@@ -21,7 +21,9 @@ if (process.contextIsolated) {
       askUploadFile: (curPath) => ipcRenderer.send('upload', curPath),
       askDeleteFile: (uuid) => ipcRenderer.send('delete', uuid),
       askAddFolder: (curPath, folderName) => ipcRenderer.send('add-folder', curPath, folderName),
-      askDeleteFolder: (folderId) => ipcRenderer.send('delete-folder', folderId)
+      askDeleteFolder: (folderId) => ipcRenderer.send('delete-folder', folderId),
+      askAllFolder: () => ipcRenderer.invoke('get-folders'),
+      askMoveFile: (uuid, targetFolderId) => ipcRenderer.send('move-file', uuid, targetFolderId)
     })
   } catch (error) {
     console.error(error)

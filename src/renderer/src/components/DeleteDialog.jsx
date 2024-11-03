@@ -28,7 +28,7 @@ function DeleteDialog({ open, setOpen, fileData, isFolder = false }) {
         </Typography>
       </DialogHeader>
       <DialogBody>
-        <Typography className="font-bold overflow-wrap">{`是否確認要刪除 '${fileData.name}' ?`}</Typography>
+        <Typography className="font-bold overflow-wrap">{`是否確認要刪除「${fileData.name}」?`}</Typography>
         <Typography className="font-bold">此行動無法被還原！</Typography>
       </DialogBody>
       <DialogFooter>
