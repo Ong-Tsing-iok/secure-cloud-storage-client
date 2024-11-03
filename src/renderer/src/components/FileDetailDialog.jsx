@@ -66,7 +66,7 @@ function FileDetailDialog({ open, setOpen, fileData }) {
         <Typography variant="h5" className="pt-4">
           權限
         </Typography>
-        {pageType === PageType.file ? (
+        {pageType === PageType.file && fileData.originOwner === fileData.owner ? (
           <Select
             value={String(fileData.perm)}
             onChange={(value) => {

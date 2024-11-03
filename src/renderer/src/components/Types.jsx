@@ -50,19 +50,58 @@ export function bytesToSize(byteString) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-export function parseFileList(fileList) {
-  fileList = JSON.parse(fileList)
+export function parseFileList(fileList, json = true) {
+  if (json) fileList = JSON.parse(fileList)
   fileList.forEach((element) => {
-    element.fileId = element.id
+    element.fileId = element.fileId || element.id
     element.owner = element.ownerId
     element.originOwner = element.originOwnerId
     element.date = element.timestamp.split(' ')[0]
     element.perm = element.permissions
+    element.desc = element.description
     delete element.id
     delete element.ownerId
     delete element.timestamp
     delete element.permissions
     delete element.originOwnerId
+    delete element.description
   })
   return fileList
+}
+
+export function parseRequestList(requestList) {
+  requestList = JSON.parse(requestList)
+  requestList.forEach((element) => {
+    // element.userName = element.name
+    // delete element.name
+    // element.userEmail = element.email
+    // delete element.email
+    element.userId = element.requester
+    delete element.requester
+    element.reqDate = element.requestTime?.split(' ')[0]
+    delete element.requestTime
+    element.resDate = element.responseTime?.split(' ')[0]
+    delete element.responseTime
+    element.reqId = element.requestId
+    delete element.requestId
+    if (element.agreed === true) {
+      element.status = ResponseType.A
+    } else if (element.agreed === false) {
+      element.status = ResponseType.R
+    } else {
+      element.status = ResponseType.N
+    }
+    delete element.agreed
+    element.reqRemark = element.requestDescription
+    delete element.requestDescription
+    element.resRemark = element.responseDescription
+    delete element.responseDescription
+  })
+  return requestList
+}
+
+export function searchFilter(fileList, searchType, searchTerm) {
+  return fileList.filter(
+    (file) => file[searchType] && file[searchType].toLowerCase().includes(searchTerm.toLowerCase())
+  )
 }

@@ -52,17 +52,17 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
   }
   function fileDialogHandler(fileId) {
     // TODO: get file detail
-    const fileData = {
-      name: 'abc.txt',
-      fileId: fileId,
-      size: '10KB',
-      date: '2024/05/18',
-      owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-      originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-      perm: PermissionType.private,
-      desc: ''
-    }
-    setFileData(fileData)
+    // const fileData = {
+    //   name: 'abc.txt',
+    //   fileId: fileId,
+    //   size: '10KB',
+    //   date: '2024/05/18',
+    //   owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
+    //   originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
+    //   perm: PermissionType.private,
+    //   desc: ''
+    // }
+    // setFileData(fileData)
     setDetailOpen(!detailOpen)
   }
 
@@ -167,7 +167,7 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
           </Button>
         )}
       </DialogFooter>
-      <FileDetailDialog open={detailOpen} setOpen={setDetailOpen} fileData={fileData} />
+      <FileDetailDialog open={detailOpen} setOpen={setDetailOpen} fileData={requestData} />
     </Dialog>
   )
 }

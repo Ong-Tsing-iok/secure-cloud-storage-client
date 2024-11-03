@@ -4,7 +4,7 @@ import FileOptionMenu from './FileOptionMenu'
 import TableView, { TableHeadContent } from './TableView'
 import { useContext, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { PageType, PermissionType, bytesToSize } from './Types'
+import { PageType, PermissionType, bytesToSize, searchFilter } from './Types'
 import { CurPathContext, SearchContext } from './Contexts'
 
 const TABLE_HEAD = ['icon', 'name', 'size', 'date', 'perm', 'end']
@@ -19,16 +19,8 @@ function FileTable({ fileList, folderList }) {
   } = useContext(SearchContext)
 
   useEffect(() => {
-    setTableContent(
-      fileList.filter((file) => file[searchType].toLowerCase().includes(searchTerm.toLowerCase()))
-    )
-    setFolderContent(
-      folderList.filter(
-        (folder) =>
-          searchType in folder &&
-          folder[searchType].toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    )
+    setTableContent(searchFilter(fileList, searchType, searchTerm))
+    setFolderContent(searchFilter(folderList, searchType, searchTerm))
   }, [searchTerm, searchType, fileList, folderList])
 
   return (

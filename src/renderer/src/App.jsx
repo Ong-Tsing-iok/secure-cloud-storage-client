@@ -47,8 +47,10 @@ function App() {
         break
       case PageType.reply:
         setSearchType(SearchType.fileId)
+        window.electronAPI.askRequestList()
         break
       case PageType.request:
+        window.electronAPI.askRequestedList()
         setSearchType(SearchType.fileId)
         break
       default:

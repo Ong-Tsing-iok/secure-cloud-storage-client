@@ -21,7 +21,8 @@ import {
   deleteRequestProcess,
   getRequestListProcess,
   getRequestedListProcess,
-  rejectRequestProcess
+  rejectRequestProcess,
+  requestFileProcess
 } from './RequestManager'
 import GlobalValueManager from './GlobalValueManager'
 
@@ -100,7 +101,7 @@ app.whenReady().then(() => {
     GlobalValueManager.curFolderId = curFolderId
     getFileListProcess(curFolderId)
   })
-  ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
+  ipcMain.on('download', (_event, uuid, request = false) => downloadFileProcess(uuid, request))
   ipcMain.on('delete', (_event, uuid) => deleteFileProcess(uuid))
   ipcMain.on('add-folder', (_event, curPath, folderName) => addFolderProcess(curPath, folderName))
   ipcMain.on('delete-folder', (_event, folderId) => deleteFolderProcess(folderId))
@@ -116,6 +117,9 @@ app.whenReady().then(() => {
   ipcMain.on('get-requested-list', () => getRequestedListProcess())
   ipcMain.on('delete-request', (_event, uuid) => {
     deleteRequestProcess(uuid)
+  })
+  ipcMain.on('request-file', (_event, requestInfo) => {
+    requestFileProcess(requestInfo)
   })
   ipcMain.on('request-agree', (_event, uuid) => {
     agreeRequestProcess(uuid)

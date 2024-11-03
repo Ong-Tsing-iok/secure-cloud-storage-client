@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from 'react'
 import { PageContext, SearchContext } from './Contexts'
-import { PageType, parseFileList, SearchType } from './Types'
+import { PageType, parseFileList, parseRequestList, ResponseType, SearchType } from './Types'
 import PublicTable from './PublicTable'
 import FileTable from './FileTable'
 import ReplyTable from './ReplyTable'
@@ -16,6 +16,8 @@ function MainView() {
   const [curPath, setCurPath] = useState([{ name: '', folderId: null }])
   const [fileList, setFileList] = useState([])
   const [folderList, setFolderList] = useState([])
+  const [requestList, setRequestList] = useState([])
+  const [requestedList, setRequestedList] = useState([])
   const [pageType] = useContext(PageContext)
 
   useEffect(() => {
@@ -30,6 +32,16 @@ function MainView() {
       })
       setFileList(fileList)
       setFolderList(folderList)
+    })
+    window.electronAPI.onRequestListRes((result) => {
+      // console.log(result)
+      const requestList = parseRequestList(result)
+      setRequestList(requestList)
+    })
+    window.electronAPI.onRequestedListRes((result) => {
+      const requestedList = parseFileList(parseRequestList(result), false)
+      console.log(requestedList)
+      setRequestedList(requestedList)
     })
   }, [])
 
@@ -51,9 +63,9 @@ function MainView() {
       case PageType.file:
         return <FileTable fileList={fileList} folderList={folderList} />
       case PageType.reply:
-        return <ReplyTable />
+        return <ReplyTable replyList={requestList} />
       case PageType.request:
-        return <RequestTable />
+        return <RequestTable requestedList={requestedList} />
       default:
         return null
     }

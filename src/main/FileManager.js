@@ -86,9 +86,25 @@ socket.on('file-list-res', (fileList) => {
   // logger.info(`File list: ${fileList}`)
 })
 
-const downloadFileProcess = (uuid) => {
+const downloadFileProcess = (uuid, request = false) => {
   logger.info(`Asking for file ${uuid}...`)
-  socket.emit('download-file-pre', uuid)
+  socket.emit('download-file-pre', uuid, (error) => {
+    if (error) {
+      logger.error(`Failed to ${request ? 'request' : 'download'} file: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        `Failed to ${request ? 'request' : 'download'} file`,
+        'error'
+      )
+    } else if (request) {
+      logger.info(`Success to request file ${uuid}`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Success to request file',
+        'success'
+      )
+    }
+  })
 }
 socket.on('download-file-res', async (uuid, filename, key, iv, size) => {
   try {

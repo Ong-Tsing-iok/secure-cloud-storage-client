@@ -1,24 +1,59 @@
 import { socket } from './MessageManager'
 import { logger } from './Logger'
 import { rekeyGen } from './KeyManager'
+import { error } from 'winston'
+import GlobalValueManager from './GlobalValueManager'
+
+const requestFileProcess = (requestInfo) => {
+  logger.info(`Asking to request file ${requestInfo.fileId}...`)
+  socket.emit('request-file', requestInfo, (error) => {
+    if (error) {
+      logger.error(`Failed to request file ${requestInfo.fileId}: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to request file', 'error')
+    } else {
+      logger.info(`Success to request file ${requestInfo.fileId}`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Success to request file',
+        'success'
+      )
+    }
+  })
+}
 
 const getRequestListProcess = () => {
-  socket.emit('get-request-list')
   logger.info('Getting request list...')
+  socket.emit('get-request-list', (result, error) => {
+    if (error) {
+      logger.error(`Failed to get request list: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Failed to get request list',
+        'error'
+      )
+    } else {
+      logger.info(`Success to get request list`)
+      GlobalValueManager.mainWindow?.webContents.send('request-list-res', result)
+    }
+  })
 }
-
-socket.on('request-list-res', (requestList) => {
-  logger.info(`Request list: ${requestList}`)
-})
 
 const getRequestedListProcess = () => {
-  socket.emit('get-requested-list')
-  logger.info('Getting requested list...')
+  socket.emit('get-requested-list', (result, error) => {
+    logger.info('Getting requested list...')
+    if (error) {
+      logger.error(`Failed to get requested list: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Failed to get requested list',
+        'error'
+      )
+    } else {
+      logger.info(`Success to get requested list`)
+      GlobalValueManager.mainWindow?.webContents.send('requested-list-res', result)
+    }
+  })
 }
-
-socket.on('requested-list-res', (requestedList) => {
-  logger.info(`Requested list: ${requestedList}`)
-})
 
 const deleteRequestProcess = (uuid) => {
   socket.emit('delete-request', uuid)
@@ -45,5 +80,6 @@ export {
   getRequestedListProcess,
   deleteRequestProcess,
   agreeRequestProcess,
-  rejectRequestProcess
+  rejectRequestProcess,
+  requestFileProcess
 }

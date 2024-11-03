@@ -16,8 +16,8 @@ import { ProfileContext } from './Contexts'
 function RequestDialog({ open, setOpen, defaultId = '' }) {
   const [fileId, setFileId] = useState(defaultId)
   const { storedNameC, storedEmailC } = useContext(ProfileContext)
-  const [storedName, setStoredName] = storedNameC
-  const [storedEmail, setStoredEmail] = storedEmailC
+  const [storedName] = storedNameC
+  const [storedEmail] = storedEmailC
   const [name, setName] = useState(storedName)
   const [email, setEmail] = useState(storedEmail)
   const [remark, setRemark] = useState('')
@@ -47,7 +47,7 @@ function RequestDialog({ open, setOpen, defaultId = '' }) {
     setName(storedName)
     setEmail(storedEmail)
     setRemark('')
-    toast.remove()
+    // toast.remove()
     setOpen(!open)
   }
 
@@ -56,9 +56,10 @@ function RequestDialog({ open, setOpen, defaultId = '' }) {
       toast.error('請檢查輸入格式')
       return
     }
-    console.log(fileId, name, email, remark)
+    // console.log(fileId, name, email, remark)
+    window.electronAPI.askRequestFile({ fileId, name, email, remark })
     dialogHandler()
-    toast.success('請求已送出')
+    // toast.success('請求已送出')
   }
 
   useEffect(() => {
@@ -67,10 +68,9 @@ function RequestDialog({ open, setOpen, defaultId = '' }) {
   }, [storedName, storedEmail])
 
   // TODO: add notice about storing as plain text
-  // TODO: auto-fill name and email
   return (
     <Dialog open={open} handler={() => setOpen(!open)}>
-      <Toaster position="bottom-left" reverseOrder={false} />
+      {<Toaster position="bottom-left" reverseOrder={false} /> && open}
       <DialogHeader>請求檔案</DialogHeader>
       <DialogBody className="space-y-2">
         {/* <Typography>檔案ID</Typography> */}

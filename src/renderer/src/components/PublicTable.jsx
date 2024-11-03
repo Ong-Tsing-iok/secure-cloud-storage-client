@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from 'react'
 import FileOptionMenu from './FileOptionMenu'
 import TableView from './TableView'
 import { PageContext, SearchContext } from './Contexts'
-import { PageType, parseFileList } from './Types'
+import { PageType, parseFileList, searchFilter } from './Types'
 const TABLE_HEAD = ['name', 'size', 'date', 'owner', 'end']
 
 function PublicTable() {
@@ -27,13 +27,8 @@ function PublicTable() {
   }, [pageType])
 
   useEffect(() => {
-    setTableContent(
-      publicFileList.filter(
-        (item) =>
-          searchType in item && item[searchType].toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    )
-  }, [searchTerm, searchType])
+    setTableContent(searchFilter(publicFileList, searchType, searchTerm))
+  }, [searchTerm, searchType, publicFileList])
   return (
     <TableView tableHead={TABLE_HEAD}>
       {tableContent.map((row, index) => (

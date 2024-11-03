@@ -1,52 +1,24 @@
 import { Typography } from '@material-tailwind/react'
 import TableView from './TableView'
-import { ResponseType } from './Types'
+import { ResponseType, searchFilter } from './Types'
 import RequestOptionMenu from './RequestOptionMenu'
 import { useContext, useEffect, useState } from 'react'
 import { SearchContext } from './Contexts'
+import propTypes from 'prop-types'
 
 const tableHead = ['fileId', 'reqDate', 'userName', 'status', 'end']
-const testReqeusts = [
-  {
-    userId: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    reqId: 'b2fdc762-06d8-469c-8b67-00cd9bbf7c12',
-    userName: 'Jane Doe',
-    userEmail: 'lO3Zg@example.com',
-    fileId: '02c22f98-2910-43c7-b323-dfe7c9676800',
-    status: ResponseType.N,
-    reqDate: '2023/06/15',
-    resDate: '',
-    reqRemark: 'Please give me this file',
-    resRemark: ''
-  },
-  {
-    userId: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    reqId: 'b2fdc762-06d8-469c-8b67-00cd9bbf7c12',
-    userName: 'Jane Doe',
-    userEmail: 'lO3Zg@example.com',
-    fileId: '02c22f98-2910-43c7-b323-dfe7c9676800',
-    status: ResponseType.R,
-    reqDate: '2023/06/15',
-    resDate: '',
-    reqRemark: 'Please give me this file',
-    resRemark: ''
-  }
-]
-function RequestTable() {
-  const [tableContent, setTableContent] = useState([...testReqeusts])
+
+function RequestTable({ requestedList }) {
+  const [tableContent, setTableContent] = useState([])
   const {
     searchTypeC: [searchType],
     searchTermC: [searchTerm]
   } = useContext(SearchContext)
 
   useEffect(() => {
-    setTableContent(
-      testReqeusts.filter(
-        (item) =>
-          searchType in item && item[searchType].toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    )
-  }, [searchTerm, searchType])
+    setTableContent(searchFilter(requestedList, searchType, searchTerm))
+    console.log(requestedList)
+  }, [searchTerm, searchType, requestedList])
   return (
     <TableView tableHead={tableHead}>
       {tableContent.map((row, index) => (
@@ -81,6 +53,10 @@ function RequestTable() {
       ))}
     </TableView>
   )
+}
+
+RequestTable.propTypes = {
+  requestedList: propTypes.array.isRequired
 }
 
 export default RequestTable

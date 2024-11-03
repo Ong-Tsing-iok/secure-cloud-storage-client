@@ -15,6 +15,10 @@ if (process.contextIsolated) {
       changeCurFolder: (curFolderId) => ipcRenderer.send('change-cur-folder', curFolderId),
       onFileListRes: (callback) =>
         ipcRenderer.on('file-list-res', (_event, result) => callback(result)),
+      onRequestListRes: (callback) =>
+        ipcRenderer.on('request-list-res', (_event, result) => callback(result)),
+      onRequestedListRes: (callback) =>
+        ipcRenderer.on('requested-list-res', (_event, result) => callback(result)),
       onLog: (callback) => ipcRenderer.on('log', (_event, result) => callback(result)),
       onNotice: (callback) =>
         ipcRenderer.on('notice', (_event, result, level) => callback(result, level)),
@@ -29,7 +33,10 @@ if (process.contextIsolated) {
       onUserConfig: (callback) => ipcRenderer.on('user-info', (_event, result) => callback(result)),
       updateUserConfig: (config) => ipcRenderer.send('update-user-config', config),
       updateFileDescPerm: (fileId, desc, perm) =>
-        ipcRenderer.send('update-file-desc-perm', fileId, desc, perm)
+        ipcRenderer.send('update-file-desc-perm', fileId, desc, perm),
+      askRequestFile: (requestInfo) => ipcRenderer.send('request-file', requestInfo),
+      askRequestList: () => ipcRenderer.send('get-request-list'),
+      askRequestedList: () => ipcRenderer.send('get-requested-list')
     })
   } catch (error) {
     console.error(error)
