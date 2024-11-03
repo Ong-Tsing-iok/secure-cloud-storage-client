@@ -38,8 +38,8 @@ function FileOptionMenu({
   const [moveOpen, setMoveOpen] = useState(false)
 
   function downloadHandler() {
-    toast.loading(`Downloading ${fileData.name}`)
-    // TODO: call download api
+    // toast.loading(`Downloading ${fileData.name}`)
+    window.electronAPI.askDownloadFile(fileData.fileId)
   }
 
   return (

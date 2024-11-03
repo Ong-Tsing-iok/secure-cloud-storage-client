@@ -14,7 +14,7 @@ const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
   form.append('file', fileStream, basename(filePath))
   const request = net.request({
     method: 'POST',
-    url: 'https://localhost:3001/upload',
+    url: `${GlobalValueManager.httpsUrl}/upload`,
     headers: { ...form.getHeaders(), socketid: socket.id, uploadid: uploadId } // TODO: maybe change to other one-time token (remember is case insensitive)
   })
   request.chunkedEncoding = true
@@ -27,7 +27,7 @@ const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
 
   request.on('response', (response) => {
     logger.info(`STATUS: ${response.statusCode}`)
-    logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
+    // logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
     // console.log(`upload end: ${Date.now()}`)
     response.on('data', (chunk) => {
       logger.info(`BODY: ${chunk}`)
@@ -53,14 +53,14 @@ const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
 const downloadFileProcessHttps = (uuid, writeStream, filePath) => {
   const request = net.request({
     method: 'GET',
-    url: `https://localhost:3001/download`,
+    url: `${GlobalValueManager.httpsUrl}/download`,
     headers: { socketid: socket.id, uuid: uuid } // TODO: maybe change to other one-time token (remember is case insensitive)
   })
   request.end()
 
   request.on('response', (response) => {
     logger.info(`STATUS: ${response.statusCode}`)
-    logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
+    // logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
 
     response.on('data', (chunk) => {
       if (response.statusCode === 200) {
@@ -78,6 +78,7 @@ const downloadFileProcessHttps = (uuid, writeStream, filePath) => {
 
   request.on('error', (error) => {
     logger.error(`ERROR: ${error.message}`)
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
   })
 }
 

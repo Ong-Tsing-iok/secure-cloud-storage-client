@@ -5,7 +5,9 @@ import {
   DialogHeader,
   Button,
   Typography,
-  Textarea
+  Textarea,
+  Select,
+  Option
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
@@ -16,19 +18,19 @@ import toast from 'react-hot-toast'
 function FileDetailDialog({ open, setOpen, fileData }) {
   const [desc, setDesc] = useState(fileData.desc)
   const [pageType] = useContext(PageContext)
+  const [permission, setPermission] = useState(fileData.perm)
 
   function updateHandler() {
-    if (pageType !== PageType.file) {
-      toast.success('成功更新敘述')
-      setOpen(!open)
-      return
-    }
-    // TODO: call api to update
+    window.electronAPI.updateFileDescPerm(fileData.fileId, desc, parseInt(permission))
     setOpen(!open)
   }
 
   return (
-    <Dialog open={open} handler={() => setOpen(!open)}>
+    <Dialog
+      open={open}
+      handler={() => setOpen(!open)}
+      className="flex flex-col max-h-screen overflow-auto"
+    >
       <DialogHeader>檔案詳情</DialogHeader>
       <DialogBody>
         <Typography variant="h5">名稱</Typography>
@@ -64,7 +66,25 @@ function FileDetailDialog({ open, setOpen, fileData }) {
         <Typography variant="h5" className="pt-4">
           權限
         </Typography>
-        <Typography variant="small">{PermissionType[fileData.perm]}</Typography>
+        {pageType === PageType.file ? (
+          <Select
+            value={String(fileData.perm)}
+            onChange={(value) => {
+              console.log(value)
+              setPermission(value)
+            }}
+            labelProps={{ className: 'peer-focus:hidden' }}
+            className="focus:!border-t-gray-900"
+          >
+            {Object.keys(PermissionType).map((key) => (
+              <Option key={key} value={String(key)}>
+                {PermissionType[key]}
+              </Option>
+            ))}
+          </Select>
+        ) : (
+          <Typography variant="small">{PermissionType[fileData.perm]}</Typography>
+        )}
 
         <Typography variant="h5" className="pt-4">
           檔案說明

@@ -13,7 +13,8 @@ import {
   deleteFolderProcess,
   getAllFoldersProcess,
   moveFileProcess,
-  getAllPublicFilesProcess
+  getAllPublicFilesProcess,
+  updateFileDescPermProcess
 } from './FileManager'
 import {
   agreeRequestProcess,
@@ -23,9 +24,6 @@ import {
   rejectRequestProcess
 } from './RequestManager'
 import GlobalValueManager from './GlobalValueManager'
-
-// console.log(process.version)
-process.env.FILE_PROTOCOL = 'https' // maybe can be save in setting file
 
 function createWindow() {
   // Create the browser window.
@@ -135,7 +133,9 @@ app.whenReady().then(() => {
   ipcMain.on('update-user-config', (_event, config) => {
     GlobalValueManager.updateUser(config)
   })
-
+  ipcMain.on('update-file-desc-perm', (_event, fileId, desc, perm) => {
+    updateFileDescPermProcess(fileId, desc, perm)
+  })
   createWindow()
   login()
 

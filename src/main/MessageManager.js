@@ -3,8 +3,7 @@ import { logger } from './Logger'
 import { initKeys, decrypt, getPublicKey } from './KeyManager'
 import GlobalValueManager from './GlobalValueManager'
 
-const url = `https://${GlobalValueManager.serverConfig.host}:${GlobalValueManager.serverConfig.port}`
-const socket = io(url, {
+const socket = io(GlobalValueManager.httpsUrl, {
   // reconnectionAttempts: 10,
   rejectUnauthorized: false
 })

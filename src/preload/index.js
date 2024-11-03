@@ -19,6 +19,7 @@ if (process.contextIsolated) {
       onNotice: (callback) =>
         ipcRenderer.on('notice', (_event, result, level) => callback(result, level)),
       askUploadFile: (curPath) => ipcRenderer.send('upload', curPath),
+      askDownloadFile: (uuid) => ipcRenderer.send('download', uuid),
       askDeleteFile: (uuid) => ipcRenderer.send('delete', uuid),
       askAddFolder: (curPath, folderName) => ipcRenderer.send('add-folder', curPath, folderName),
       askDeleteFolder: (folderId) => ipcRenderer.send('delete-folder', folderId),
@@ -26,7 +27,9 @@ if (process.contextIsolated) {
       askMoveFile: (uuid, targetFolderId) => ipcRenderer.send('move-file', uuid, targetFolderId),
       askAllPublicFile: () => ipcRenderer.invoke('get-public-files'),
       onUserConfig: (callback) => ipcRenderer.on('user-info', (_event, result) => callback(result)),
-      updateUserConfig: (config) => ipcRenderer.send('update-user-config', config)
+      updateUserConfig: (config) => ipcRenderer.send('update-user-config', config),
+      updateFileDescPerm: (fileId, desc, perm) =>
+        ipcRenderer.send('update-file-desc-perm', fileId, desc, perm)
     })
   } catch (error) {
     console.error(error)

@@ -1,6 +1,7 @@
 import config from 'config'
 import { logger } from './Logger'
 import { writeFileSync, readFileSync } from 'node:original-fs'
+import { join } from 'node:path'
 // TODO: check overwrite, if not exist then use default
 // TODO: maybe need to set config path?
 class GlobalValueManager {
@@ -11,6 +12,7 @@ class GlobalValueManager {
       this.serverConfig = config.get('server')
       this.keysConfig = config.get('keys')
       this.userConfig = config.get('user')
+      this.directoryConfig = config.get('directories')
     } catch (error) {
       logger.error(`Failed to load config: ${error}`)
     }
@@ -20,6 +22,14 @@ class GlobalValueManager {
     this.curFolderId = null
     this.userId = null
     logger.info('Global value manager initialized')
+  }
+
+  get downloadDir() {
+    return this.directoryConfig.downloads
+  }
+
+  get httpsUrl() {
+    return `https://${this.serverConfig.host}:${this.serverConfig.port.https}`
   }
 
   updateConfig(field, value) {
@@ -34,7 +44,6 @@ class GlobalValueManager {
   }
 
   updateUser(user) {
-    const wrapper = { user }
     try {
       this.updateConfig('user', user)
       this.userConfig = config.get('user')

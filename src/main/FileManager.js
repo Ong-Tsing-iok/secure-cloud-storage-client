@@ -92,20 +92,24 @@ const downloadFileProcess = (uuid) => {
 }
 socket.on('download-file-res', async (uuid, filename, key, iv, size) => {
   try {
-    mkdirSync(__download_dir_path, { recursive: false })
+    mkdirSync(GlobalValueManager.downloadDir, { recursive: false })
   } catch (error) {
     if (error.code !== 'EEXIST') {
       logger.error(`Failed to create downloads directory: ${error}. Download aborted.`)
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
+      return
     }
   }
-  const filePath = join(__download_dir_path, filename)
+  const filePath = join(GlobalValueManager.downloadDir, filename)
   const writeStream = createWriteStream(filePath)
   writeStream.on('error', (err) => {
     logger.error(`Failed to write file ${filename}: ${err}. Download aborted.`)
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
     unlink(filePath)
   })
   writeStream.on('finish', () => {
     logger.info(`Downloaded file ${filename} to ${filePath}`)
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to download file', 'success')
   })
   const decipher = await decrypt(key, iv, writeStream)
   logger.info(
@@ -121,6 +125,7 @@ socket.on('download-file-res', async (uuid, filename, key, iv, size) => {
     downloadFileProcessFtps(uuid, PipeProgress, filePath)
   } else {
     logger.error('Invalid file protocol')
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
   }
 })
 
@@ -131,6 +136,7 @@ const deleteFileProcess = (uuid) => {
       logger.error(`Failed to delete file ${uuid}: ${error}`)
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to delete file', 'error')
     } else {
+      logger.info(`Success to delete file ${uuid}`)
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to delete file', 'success')
       getFileListProcess(GlobalValueManager.curFolderId)
     }
@@ -144,6 +150,7 @@ const addFolderProcess = (parentFolderId, folderName) => {
       logger.error(`Failed to add folder ${folderName}: ${error}`)
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to add folder', 'error')
     } else {
+      logger.info(`Success to add folder ${folderName}`)
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to add folder', 'success')
       getFileListProcess(GlobalValueManager.curFolderId)
     }
@@ -157,6 +164,7 @@ const deleteFolderProcess = (folderId) => {
       logger.error(`Failed to delete folder: ${error}`)
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to delete folder', 'error')
     } else {
+      logger.info(`Success to delete folder ${folderId}`)
       GlobalValueManager.mainWindow?.webContents.send(
         'notice',
         'Success to delete folder',
@@ -193,6 +201,7 @@ const moveFileProcess = (uuid, targetFolderId) => {
       logger.error(`Failed to move file ${uuid} to ${targetFolderId}: ${error}`)
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to move file', 'error')
     } else {
+      logger.info(`Moved file ${uuid} to ${targetFolderId}`)
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to move file', 'success')
       getFileListProcess(GlobalValueManager.curFolderId)
     }
@@ -218,6 +227,28 @@ const getAllPublicFilesProcess = () => {
   })
 }
 
+const updateFileDescPermProcess = (uuid, desc, perm) => {
+  logger.info(`Asking to update file ${uuid} description and permission...`)
+  socket.emit('update-file-desc-perm', uuid, desc, perm, (error) => {
+    if (error) {
+      logger.error(`Failed to update file ${uuid} description and permission: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Failed to update file description and permission',
+        'error'
+      )
+    } else {
+      logger.info(`Success to update file ${uuid} description and permission`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Success to update file description and permission',
+        'success'
+      )
+      getFileListProcess(GlobalValueManager.curFolderId)
+    }
+  })
+}
+
 export {
   uploadFileProcess,
   getFileListProcess,
@@ -227,5 +258,6 @@ export {
   deleteFolderProcess,
   getAllFoldersProcess,
   moveFileProcess,
-  getAllPublicFilesProcess
+  getAllPublicFilesProcess,
+  updateFileDescPermProcess
 }

@@ -18,8 +18,8 @@ const uploadFileProcessFtps = async (fileStream, filePath, uploadId) => {
   const client = new Client()
   try {
     let response = await client.access({
-      host: 'localhost',
-      port: ftpPort,
+      host: GlobalValueManager.serverConfig.host,
+      port: GlobalValueManager.serverConfig.port.ftps,
       user: socket.id,
       password: uploadId,
       secure: true,
@@ -53,8 +53,8 @@ const downloadFileProcessFtps = async (uuid, writeStream, filePath) => {
   const client = new Client()
   try {
     let response = await client.access({
-      host: 'localhost',
-      port: ftpPort,
+      host: GlobalValueManager.serverConfig.host,
+      port: GlobalValueManager.serverConfig.port.ftps,
       user: socket.id,
       secure: true,
       // TODO: remove insecure option in production
@@ -64,10 +64,10 @@ const downloadFileProcessFtps = async (uuid, writeStream, filePath) => {
     logger.info(`ftp download access response: ${response.message}`)
     response = await client.downloadTo(writeStream, uuid) // TODO: make sure the directory is created
     logger.info(`ftp download response: ${response.message}`)
-    // TODO: get file name from server and replace uuid
-    // logger.info(`download with ftps succeeded. File saved at ${filePath}`)
+    logger.info(`download with ftps succeeded. File saved at ${filePath}`)
   } catch (error) {
     logger.error(`download with ftps failed: ${error}`)
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
   }
   client.close()
 }
