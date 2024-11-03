@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from 'react'
 import { PageContext, SearchContext } from './Contexts'
-import { PageType, SearchType } from './Types'
+import { PageType, parseFileList, SearchType } from './Types'
 import PublicTable from './PublicTable'
 import FileTable from './FileTable'
 import ReplyTable from './ReplyTable'
@@ -20,24 +20,10 @@ function MainView() {
 
   useEffect(() => {
     window.electronAPI.onFileListRes((result) => {
-      console.log(result)
       const { files, folders } = result
-      const fileList = JSON.parse(files)
-      const folderList = JSON.parse(folders)
-      // console.log(fileList)
-      fileList.forEach((element) => {
-        element.fileId = element.id
-        element.owner = element.ownerId
-        element.originOwner = element.originOwnerId
-        element.date = element.timestamp.split(' ')[0]
-        element.perm = element.permissions
-        delete element.id
-        delete element.ownerId
-        delete element.timestamp
-        delete element.permissions
-        delete element.originOwnerId
-      })
+      const fileList = parseFileList(files)
 
+      const folderList = JSON.parse(folders)
       folderList.forEach((element) => {
         element.folderId = element.id
         delete element.id

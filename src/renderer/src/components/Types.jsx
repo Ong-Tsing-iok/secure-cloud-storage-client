@@ -49,3 +49,20 @@ export function bytesToSize(byteString) {
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
+
+export function parseFileList(fileList) {
+  fileList = JSON.parse(fileList)
+  fileList.forEach((element) => {
+    element.fileId = element.id
+    element.owner = element.ownerId
+    element.originOwner = element.originOwnerId
+    element.date = element.timestamp.split(' ')[0]
+    element.perm = element.permissions
+    delete element.id
+    delete element.ownerId
+    delete element.timestamp
+    delete element.permissions
+    delete element.originOwnerId
+  })
+  return fileList
+}

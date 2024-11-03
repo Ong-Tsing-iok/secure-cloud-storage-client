@@ -199,6 +199,25 @@ const moveFileProcess = (uuid, targetFolderId) => {
   })
 }
 
+const getAllPublicFilesProcess = () => {
+  logger.info('Asking for all public files...')
+  return new Promise((resolve, reject) => {
+    socket.emit('get-public-files', (files, error) => {
+      if (error) {
+        logger.error(`Failed to get all public files: ${error}`)
+        GlobalValueManager.mainWindow?.webContents.send(
+          'notice',
+          'Failed to get all public files',
+          'error'
+        )
+        resolve(null)
+      } else {
+        resolve(files)
+      }
+    })
+  })
+}
+
 export {
   uploadFileProcess,
   getFileListProcess,
@@ -207,5 +226,6 @@ export {
   addFolderProcess,
   deleteFolderProcess,
   getAllFoldersProcess,
-  moveFileProcess
+  moveFileProcess,
+  getAllPublicFilesProcess
 }

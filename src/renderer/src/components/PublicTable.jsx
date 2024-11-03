@@ -2,162 +2,33 @@ import { Typography } from '@material-tailwind/react'
 import { useContext, useEffect, useState } from 'react'
 import FileOptionMenu from './FileOptionMenu'
 import TableView from './TableView'
-import { SearchContext } from './Contexts'
+import { PageContext, SearchContext } from './Contexts'
+import { PageType, parseFileList } from './Types'
 const TABLE_HEAD = ['name', 'size', 'date', 'owner', 'end']
 
-const testPublicList = [
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'bfr0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bea31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'bfr0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'beg31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'bfr0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  },
-  {
-    name: 'abc.txt',
-    fileId: 'bed31936-7b57-413a-9efa-2ad2cf6d913a',
-    size: '10KB',
-    date: '2024/05/18',
-    owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    perm: 'public',
-    desc: ''
-  }
-]
-
 function PublicTable() {
-  const [tableContent, setTableContent] = useState([...testPublicList])
+  const [publicFileList, setPublicFileList] = useState([])
+  const [tableContent, setTableContent] = useState([])
+  const [pageType] = useContext(PageContext)
   const {
     searchTypeC: [searchType],
     searchTermC: [searchTerm]
   } = useContext(SearchContext)
 
   useEffect(() => {
+    async function getAllPublicFiles() {
+      const allPublicFiles = await window.electronAPI.askAllPublicFile()
+      const fileList = parseFileList(allPublicFiles)
+      setPublicFileList(fileList)
+    }
+    if (pageType === PageType.public) {
+      getAllPublicFiles()
+    }
+  }, [pageType])
+
+  useEffect(() => {
     setTableContent(
-      testPublicList.filter(
+      publicFileList.filter(
         (item) =>
           searchType in item && item[searchType].toLowerCase().includes(searchTerm.toLowerCase())
       )

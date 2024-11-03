@@ -23,7 +23,8 @@ if (process.contextIsolated) {
       askAddFolder: (curPath, folderName) => ipcRenderer.send('add-folder', curPath, folderName),
       askDeleteFolder: (folderId) => ipcRenderer.send('delete-folder', folderId),
       askAllFolder: () => ipcRenderer.invoke('get-folders'),
-      askMoveFile: (uuid, targetFolderId) => ipcRenderer.send('move-file', uuid, targetFolderId)
+      askMoveFile: (uuid, targetFolderId) => ipcRenderer.send('move-file', uuid, targetFolderId),
+      askAllPublicFile: () => ipcRenderer.invoke('get-public-files')
     })
   } catch (error) {
     console.error(error)

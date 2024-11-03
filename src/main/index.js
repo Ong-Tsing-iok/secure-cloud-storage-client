@@ -12,7 +12,8 @@ import {
   addFolderProcess,
   deleteFolderProcess,
   getAllFoldersProcess,
-  moveFileProcess
+  moveFileProcess,
+  getAllPublicFilesProcess
 } from './FileManager'
 import {
   agreeRequestProcess,
@@ -121,6 +122,9 @@ app.whenReady().then(() => {
     return await getAllFoldersProcess()
   })
   ipcMain.on('move-file', (_event, uuid, targetFolderId) => moveFileProcess(uuid, targetFolderId))
+  ipcMain.handle('get-public-files', async () => {
+    return await getAllPublicFilesProcess()
+  })
 
   createWindow()
   login()
