@@ -43,6 +43,7 @@ function RequestOptionMenu({ requestData }) {
         <RequestDeleteDialog
           open={deleteOpen}
           setOpen={setDeleteOpen}
+          requestId={requestData.requestId}
           fileId={requestData.fileId}
         />
       )}

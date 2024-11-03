@@ -55,9 +55,22 @@ const getRequestedListProcess = () => {
   })
 }
 
-const deleteRequestProcess = (uuid) => {
-  socket.emit('delete-request', uuid)
-  logger.info(`Deleting request for ${uuid}...`)
+const deleteRequestProcess = (requestId) => {
+  logger.info(`Deleting request for ${requestId}...`)
+  socket.emit('delete-request', requestId, (error) => {
+    if (error) {
+      logger.error(`Failed to delete request for ${requestId}: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to delete request', 'error')
+    } else {
+      logger.info(`Success to delete request for ${requestId}`)
+      getRequestListProcess()
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Success to delete request',
+        'success'
+      )
+    }
+  })
 }
 
 const agreeRequestProcess = (uuid) => {

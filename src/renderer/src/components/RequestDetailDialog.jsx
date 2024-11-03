@@ -130,7 +130,7 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
           ) : (
             renderData('檔案ID', requestData.fileId)
           )}
-          {renderData('請求ID', requestData.reqId)}
+          {renderData('請求ID', requestData.requestId)}
           {renderData('狀態', requestData.status)}
           {renderData('回覆日期', requestData.resDate)}
           <Typography variant="h5" className="pt-4">

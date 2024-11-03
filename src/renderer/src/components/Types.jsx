@@ -82,8 +82,6 @@ export function parseRequestList(requestList) {
     delete element.requestTime
     element.resDate = element.responseTime?.split(' ')[0]
     delete element.responseTime
-    element.reqId = element.requestId
-    delete element.requestId
     if (element.agreed === true) {
       element.status = ResponseType.A
     } else if (element.agreed === false) {

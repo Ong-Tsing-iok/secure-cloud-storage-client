@@ -123,7 +123,7 @@ FileDetailDialog.propTypes = {
     fileId: PropTypes.string.isRequired,
     name: PropTypes.string.isRequired,
     owner: PropTypes.string.isRequired,
-    size: PropTypes.string.isRequired,
+    size: PropTypes.number.isRequired,
     date: PropTypes.string.isRequired,
     originOwner: PropTypes.string.isRequired,
     perm: PropTypes.string.isRequired,

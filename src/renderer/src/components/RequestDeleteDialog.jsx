@@ -9,11 +9,11 @@ import {
 import PropTypes from 'prop-types'
 import toast from 'react-hot-toast'
 
-function RequestDeleteDialog({ open, setOpen, fileId }) {
+function RequestDeleteDialog({ open, setOpen, requestId, fileId }) {
   function deleteHandler() {
-    toast.success('成功刪除請求')
+    // toast.success('成功刪除請求')
+    window.electronAPI.askDeleteRequest(requestId)
     setOpen(!open)
-    //TODO: call delete request api
   }
 
   return (
@@ -24,7 +24,7 @@ function RequestDeleteDialog({ open, setOpen, fileId }) {
         </Typography>
       </DialogHeader>
       <DialogBody>
-        <Typography className="font-bold overflow-wrap">{`是否確認要刪除對檔案 '${fileId}' 的請求?`}</Typography>
+        <Typography className="font-bold overflow-wrap">{`是否確認要刪除對檔案「${fileId}」的請求?`}</Typography>
         <Typography className="font-bold">此行動無法被還原！</Typography>
       </DialogBody>
       <DialogFooter>
@@ -42,6 +42,7 @@ function RequestDeleteDialog({ open, setOpen, fileId }) {
 RequestDeleteDialog.propTypes = {
   open: PropTypes.bool.isRequired,
   setOpen: PropTypes.func.isRequired,
+  requestId: PropTypes.string.isRequired,
   fileId: PropTypes.string.isRequired
 }
 

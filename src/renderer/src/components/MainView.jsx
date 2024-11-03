@@ -34,13 +34,13 @@ function MainView() {
       setFolderList(folderList)
     })
     window.electronAPI.onRequestListRes((result) => {
-      // console.log(result)
       const requestList = parseRequestList(result)
+      // console.log(requestList)
       setRequestList(requestList)
     })
     window.electronAPI.onRequestedListRes((result) => {
       const requestedList = parseFileList(parseRequestList(result), false)
-      console.log(requestedList)
+      // console.log(requestedList)
       setRequestedList(requestedList)
     })
   }, [])

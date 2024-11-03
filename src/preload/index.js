@@ -36,7 +36,8 @@ if (process.contextIsolated) {
         ipcRenderer.send('update-file-desc-perm', fileId, desc, perm),
       askRequestFile: (requestInfo) => ipcRenderer.send('request-file', requestInfo),
       askRequestList: () => ipcRenderer.send('get-request-list'),
-      askRequestedList: () => ipcRenderer.send('get-requested-list')
+      askRequestedList: () => ipcRenderer.send('get-requested-list'),
+      askDeleteRequest: (requestId) => ipcRenderer.send('delete-request', requestId)
     })
   } catch (error) {
     console.error(error)
