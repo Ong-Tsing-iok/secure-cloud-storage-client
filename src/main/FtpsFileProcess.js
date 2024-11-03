@@ -2,6 +2,8 @@ import { socket } from './MessageManager'
 import { logger } from './Logger'
 import { Client } from 'basic-ftp'
 import { basename } from 'node:path'
+import GlobalValueManager from './GlobalValueManager'
+import { getFileListProcess } from './FileManager'
 
 const ftpPort = 7002
 
@@ -30,8 +32,11 @@ const uploadFileProcessFtps = async (fileStream, filePath, uploadId) => {
     // console.log(`upload end: ${Date.now()}`)
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
+    getFileListProcess(GlobalValueManager.curFolderId)
   } catch (error) {
     logger.error(`upload with ftps failed: ${error}`)
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
   }
   client.close()
 }

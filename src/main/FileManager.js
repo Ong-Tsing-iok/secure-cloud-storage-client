@@ -52,7 +52,6 @@ const uploadQueue = cq()
 
 const uploadFileProcess = async (parentFolderId) => {
   logger.info('Browsing file...')
-  // TODO: may need to store and use main window id
   const { filePaths } = await dialog.showOpenDialog({
     properties: ['openFile', 'multiSelections']
   })
@@ -62,6 +61,14 @@ const uploadFileProcess = async (parentFolderId) => {
     }
   }
 }
+socket.on('upload-file-res', (error) => {
+  if (error) {
+    logger.error(`Failed to upload file: ${error}. Upload aborted.`)
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
+  } else {
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to upload file', 'success')
+  }
+})
 
 const getFileListProcess = (parentFolderId) => {
   logger.info(`Getting file list for ${parentFolderId || 'root'}...`)

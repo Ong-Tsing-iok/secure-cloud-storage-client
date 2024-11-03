@@ -4,7 +4,9 @@ import { logger } from './Logger'
 import { net } from 'electron'
 import FormData from 'form-data'
 import { basename } from 'node:path'
+import GlobalValueManager from './GlobalValueManager'
 import { createPipeProgress } from './util/PipeProgress'
+import { getFileListProcess } from './FileManager'
 
 const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
   const form = new FormData()
@@ -13,7 +15,6 @@ const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
   const request = net.request({
     method: 'POST',
     url: 'https://localhost:3001/upload',
-    // url: 'https://ba96fc54-6a51-49c9-bba0-bc1060e0dd24.mock.pstmn.io/upload',
     headers: { ...form.getHeaders(), socketid: socket.id, uploadid: uploadId } // TODO: maybe change to other one-time token (remember is case insensitive)
   })
   request.chunkedEncoding = true
@@ -27,18 +28,25 @@ const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
   request.on('response', (response) => {
     logger.info(`STATUS: ${response.statusCode}`)
     logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
-    console.log(`upload end: ${Date.now()}`)
+    // console.log(`upload end: ${Date.now()}`)
     response.on('data', (chunk) => {
       logger.info(`BODY: ${chunk}`)
     })
 
     response.on('end', () => {
-      logger.info('No more data in response.')
+      // logger.info('No more data in response.')
+      if (response.statusCode === 200) {
+        GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
+        getFileListProcess(GlobalValueManager.curFolderId)
+      } else {
+        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
+      }
     })
   })
 
   request.on('error', (error) => {
     logger.error(`ERROR: ${error.message}`)
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
   })
 }
 
