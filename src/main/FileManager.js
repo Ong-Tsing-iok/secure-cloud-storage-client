@@ -65,8 +65,13 @@ const uploadFileProcess = async (parentFolderId) => {
 
 const getFileListProcess = (parentFolderId) => {
   logger.info(`Getting file list for ${parentFolderId || 'root'}...`)
-  socket.emit('get-file-list', parentFolderId, (fileList) => {
-    GlobalValueManager.mainWindow?.webContents.send('file-list-res', fileList)
+  socket.emit('get-file-list', parentFolderId, (fileList, error) => {
+    if (error) {
+      logger.error(`Failed to get file list: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to get file list', 'error')
+    } else {
+      GlobalValueManager.mainWindow?.webContents.send('file-list-res', fileList)
+    }
   })
 }
 socket.on('file-list-res', (fileList) => {
@@ -125,14 +130,15 @@ const deleteFileProcess = (uuid) => {
   })
 }
 
-const addFolderProcess = (curPath, folderName) => {
+const addFolderProcess = (parentFolderId, folderName) => {
   logger.info(`Asking to add folder ${folderName}...`)
-  socket.emit('add-folder', curPath, folderName, (error) => {
+  socket.emit('add-folder', parentFolderId, folderName, (error) => {
     if (error) {
       logger.error(`Failed to add folder ${folderName}: ${error}`)
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to add folder', 'error')
     } else {
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to add folder', 'success')
+      getFileListProcess(GlobalValueManager.curFolderId)
     }
   })
 }
@@ -144,7 +150,12 @@ const deleteFolderProcess = (folderId) => {
       logger.error(`Failed to delete folder: ${error}`)
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to delete folder', 'error')
     } else {
-      GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to delete folder', 'success')
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Success to delete folder',
+        'success'
+      )
+      getFileListProcess(GlobalValueManager.curFolderId)
     }
   })
 }

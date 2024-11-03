@@ -8,9 +8,11 @@ import {
 } from '@material-tailwind/react'
 import { HomeIcon } from '@heroicons/react/24/outline'
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useState, useContext } from 'react'
+import { CurPathContext } from './Contexts'
 
-function CurPathBreadcrumbs({ curPath, setCurPath }) {
+function CurPathBreadcrumbs() {
+  const { curPath, setCurPath } = useContext(CurPathContext)
   const [open, setOpen] = useState(false)
   function setPathHandler(index) {
     // if (index === 0) {
@@ -69,10 +71,6 @@ function CurPathBreadcrumbs({ curPath, setCurPath }) {
   //   }
 
   //   return renderBreadcrumbs(curPath);
-}
-CurPathBreadcrumbs.propTypes = {
-  curPath: PropTypes.array.isRequired,
-  setCurPath: PropTypes.func.isRequired
 }
 
 export default CurPathBreadcrumbs

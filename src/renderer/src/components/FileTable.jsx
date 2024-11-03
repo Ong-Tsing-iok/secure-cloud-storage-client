@@ -9,57 +9,31 @@ import { CurPathContext, SearchContext } from './Contexts'
 
 const TABLE_HEAD = ['icon', 'name', 'size', 'date', 'perm', 'end']
 
-const testFolderList = [
-  { name: 'folder1', folderId: '1' },
-  { name: 'folder2', folderId: '2' }
-]
-
-function FileTable() {
+function FileTable({ fileList, folderList }) {
   const { curPath, setCurPath } = useContext(CurPathContext)
-  const [fileList, setFileList] = useState([])
   const [tableContent, setTableContent] = useState([])
-  const [folders, setFolders] = useState([])
+  const [folderContent, setFolderContent] = useState([])
   const {
     searchTypeC: [searchType],
     searchTermC: [searchTerm]
   } = useContext(SearchContext)
 
   useEffect(() => {
-    window.electronAPI.onFileListRes((result) => {
-      const fileList = JSON.parse(result)
-      console.log(fileList)
-      fileList.forEach((element) => {
-        element.fileId = element.id
-        element.owner = element.ownerId
-        element.originOwner = element.originOwnerId
-        element.date = element.timestamp.split(' ')[0]
-        element.perm = element.permissions
-        delete element.id
-        delete element.ownerId
-        delete element.timestamp
-        delete element.permissions
-        delete element.originOwnerId
-      })
-      setFileList(fileList)
-    })
-  }, [])
-
-  useEffect(() => {
     setTableContent(
       fileList.filter((file) => file[searchType].toLowerCase().includes(searchTerm.toLowerCase()))
     )
-    setFolders(
-      testFolderList.filter(
+    setFolderContent(
+      folderList.filter(
         (folder) =>
           searchType in folder &&
           folder[searchType].toLowerCase().includes(searchTerm.toLowerCase())
       )
     )
-  }, [searchTerm, searchType, fileList])
+  }, [searchTerm, searchType, fileList, folderList])
 
   return (
     <TableView tableHead={TABLE_HEAD}>
-      {folders.map((row, index) => (
+      {folderContent.map((row, index) => (
         <tr
           key={index}
           onDoubleClick={() => setCurPath([...curPath, { name: row.name, folderId: row.folderId }])}
@@ -109,6 +83,11 @@ function FileTable() {
       ))}
     </TableView>
   )
+}
+
+FileTable.propTypes = {
+  fileList: PropTypes.array.isRequired,
+  folderList: PropTypes.array.isRequired
 }
 
 export default FileTable
