@@ -16,16 +16,22 @@ import {
   PaperAirplaneIcon
 } from '@heroicons/react/24/outline'
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import RequestDialog from './RequestDialog'
 import ProfileDialog from './ProfileDialog'
-import { PageType } from './Types'
+import { PageType, ResponseType } from './Types'
+import { RequestContext } from './Contexts'
+// import { store } from './Types'
 
 const pageList = [PageType.public, PageType.file, PageType.reply, PageType.request]
 
-function NavBar({ pageType, setPageType }) {
+function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
   const [profileOpen, setProfileOpen] = useState(false)
   const [requestOpen, setRequestOpen] = useState(false)
+  const {
+    requestListC: [requestList],
+    requestedListC: [requestedList]
+  } = useContext(RequestContext)
 
   return (
     <>
@@ -70,7 +76,9 @@ function NavBar({ pageType, setPageType }) {
             回覆列表
             <ListItemSuffix>
               <Chip
-                value="14"
+                value={
+                  requestList.filter((file) => file.status !== ResponseType.N).length - seenReply
+                }
                 size="sm"
                 variant="ghost"
                 color="blue-gray"
@@ -88,6 +96,15 @@ function NavBar({ pageType, setPageType }) {
               <ClipboardDocumentListIcon className="h-5 w-5" />
             </ListItemPrefix>
             請求列表
+            <ListItemSuffix>
+              <Chip
+                value={requestedList.length - seenRequest}
+                size="sm"
+                variant="ghost"
+                color="blue-gray"
+                className="rounded-full"
+              />
+            </ListItemSuffix>
           </ListItem>
           <ListItem
             onClick={() => setRequestOpen(!requestOpen)}
@@ -120,7 +137,9 @@ function NavBar({ pageType, setPageType }) {
 NavBar.propTypes = {
   pageType: PropTypes.oneOf([PageType.public, PageType.file, PageType.reply, PageType.request])
     .isRequired,
-  setPageType: PropTypes.func.isRequired
+  setPageType: PropTypes.func.isRequired,
+  seenRequest: PropTypes.number.isRequired,
+  seenReply: PropTypes.number.isRequired
 }
 
 export default NavBar

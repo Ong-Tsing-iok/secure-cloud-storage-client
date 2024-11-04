@@ -11,3 +11,7 @@ export const SearchContext = createContext({
   searchTermC: ['', null]
 })
 export const CurPathContext = createContext([[], null])
+export const RequestContext = createContext({
+  requestListC: [[], null],
+  requestedListC: [[], null]
+})

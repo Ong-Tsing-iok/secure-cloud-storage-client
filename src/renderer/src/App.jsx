@@ -5,10 +5,16 @@ import NavBar, { PageType } from './components/NavBar.jsx'
 import MainView from './components/MainView.jsx'
 import ProgressView from './components/ProgressView.jsx'
 import Console from './components/Console.jsx'
-import { ProfileContext, PageContext, SearchContext } from './components/Contexts.jsx'
+import {
+  ProfileContext,
+  PageContext,
+  SearchContext,
+  RequestContext
+} from './components/Contexts.jsx'
 import { Toaster } from 'react-hot-toast'
-import { SearchType } from './components/Types.jsx'
+import { ResponseType, SearchType } from './components/Types.jsx'
 import toast from 'react-hot-toast'
+// import { store } from './components/Types.jsx'
 
 function App() {
   const [pageType, setPageType] = useState(PageType.file)
@@ -17,6 +23,10 @@ function App() {
   const [userId, setUserId] = useState('')
   const [searchType, setSearchType] = useState(SearchType.name)
   const [searchTerm, setSearchTerm] = useState('')
+  const [requestList, setRequestList] = useState([])
+  const [requestedList, setRequestedList] = useState([])
+  const [seenRequests, setSeenRequests] = useState(0)
+  const [seenReplies, setSeenReplies] = useState(0)
 
   useEffect(() => {
     window.electronAPI.onNotice((result, level) => {
@@ -34,6 +44,10 @@ function App() {
       setStoredEmail(email)
       setUserId(userId)
     })
+    window.electronAPI.onRequestValue(({ seenRequests, seenReplies }) => {
+      setSeenRequests(seenRequests)
+      setSeenReplies(seenReplies)
+    })
   }, [])
 
   function swapPageHandler(pageType) {
@@ -48,10 +62,20 @@ function App() {
       case PageType.reply:
         setSearchType(SearchType.fileId)
         window.electronAPI.askRequestList()
+        window.electronAPI.updateRequestValue({
+          seenRequests: seenRequests,
+          seenReplies: requestList.filter((file) => file.status !== ResponseType.N).length
+        })
+        setSeenReplies(requestList.filter((file) => file.status !== ResponseType.N).length)
         break
       case PageType.request:
         window.electronAPI.askRequestedList()
         setSearchType(SearchType.fileId)
+        window.electronAPI.updateRequestValue({
+          seenRequests: requestedList.length,
+          seenReplies: seenReplies
+        })
+        setSeenRequests(requestedList.length)
         break
       default:
         break
@@ -70,20 +94,32 @@ function App() {
         }}
       >
         <PageContext.Provider value={[pageType, swapPageHandler]}>
-          <SearchContext.Provider
+          <RequestContext.Provider
             value={{
-              searchTypeC: [searchType, setSearchType],
-              searchTermC: [searchTerm, setSearchTerm]
+              requestListC: [requestList, setRequestList],
+              requestedListC: [requestedList, setRequestedList]
             }}
           >
-            <div className="flex flex-row h-screen w-screen justify-center">
-              <NavBar pageType={pageType} setPageType={swapPageHandler} />
-              <div className="flex flex-col grow">
-                <MainView />
-                <Console />
+            <SearchContext.Provider
+              value={{
+                searchTypeC: [searchType, setSearchType],
+                searchTermC: [searchTerm, setSearchTerm]
+              }}
+            >
+              <div className="flex flex-row h-screen w-screen justify-center">
+                <NavBar
+                  pageType={pageType}
+                  setPageType={swapPageHandler}
+                  seenRequest={seenRequests}
+                  seenReply={seenReplies}
+                />
+                <div className="flex flex-col grow">
+                  <MainView />
+                  <Console />
+                </div>
               </div>
-            </div>
-          </SearchContext.Provider>
+            </SearchContext.Provider>
+          </RequestContext.Provider>
         </PageContext.Provider>
       </ProfileContext.Provider>
       <ProgressView />

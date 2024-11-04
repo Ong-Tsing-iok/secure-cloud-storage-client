@@ -57,6 +57,10 @@ function createWindow() {
       email: GlobalValueManager.userConfig.email,
       userId: GlobalValueManager.userId
     })
+    GlobalValueManager.mainWindow?.webContents.send('request-value', {
+      seenReplies: GlobalValueManager.requestConfig.seenReplies,
+      seenRequests: GlobalValueManager.requestConfig.seenRequests
+    })
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -140,6 +144,9 @@ app.whenReady().then(() => {
   })
   ipcMain.on('update-user-config', (_event, config) => {
     GlobalValueManager.updateUser(config)
+  })
+  ipcMain.on('update-request-value', (_event, values) => {
+    GlobalValueManager.updateRequest(values)
   })
   ipcMain.on('update-file-desc-perm', (_event, fileId, desc, perm) => {
     updateFileDescPermProcess(fileId, desc, perm)

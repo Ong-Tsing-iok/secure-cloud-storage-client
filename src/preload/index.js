@@ -31,7 +31,10 @@ if (process.contextIsolated) {
       askMoveFile: (uuid, targetFolderId) => ipcRenderer.send('move-file', uuid, targetFolderId),
       askAllPublicFile: () => ipcRenderer.invoke('get-public-files'),
       onUserConfig: (callback) => ipcRenderer.on('user-info', (_event, result) => callback(result)),
+      onRequestValue: (callback) =>
+        ipcRenderer.on('request-value', (_event, result) => callback(result)),
       updateUserConfig: (config) => ipcRenderer.send('update-user-config', config),
+      updateRequestValue: (values) => ipcRenderer.send('update-request-value', values),
       updateFileDescPerm: (fileId, desc, perm) =>
         ipcRenderer.send('update-file-desc-perm', fileId, desc, perm),
       askRequestFile: (requestInfo) => ipcRenderer.send('request-file', requestInfo),

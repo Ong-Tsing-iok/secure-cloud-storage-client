@@ -2,6 +2,17 @@ import config from 'config'
 import { logger } from './Logger'
 import { writeFileSync, readFileSync } from 'node:original-fs'
 import { join } from 'node:path'
+// import Store from 'electron-store'
+// export const store = new Store({
+//   seenRequest: {
+//     type: 'number',
+//     default: 0
+//   },
+//   seenReply: {
+//     type: 'number',
+//     default: 0
+//   }
+// })
 // TODO: check overwrite, if not exist then use default
 // TODO: maybe need to set config path?
 class GlobalValueManager {
@@ -13,6 +24,7 @@ class GlobalValueManager {
       this.keysConfig = config.get('keys')
       this.userConfig = config.get('user')
       this.directoryConfig = config.get('directories')
+      this.requestConfig = config.get('request')
     } catch (error) {
       logger.error(`Failed to load config: ${error}`)
     }
@@ -51,6 +63,17 @@ class GlobalValueManager {
     } catch (error) {
       logger.error(`Failed to update user: ${error}`)
       this.mainWindow?.webContents.send('notice', 'Failed to update user info', 'error')
+    }
+  }
+
+  updateRequest(req) {
+    try {
+      this.updateConfig('request', req)
+      this.requestConfig = config.get('request')
+      // this.mainWindow?.webContents.send('notice', 'Success to update request info', 'success')
+    } catch (error) {
+      logger.error(`Failed to update request: ${error}`)
+      // this.mainWindow?.webContents.send('notice', 'Failed to update request info', 'error')
     }
   }
 }

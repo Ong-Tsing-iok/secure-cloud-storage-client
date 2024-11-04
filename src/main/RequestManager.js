@@ -12,6 +12,7 @@ const requestFileProcess = (requestInfo) => {
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to request file', 'error')
     } else {
       logger.info(`Success to request file ${requestInfo.fileId}`)
+      getRequestListProcess()
       GlobalValueManager.mainWindow?.webContents.send(
         'notice',
         'Success to request file',
@@ -124,6 +125,13 @@ const respondRequestProcess = async (responseInfo) => {
     }
   })
 }
+
+socket.on('new-request', () => {
+  getRequestedListProcess()
+})
+socket.on('new-response', () => {
+  getRequestListProcess()
+})
 
 export {
   getRequestListProcess,

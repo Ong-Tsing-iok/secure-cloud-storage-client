@@ -10,14 +10,16 @@ import FileViewButtonGroup from './FileViewButtonGroup'
 import RequestViewButtonGroup from './RequestViewButtonGroup'
 import CurPathBreadcrumbs from './CurPathBreadcrumbs'
 import RequestTable from './RequestTable'
-import { CurPathContext } from './Contexts'
+import { CurPathContext, RequestContext } from './Contexts'
 
 function MainView() {
   const [curPath, setCurPath] = useState([{ name: '', folderId: null }])
   const [fileList, setFileList] = useState([])
   const [folderList, setFolderList] = useState([])
-  const [requestList, setRequestList] = useState([])
-  const [requestedList, setRequestedList] = useState([])
+  const {
+    requestListC: [requestList, setRequestList],
+    requestedListC: [requestedList, setRequestedList]
+  } = useContext(RequestContext)
   const [pageType] = useContext(PageContext)
 
   useEffect(() => {

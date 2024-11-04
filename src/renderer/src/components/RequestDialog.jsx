@@ -70,7 +70,7 @@ function RequestDialog({ open, setOpen, defaultId = '' }) {
   // TODO: add notice about storing as plain text
   return (
     <Dialog open={open} handler={() => setOpen(!open)}>
-      {<Toaster position="bottom-left" reverseOrder={false} /> && open}
+      <Toaster position="bottom-left" reverseOrder={false} />
       <DialogHeader>請求檔案</DialogHeader>
       <DialogBody className="space-y-2">
         {/* <Typography>檔案ID</Typography> */}
