@@ -15,3 +15,7 @@ export const RequestContext = createContext({
   requestListC: [[], null],
   requestedListC: [[], null]
 })
+export const UserListContext = createContext({
+  whiteListC: [[], null],
+  blackListC: [[], null]
+})

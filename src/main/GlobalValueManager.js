@@ -25,6 +25,7 @@ class GlobalValueManager {
       this.userConfig = config.get('user')
       this.directoryConfig = config.get('directories')
       this.requestConfig = config.get('request')
+      this.userListConfig = config.get('userList')
     } catch (error) {
       logger.error(`Failed to load config: ${error}`)
     }
@@ -63,6 +64,17 @@ class GlobalValueManager {
     } catch (error) {
       logger.error(`Failed to update user: ${error}`)
       this.mainWindow?.webContents.send('notice', 'Failed to update user info', 'error')
+    }
+  }
+
+  updateUserList(users) {
+    try {
+      this.updateConfig('userList', users)
+      this.userListConfig = config.get('userList')
+      // this.mainWindow?.webContents.send('notice', 'Success to update user list', 'success')
+    } catch (error) {
+      logger.error(`Failed to update user list: ${error}`)
+      // this.mainWindow?.webContents.send('notice', 'Failed to update user list', 'error')
     }
   }
 

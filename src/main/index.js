@@ -148,6 +148,9 @@ app.whenReady().then(() => {
   ipcMain.on('update-request-value', (_event, values) => {
     GlobalValueManager.updateRequest(values)
   })
+  ipcMain.on('update-user-list', (_event, users) => {
+    GlobalValueManager.updateUserList(users)
+  })
   ipcMain.on('update-file-desc-perm', (_event, fileId, desc, perm) => {
     updateFileDescPermProcess(fileId, desc, perm)
   })

@@ -9,7 +9,7 @@ import {
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
-import { PageContext } from './Contexts'
+import { PageContext, UserListContext } from './Contexts'
 import { PageType, PermissionType, ResponseType } from './Types'
 import toast, { Toaster } from 'react-hot-toast'
 import {
@@ -24,6 +24,10 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
   const [detailOpen, setDetailOpen] = useState(false)
 
   const [pageType] = useContext(PageContext)
+  const {
+    blackListC: [blackList, setBlackList],
+    whiteListC: [whiteList, setWhiteList]
+  } = useContext(UserListContext)
   const isRequest = pageType === PageType.request
   const canRespond = isRequest && requestData.status === ResponseType.N
 
@@ -38,12 +42,20 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
     setOpen(!open)
   }
   function whiteListHandler(userId) {
+    if (whiteList.includes(userId)) {
+      toast('該使用者已存在')
+      return
+    }
+    setWhiteList([...whiteList, userId])
     toast.success('成功新增白名單')
-    //TODO: call add white list api
   }
   function blackListHandler(userId) {
+    if (blackList.includes(userId)) {
+      toast('該使用者已存在')
+      return
+    }
+    setBlackList([...blackList, userId])
     toast.success('成功新增黑名單')
-    //TODO: call add black list api
   }
   function fileDialogHandler(fileId) {
     setDetailOpen(!detailOpen)

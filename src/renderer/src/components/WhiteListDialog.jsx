@@ -13,40 +13,33 @@ import {
 } from '@material-tailwind/react'
 
 import PropTypes from 'prop-types'
-import { useState } from 'react'
+import { useState, useContext } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
+import { UserListContext } from './Contexts'
 
-const testUserIdList = [
-  'dd147966-becd-4c63-9e49-9b24a243c412',
-  'a0c87e67-7363-4015-9bea-e32bcfd7f7db',
-  '8f625466-bb70-4629-ae8b-f43f2e2d771e',
-  'dd147966-becd-4c63-9e49-9b24a243c412',
-  'a0c87e67-7363-4015-9bea-e32bcfd7f7db',
-  '8f625466-bb70-4629-ae8b-f43f2e2d771e',
-  'dd147966-becd-4c63-9e49-9b24a243c412',
-  'a0c87e67-7363-4015-9bea-e32bcfd7f7db',
-  '8f625466-bb70-4629-ae8b-f43f2e2d771e',
-  'dd147966-becd-4c63-9e49-9b24a243c412',
-  'a0c87e67-7363-4015-9bea-e32bcfd7f7db',
-  '8f625466-bb70-4629-ae8b-f43f2e2d771e'
-]
 function WhiteListDialog({ open, setOpen }) {
   const [text, setText] = useState('')
-
+  const {
+    whiteListC: [whiteList, setWhiteList]
+  } = useContext(UserListContext)
   function dialogHandler() {
     setText('')
     setOpen(!open)
   }
   function addWhiteListHandler() {
     if (text !== '') {
-      toast.success('成功新增白名單')
+      if (whiteList.includes(text)) {
+        toast('該使用者已存在')
+      } else {
+        setWhiteList([...whiteList, text])
+        toast.success('成功新增白名單')
+      }
       setText('')
     }
-    // TODO: call add whitelist api
   }
-  function removeWhiteListHandler(userId) {
+  function removeWhiteListHandler(index) {
+    setWhiteList(whiteList.splice(index, index))
     toast.success('成功移除白名單')
-    // TODO: call remove whitelist api
   }
 
   return (
@@ -82,12 +75,12 @@ function WhiteListDialog({ open, setOpen }) {
           </Button>
         </div>
         <List className="flex flex-col grow overflow-auto">
-          {testUserIdList.map((item, index) => (
+          {whiteList.map((item, index) => (
             <ListItem key={index} ripple={false}>
               <Typography>{item}</Typography>
               <ListItemSuffix>
                 <Button
-                  onClick={() => removeWhiteListHandler(item)}
+                  onClick={() => removeWhiteListHandler(index)}
                   className="justify-center"
                   size="sm"
                   variant="gradient"
