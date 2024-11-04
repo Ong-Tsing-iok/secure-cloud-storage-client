@@ -61,7 +61,10 @@ function createWindow() {
       seenReplies: GlobalValueManager.requestConfig.seenReplies,
       seenRequests: GlobalValueManager.requestConfig.seenRequests
     })
-    GlobalValueManager.mainWindow?.webContents.send('user-list', GlobalValueManager.userList)
+    GlobalValueManager.mainWindow?.webContents.send('user-list', {
+      whiteList: GlobalValueManager.userListConfig.whiteList,
+      blackList: GlobalValueManager.userListConfig.blackList
+    })
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {

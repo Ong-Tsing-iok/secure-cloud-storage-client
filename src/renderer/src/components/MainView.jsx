@@ -50,6 +50,8 @@ function MainView() {
       setRequestedList(requestedList)
     })
     window.electronAPI.onUserList(({ whiteList, blackList }) => {
+      // console.log(whiteList)
+      // console.log(blackList)
       setWhiteList(whiteList)
       setBlackList(blackList)
     })
