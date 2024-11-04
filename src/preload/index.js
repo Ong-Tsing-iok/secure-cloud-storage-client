@@ -37,7 +37,8 @@ if (process.contextIsolated) {
       askRequestFile: (requestInfo) => ipcRenderer.send('request-file', requestInfo),
       askRequestList: () => ipcRenderer.send('get-request-list'),
       askRequestedList: () => ipcRenderer.send('get-requested-list'),
-      askDeleteRequest: (requestId) => ipcRenderer.send('delete-request', requestId)
+      askDeleteRequest: (requestId) => ipcRenderer.send('delete-request', requestId),
+      askRespondRequest: (responseInfo) => ipcRenderer.send('respond-request', responseInfo)
     })
   } catch (error) {
     console.error(error)

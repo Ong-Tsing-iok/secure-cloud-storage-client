@@ -22,24 +22,19 @@ import FileDetailDialog from './FileDetailDialog'
 function RequestDetailDialog({ open, setOpen, requestData }) {
   const [desc, setDesc] = useState(requestData.resDesc)
   const [detailOpen, setDetailOpen] = useState(false)
-  const [fileData, setFileData] = useState({
-    name: '',
-    fileId: '',
-    size: '',
-    date: '',
-    owner: '',
-    originOwner: '',
-    perm: '',
-    desc: ''
-  })
 
   const [pageType] = useContext(PageContext)
   const isRequest = pageType === PageType.request
   const canRespond = isRequest && requestData.status === ResponseType.N
 
   function responseHandler(agreed) {
-    agreed ? toast.success('成功同意請求') : toast.success('成功拒絕請求')
-    // TODO: call api to response
+    // agreed ? toast.success('成功同意請求') : toast.success('成功拒絕請求')
+    window.electronAPI.askRespondRequest({
+      requestId: requestData.requestId,
+      agreed,
+      description: desc,
+      pk: requestData.pk
+    })
     setOpen(!open)
   }
   function whiteListHandler(userId) {
@@ -51,18 +46,6 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
     //TODO: call add black list api
   }
   function fileDialogHandler(fileId) {
-    // TODO: get file detail
-    // const fileData = {
-    //   name: 'abc.txt',
-    //   fileId: fileId,
-    //   size: '10KB',
-    //   date: '2024/05/18',
-    //   owner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    //   originOwner: 'afb0dccb-ad3f-4ae8-b2ea-53a3197bfba0',
-    //   perm: PermissionType.private,
-    //   desc: ''
-    // }
-    // setFileData(fileData)
     setDetailOpen(!detailOpen)
   }
 
@@ -144,7 +127,7 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
               className="focus:!border-t-gray-900"
             ></Textarea>
           ) : (
-            <Typography variant="paragraph">{requestData.desc || '無'}</Typography>
+            <Typography variant="paragraph">{requestData.resDesc || '無'}</Typography>
           )}
         </div>
       </DialogBody>

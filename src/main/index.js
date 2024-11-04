@@ -22,7 +22,8 @@ import {
   getRequestListProcess,
   getRequestedListProcess,
   rejectRequestProcess,
-  requestFileProcess
+  requestFileProcess,
+  respondRequestProcess
 } from './RequestManager'
 import GlobalValueManager from './GlobalValueManager'
 
@@ -126,6 +127,9 @@ app.whenReady().then(() => {
   })
   ipcMain.on('request-reject', (_event, uuid) => {
     rejectRequestProcess(uuid)
+  })
+  ipcMain.on('respond-request', (_event, responseInfo) => {
+    respondRequestProcess(responseInfo)
   })
   ipcMain.handle('get-folders', async () => {
     return await getAllFoldersProcess()

@@ -88,11 +88,49 @@ const rejectRequestProcess = (uuid) => {
   logger.info(`Reject request for ${uuid}...`)
 }
 
+const respondRequestProcess = async (responseInfo) => {
+  logger.info(`Respond request for ${responseInfo.requestId}...`)
+  let rekey = null
+  if (responseInfo.agreed) {
+    try {
+      rekey = await rekeyGen(responseInfo.pk)
+    } catch (error) {
+      logger.error(`Failed to generate rekey: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Failed to respond request',
+        'error'
+      )
+      return
+    }
+  }
+  delete responseInfo.pk
+  socket.emit('respond-request', { ...responseInfo, rekey }, (error) => {
+    if (error) {
+      logger.error(`Failed to respond request for ${responseInfo.requestId}: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Failed to respond request',
+        'error'
+      )
+    } else {
+      logger.info(`Success to respond request for ${responseInfo.requestId}`)
+      getRequestedListProcess()
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Success to respond request',
+        'success'
+      )
+    }
+  })
+}
+
 export {
   getRequestListProcess,
   getRequestedListProcess,
   deleteRequestProcess,
   agreeRequestProcess,
   rejectRequestProcess,
-  requestFileProcess
+  requestFileProcess,
+  respondRequestProcess
 }

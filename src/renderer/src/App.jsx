@@ -29,7 +29,7 @@ function App() {
       }
     })
     window.electronAPI.onUserConfig(({ name, email, userId }) => {
-      console.log(name, email, userId)
+      // console.log(name, email, userId)
       setStoredName(name)
       setStoredEmail(email)
       setUserId(userId)

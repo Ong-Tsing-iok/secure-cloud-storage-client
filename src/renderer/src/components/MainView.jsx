@@ -34,6 +34,7 @@ function MainView() {
       setFolderList(folderList)
     })
     window.electronAPI.onRequestListRes((result) => {
+      // console.log(result)
       const requestList = parseRequestList(result)
       // console.log(requestList)
       setRequestList(requestList)

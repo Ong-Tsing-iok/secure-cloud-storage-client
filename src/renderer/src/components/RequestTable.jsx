@@ -17,7 +17,7 @@ function RequestTable({ requestedList }) {
 
   useEffect(() => {
     setTableContent(searchFilter(requestedList, searchType, searchTerm))
-    console.log(requestedList)
+    // console.log(requestedList)
   }, [searchTerm, searchType, requestedList])
   return (
     <TableView tableHead={tableHead}>
