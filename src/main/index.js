@@ -61,6 +61,7 @@ function createWindow() {
       seenReplies: GlobalValueManager.requestConfig.seenReplies,
       seenRequests: GlobalValueManager.requestConfig.seenRequests
     })
+    GlobalValueManager.mainWindow?.webContents.send('user-list', GlobalValueManager.userList)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {

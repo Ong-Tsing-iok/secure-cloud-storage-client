@@ -51,9 +51,41 @@ const getRequestedListProcess = () => {
       )
     } else {
       logger.info(`Success to get requested list`)
+      autoReplyProcess(result)
       GlobalValueManager.mainWindow?.webContents.send('requested-list-res', result)
     }
   })
+}
+
+const autoReplyProcess = async (result) => {
+  let changed = false
+  const resultList = JSON.parse(result)
+  for (const item of resultList) {
+    if (item.agreed === null || item.agreed === undefined) {
+      // console.log('item not responded')
+      // console.log(item.requester)
+      // Check if in black list
+      if (GlobalValueManager.userListConfig.blackList.includes(item.requester)) {
+        // console.log('blacklisted item')
+        changed = true
+        await respondRequestProcess(
+          { requestId: item.requestId, agreed: false, description: '', pk: item.pk },
+          false
+        )
+        // item.agreed = 0
+      } else if (GlobalValueManager.userListConfig.whiteList.includes(item.requester)) {
+        changed = true
+        await respondRequestProcess(
+          { requestId: item.requestId, agreed: true, description: '', pk: item.pk },
+          false
+        )
+        // item.agreed = 1
+      }
+    }
+  }
+  if (changed) {
+    getRequestedListProcess()
+  }
 }
 
 const deleteRequestProcess = (requestId) => {
@@ -89,7 +121,7 @@ const rejectRequestProcess = (uuid) => {
   logger.info(`Reject request for ${uuid}...`)
 }
 
-const respondRequestProcess = async (responseInfo) => {
+const respondRequestProcess = async (responseInfo, refresh = true) => {
   logger.info(`Respond request for ${responseInfo.requestId}...`)
   let rekey = null
   if (responseInfo.agreed) {
@@ -106,23 +138,29 @@ const respondRequestProcess = async (responseInfo) => {
     }
   }
   delete responseInfo.pk
-  socket.emit('respond-request', { ...responseInfo, rekey }, (error) => {
-    if (error) {
-      logger.error(`Failed to respond request for ${responseInfo.requestId}: ${error}`)
-      GlobalValueManager.mainWindow?.webContents.send(
-        'notice',
-        'Failed to respond request',
-        'error'
-      )
-    } else {
-      logger.info(`Success to respond request for ${responseInfo.requestId}`)
-      getRequestedListProcess()
-      GlobalValueManager.mainWindow?.webContents.send(
-        'notice',
-        'Success to respond request',
-        'success'
-      )
-    }
+  return new Promise((resolve, reject) => {
+    socket.emit('respond-request', { ...responseInfo, rekey }, (error) => {
+      if (error) {
+        logger.error(`Failed to respond request for ${responseInfo.requestId}: ${error}`)
+        GlobalValueManager.mainWindow?.webContents.send(
+          'notice',
+          'Failed to respond request',
+          'error'
+        )
+        reject()
+      } else {
+        logger.info(`Success to respond request for ${responseInfo.requestId}`)
+        if (refresh) {
+          getRequestedListProcess()
+        }
+        GlobalValueManager.mainWindow?.webContents.send(
+          'notice',
+          'Success to respond request',
+          'success'
+        )
+        resolve()
+      }
+    })
   })
 }
 
