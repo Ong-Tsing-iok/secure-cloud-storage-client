@@ -47,9 +47,11 @@ class GlobalValueManager {
 
   updateConfig(field, value) {
     try {
-      const current = JSON.parse(readFileSync('./config/local.json'))
+      const filename = `./config/local-${process.env.NODE_APP_INSTANCE}.json`
+      console.log(filename)
+      const current = JSON.parse(readFileSync(filename))
       current[field] = value
-      writeFileSync('./config/local.json', JSON.stringify(current, null, 2))
+      writeFileSync(filename, JSON.stringify(current, null, 2))
       // config.set(field, value)
     } catch (error) {
       logger.error(`Failed to update config: ${error}`)

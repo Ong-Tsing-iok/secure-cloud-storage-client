@@ -62,8 +62,8 @@ const autoReplyProcess = async (result) => {
   const resultList = JSON.parse(result)
   for (const item of resultList) {
     if (item.agreed === null || item.agreed === undefined) {
-      // console.log('item not responded')
-      // console.log(item.requester)
+      console.log('item not responded')
+      console.log(item.requester)
       // Check if in black list
       if (GlobalValueManager.userListConfig.blackList.includes(item.requester)) {
         // console.log('blacklisted item')
@@ -75,6 +75,7 @@ const autoReplyProcess = async (result) => {
         // item.agreed = 0
       } else if (GlobalValueManager.userListConfig.whiteList.includes(item.requester)) {
         changed = true
+        console.log('whitelist item')
         await respondRequestProcess(
           { requestId: item.requestId, agreed: true, description: '', pk: item.pk },
           false

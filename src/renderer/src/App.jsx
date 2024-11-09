@@ -50,9 +50,23 @@ function App() {
     })
   }, [])
 
-  function swapPageHandler(pageType) {
+  function swapPageHandler(newPageType) {
+    if (newPageType === PageType.reply || pageType === PageType.reply) {
+      window.electronAPI.updateRequestValue({
+        seenRequests: seenRequests,
+        seenReplies: requestList.filter((file) => file.status !== ResponseType.N).length
+      })
+      setSeenReplies(requestList.filter((file) => file.status !== ResponseType.N).length)
+    }
+    if (newPageType === PageType.request || pageType === PageType.request) {
+      window.electronAPI.updateRequestValue({
+        seenRequests: requestList.length,
+        seenReplies: seenReplies
+      })
+      setSeenRequests(requestList.length)
+    }
     setSearchTerm('')
-    switch (pageType) {
+    switch (newPageType) {
       case PageType.public:
         setSearchType(SearchType.name)
         break
@@ -62,25 +76,16 @@ function App() {
       case PageType.reply:
         setSearchType(SearchType.fileId)
         window.electronAPI.askRequestList()
-        window.electronAPI.updateRequestValue({
-          seenRequests: seenRequests,
-          seenReplies: requestList.filter((file) => file.status !== ResponseType.N).length
-        })
-        setSeenReplies(requestList.filter((file) => file.status !== ResponseType.N).length)
+
         break
       case PageType.request:
         window.electronAPI.askRequestedList()
         setSearchType(SearchType.fileId)
-        window.electronAPI.updateRequestValue({
-          seenRequests: requestedList.length,
-          seenReplies: seenReplies
-        })
-        setSeenRequests(requestedList.length)
         break
       default:
         break
     }
-    setPageType(pageType)
+    setPageType(newPageType)
   }
 
   return (
@@ -122,7 +127,7 @@ function App() {
           </RequestContext.Provider>
         </PageContext.Provider>
       </ProfileContext.Provider>
-      <ProgressView />
+      {/* <ProgressView /> */}
     </>
   )
 }

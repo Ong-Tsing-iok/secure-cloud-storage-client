@@ -17,7 +17,7 @@ function AddFolderDialog({ open, setOpen }) {
   function addFolderHandler() {
     // toast.success('成功新增資料夾')
     // TODO: check folder name format and length
-    window.electronAPI.askAddFolder(curPath.folderId, folderName)
+    window.electronAPI.askAddFolder(curPath.at(-1).folderId, folderName)
     setOpen(!open)
   }
 
