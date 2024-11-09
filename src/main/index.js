@@ -45,26 +45,7 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
-    // TODO: invoke all process of getting list
-    // TODO: make it a function so that it can be called when login/reconnect
-    //? can we ensure we logged in first?
-    getFileListProcess(null)
-    getRequestListProcess()
-    getRequestedListProcess()
-    // TODO: send userId and other stored name, email to renderer
-    GlobalValueManager.mainWindow?.webContents.send('user-info', {
-      name: GlobalValueManager.userConfig.name,
-      email: GlobalValueManager.userConfig.email,
-      userId: GlobalValueManager.userId
-    })
-    GlobalValueManager.mainWindow?.webContents.send('request-value', {
-      seenReplies: GlobalValueManager.requestConfig.seenReplies,
-      seenRequests: GlobalValueManager.requestConfig.seenRequests
-    })
-    GlobalValueManager.mainWindow?.webContents.send('user-list', {
-      whiteList: GlobalValueManager.userListConfig.whiteList,
-      blackList: GlobalValueManager.userListConfig.blackList
-    })
+    login()
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -110,7 +91,7 @@ app.whenReady().then(() => {
     GlobalValueManager.curFolderId = curFolderId
     getFileListProcess(curFolderId)
   })
-  ipcMain.on('download', (_event, uuid, request = false) => downloadFileProcess(uuid, request))
+  ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
   ipcMain.on('delete', (_event, uuid) => deleteFileProcess(uuid))
   ipcMain.on('add-folder', (_event, curPath, folderName) => addFolderProcess(curPath, folderName))
   ipcMain.on('delete-folder', (_event, folderId) => deleteFolderProcess(folderId))
@@ -159,7 +140,7 @@ app.whenReady().then(() => {
     updateFileDescPermProcess(fileId, desc, perm)
   })
   createWindow()
-  login()
+  // login()
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the

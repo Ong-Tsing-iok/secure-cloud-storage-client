@@ -2,6 +2,8 @@ import io from 'socket.io-client'
 import { logger } from './Logger'
 import { initKeys, decrypt, getPublicKey } from './KeyManager'
 import GlobalValueManager from './GlobalValueManager'
+import { getFileListProcess } from './FileManager'
+import { getRequestedListProcess, getRequestListProcess } from './RequestManager'
 
 const socket = io(GlobalValueManager.httpsUrl, {
   // reconnectionAttempts: 10,
@@ -58,10 +60,31 @@ async function respondToAuth(cipher) {
     if (userId) {
       logger.info('Login succeeded')
       GlobalValueManager.userId = userId
+      // TODO: invoke all process of getting list
+      // TODO: make it a function so that it can be called when login/reconnect
+      //? can we ensure we logged in first?
+      getFileListProcess(null)
+      getRequestListProcess()
+      getRequestedListProcess()
+      // TODO: send userId and other stored name, email to renderer
+      GlobalValueManager.mainWindow?.webContents.send('user-info', {
+        name: GlobalValueManager.userConfig.name,
+        email: GlobalValueManager.userConfig.email,
+        userId: GlobalValueManager.userId
+      })
+      GlobalValueManager.mainWindow?.webContents.send('request-value', {
+        seenReplies: GlobalValueManager.requestConfig.seenReplies,
+        seenRequests: GlobalValueManager.requestConfig.seenRequests
+      })
+      GlobalValueManager.mainWindow?.webContents.send('user-list', {
+        whiteList: GlobalValueManager.userListConfig.whiteList,
+        blackList: GlobalValueManager.userListConfig.blackList
+      })
     }
   })
 }
 async function login() {
+  // only login after window is ready to show
   try {
     await initKeys()
     const publicKey = getPublicKey()
@@ -80,6 +103,7 @@ async function login() {
 }
 
 async function register(name, email) {
+  // only register after window is ready to show
   try {
     await initKeys()
     const publicKey = getPublicKey()

@@ -86,27 +86,26 @@ socket.on('file-list-res', (fileList) => {
   // logger.info(`File list: ${fileList}`)
 })
 
-const downloadFileProcess = (uuid, request = false) => {
+const downloadFileProcess = (uuid) => {
   logger.info(`Asking for file ${uuid}...`)
-  socket.emit('download-file-pre', uuid, (error) => {
+  socket.emit('download-file-pre', uuid, (error, fileInfo) => {
     if (error) {
-      logger.error(`Failed to ${request ? 'request' : 'download'} file: ${error}`)
-      GlobalValueManager.mainWindow?.webContents.send(
-        'notice',
-        `Failed to ${request ? 'request' : 'download'} file`,
-        'error'
-      )
-    } else if (request) {
-      logger.info(`Success to request file ${uuid}`)
-      GlobalValueManager.mainWindow?.webContents.send(
-        'notice',
-        'Success to request file',
-        'success'
-      )
+      logger.error(`Failed to download file: ${error}`)
+      GlobalValueManager.mainWindow?.webContents.send('notice', `Failed to download file`, 'error')
+      return
     }
+    if (!fileInfo) {
+      //! This should not happen
+      logger.error(`File ${uuid} not found`)
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'File not found', 'error')
+      return
+    }
+    const { id, name, keyCipher, ivCipher, size } = fileInfo
+    downloadFileProcess2(id, name, keyCipher, ivCipher, size)
   })
 }
-socket.on('download-file-res', async (uuid, filename, key, iv, size) => {
+
+const downloadFileProcess2 = async (uuid, filename, key, iv, size) => {
   try {
     mkdirSync(GlobalValueManager.downloadDir, { recursive: false })
   } catch (error) {
@@ -143,7 +142,7 @@ socket.on('download-file-res', async (uuid, filename, key, iv, size) => {
     logger.error('Invalid file protocol')
     GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
   }
-})
+}
 
 const deleteFileProcess = (uuid) => {
   logger.info(`Asking to delete file ${uuid}...`)
