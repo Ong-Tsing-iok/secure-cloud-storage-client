@@ -121,7 +121,7 @@ function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
           <ListItem
             onClick={() => setProfileOpen(!profileOpen)}
             ripple={false}
-            className="focus:bg-white"
+            className={checkIsLoggedIn(userId) ? 'focus:bg-white' : 'bg-red-100'}
           >
             <ListItemPrefix>
               <UserCircleIcon className="h-5 w-5" />

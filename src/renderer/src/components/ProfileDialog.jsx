@@ -10,7 +10,7 @@ import PropTypes from 'prop-types'
 import { useState, useContext, useEffect } from 'react'
 import { ProfileContext } from './Contexts'
 import { checkEmailValid, checkIsLoggedIn, checkNameValid } from './Utils'
-import toast from 'react-hot-toast'
+import toast, { Toaster } from 'react-hot-toast'
 
 function ProfileDialog({ open, setOpen }) {
   const { storedNameC, storedEmailC, userIdC: userId } = useContext(ProfileContext)
@@ -43,6 +43,7 @@ function ProfileDialog({ open, setOpen }) {
   }
   return (
     <Dialog open={open} handler={dialogHandler}>
+      <Toaster position="bottom-left" />
       <DialogHeader>使用者資料</DialogHeader>
       <DialogBody className="space-y-2">
         {checkIsLoggedIn(userId) && (
