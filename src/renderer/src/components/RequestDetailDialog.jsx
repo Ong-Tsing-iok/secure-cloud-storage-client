@@ -10,7 +10,7 @@ import {
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
 import { PageContext, UserListContext } from './Contexts'
-import { PageType, PermissionType, ResponseType } from './Types'
+import { PageType, ResponseType } from './Types'
 import toast, { Toaster } from 'react-hot-toast'
 import {
   BookmarkSquareIcon,
@@ -32,7 +32,6 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
   const canRespond = isRequest && requestData.status === ResponseType.N
 
   function responseHandler(agreed) {
-    // agreed ? toast.success('成功同意請求') : toast.success('成功拒絕請求')
     window.electronAPI.askRespondRequest({
       requestId: requestData.requestId,
       agreed,
@@ -57,7 +56,7 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
     setBlackList([...blackList, userId])
     toast.success('成功新增黑名單')
   }
-  function fileDialogHandler(fileId) {
+  function fileDialogHandler() {
     setDetailOpen(!detailOpen)
   }
 
@@ -117,7 +116,7 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
                 </Typography>
                 <InformationCircleIcon
                   className="size-6 mb-0.5 rounded-md hover:bg-gray-300"
-                  onClick={() => fileDialogHandler(requestData.fileId)}
+                  onClick={() => fileDialogHandler()}
                 />
               </div>
               <Typography variant="small">{requestData.fileId || '無'}</Typography>

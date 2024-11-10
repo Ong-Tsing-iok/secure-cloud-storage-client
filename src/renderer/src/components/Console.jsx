@@ -33,7 +33,6 @@ function Console() {
 
   return (
     <Card className="h-36 min-h-36 w-full p-4 border-2 overflow-auto justify-start">
-      {/* <Typography className="w-full h-full text-left whitespace-pre-wrap break-all"> */}
       {logs.map((log, index) => (
         <Typography
           ref={(el) => (logsRef.current[index] = el)}
@@ -44,7 +43,6 @@ function Console() {
           {log.message + '\n'}
         </Typography>
       ))}
-      {/* </Typography> */}
     </Card>
   )
 }

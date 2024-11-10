@@ -7,7 +7,6 @@ import {
   Typography
 } from '@material-tailwind/react'
 import { HomeIcon } from '@heroicons/react/24/outline'
-import PropTypes from 'prop-types'
 import { useState, useContext } from 'react'
 import { CurPathContext } from './Contexts'
 
@@ -15,12 +14,7 @@ function CurPathBreadcrumbs() {
   const { curPath, setCurPath } = useContext(CurPathContext)
   const [open, setOpen] = useState(false)
   function setPathHandler(index) {
-    // if (index === 0) {
-    //   setCurPath('/')
-    //   return
-    // }
     setCurPath(curPath.slice(0, index + 1))
-    // console.log(curPath)
   }
   function renderItem(item, index) {
     return (
@@ -29,8 +23,6 @@ function CurPathBreadcrumbs() {
       </Typography>
     )
   }
-  //   function renderBreadcrumbs(curPath) {
-  // const pathItems = curPath.split('/').slice(0, -1)
   if (curPath.length <= 6) {
     return (
       <Breadcrumbs>
@@ -68,9 +60,6 @@ function CurPathBreadcrumbs() {
       {renderItem(curPath.at(-1), curPath.length - 1)}
     </Breadcrumbs>
   )
-  //   }
-
-  //   return renderBreadcrumbs(curPath);
 }
 
 export default CurPathBreadcrumbs

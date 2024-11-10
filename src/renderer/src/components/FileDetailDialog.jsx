@@ -13,7 +13,6 @@ import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
 import { PageContext } from './Contexts'
 import { PageType, PermissionType, bytesToSize } from './Types'
-import toast from 'react-hot-toast'
 
 function FileDetailDialog({ open, setOpen, fileData }) {
   const [desc, setDesc] = useState(fileData.desc)

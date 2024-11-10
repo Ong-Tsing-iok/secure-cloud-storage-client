@@ -8,7 +8,7 @@ import {
   Textarea
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
-import { useContext, useEffect, useState } from 'react'
+import { useState } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 
 function RequestDialog({ open, setOpen, defaultId = '' }) {

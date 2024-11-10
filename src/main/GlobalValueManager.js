@@ -1,18 +1,7 @@
 import config from 'config'
 import { logger } from './Logger'
 import { writeFileSync, readFileSync } from 'node:original-fs'
-import { join } from 'node:path'
-// import Store from 'electron-store'
-// export const store = new Store({
-//   seenRequest: {
-//     type: 'number',
-//     default: 0
-//   },
-//   seenReply: {
-//     type: 'number',
-//     default: 0
-//   }
-// })
+
 // TODO: check overwrite, if not exist then use default
 // TODO: maybe need to set config path?
 class GlobalValueManager {

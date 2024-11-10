@@ -1,7 +1,3 @@
-// import Store from 'electron-store'
-
-// export const store = new Store()
-
 export const PageType = Object.freeze({
   public: 'public',
   file: 'file',
@@ -22,9 +18,6 @@ export const PermissionType = Object.freeze({
 })
 
 export const SearchType = Object.freeze({
-  // name: "檔案名稱",
-  // owner: "擁有者",
-  // fileId: "檔案ID",
   name: 'name',
   owner: 'owner',
   fileId: 'fileId'
@@ -76,10 +69,6 @@ export function parseFileList(fileList, json = true) {
 export function parseRequestList(requestList) {
   requestList = JSON.parse(requestList)
   requestList.forEach((element) => {
-    // element.userName = element.name
-    // delete element.name
-    // element.userEmail = element.email
-    // delete element.email
     element.userId = element.requester
     delete element.requester
     element.reqDate = element.requestTime?.split(' ')[0]

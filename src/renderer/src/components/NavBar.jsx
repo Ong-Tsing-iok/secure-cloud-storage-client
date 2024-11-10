@@ -22,9 +22,6 @@ import ProfileDialog from './ProfileDialog'
 import { PageType, ResponseType } from './Types'
 import { ProfileContext, RequestContext } from './Contexts'
 import { checkIsLoggedIn } from './Utils'
-// import { store } from './Types'
-
-const pageList = [PageType.public, PageType.file, PageType.reply, PageType.request]
 
 function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
   const [profileOpen, setProfileOpen] = useState(false)

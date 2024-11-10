@@ -1,17 +1,16 @@
 import { Button, Menu, MenuHandler, MenuList, MenuItem, Input } from '@material-tailwind/react'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
-import { useContext, useEffect } from 'react'
-import { PageContext, SearchContext } from './Contexts'
-import { PageType, SearchType } from './Types'
+import { useContext } from 'react'
+import { SearchContext } from './Contexts'
+import { SearchType } from './Types'
 
 function SearchBar() {
   const {
     searchTypeC: [type, setType],
     searchTermC: [searchTerm, setSearchTerm]
   } = useContext(SearchContext)
-  const [pageType] = useContext(PageContext)
 
-  // TODO: remove some search incase to costly
+  // TODO: remove some search (like public) incase to costly
   return (
     <div className="flex flex-row grow justify-center items-center">
       <Menu placement="bottom-start">

@@ -12,7 +12,6 @@ import {
 import { Toaster } from 'react-hot-toast'
 import { ResponseType, SearchType } from './components/Types.jsx'
 import toast from 'react-hot-toast'
-// import { store } from './components/Types.jsx'
 
 function App() {
   const [pageType, setPageType] = useState('')

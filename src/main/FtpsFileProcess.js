@@ -5,8 +5,6 @@ import { basename } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
 import { getFileListProcess } from './FileManager'
 
-const ftpPort = 7002
-
 /**
  * Uploads a file to an FTPS server.
  *

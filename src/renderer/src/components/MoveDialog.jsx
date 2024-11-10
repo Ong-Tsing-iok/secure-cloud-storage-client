@@ -12,17 +12,15 @@ import {
 import { FolderIcon } from '@heroicons/react/24/outline'
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
-import toast, { Toaster } from 'react-hot-toast'
-import CurPathBreadcrumbs from './CurPathBreadcrumbs'
+import { Toaster } from 'react-hot-toast'
 
 const homeFolder = { name: 'home', id: null }
 
 function MoveDialog({ open, setOpen, fileData }) {
-  // TODO: it's possible to make a file view in this dialog
+  //? It's possible to make a file view in this dialog
   const [paths, setPaths] = useState([])
   const [selectedPath, setSelectedPath] = useState([homeFolder])
   function moveHandler() {
-    // toast.success(`成功移動檔案至${selectedPath}`)
     window.electronAPI.askMoveFile(fileData.fileId, selectedPath.id)
     setOpen(!open)
   }

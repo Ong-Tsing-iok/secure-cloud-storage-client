@@ -1,10 +1,10 @@
-import { Card, Typography } from '@material-tailwind/react'
+import { Typography } from '@material-tailwind/react'
 import { FolderIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
 import FileOptionMenu from './FileOptionMenu'
-import TableView, { TableHeadContent } from './TableView'
+import TableView from './TableView'
 import { useContext, useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
-import { PageType, PermissionType, bytesToSize, searchFilter } from './Types'
+import { PermissionType, bytesToSize, searchFilter } from './Types'
 import { CurPathContext, SearchContext } from './Contexts'
 
 const TABLE_HEAD = ['icon', 'name', 'size', 'date', 'perm', 'end']

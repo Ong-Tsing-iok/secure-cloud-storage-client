@@ -7,7 +7,6 @@ import {
   Typography
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
-import toast from 'react-hot-toast'
 
 function DeleteDialog({ open, setOpen, fileData, isFolder = false }) {
   function deleteHandler(isFolder) {

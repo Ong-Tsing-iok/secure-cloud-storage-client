@@ -3,14 +3,11 @@ import AddFolderDialog from './AddFolderDialog'
 import { ArrowUpTrayIcon, FolderPlusIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import PropTypes from 'prop-types'
-import toast from 'react-hot-toast'
 
 function FileViewButtonGroup({ curPath }) {
   const [open, setOpen] = useState(false)
 
   function uploadHandler() {
-    // toast('上傳檔案')
-    // console.log(curPath)
     window.electronAPI.askUploadFile(curPath.at(-1).folderId)
   }
 

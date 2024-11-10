@@ -1,12 +1,4 @@
-import {
-  Menu,
-  MenuHandler,
-  MenuList,
-  MenuItem,
-  Button,
-  Typography,
-  Dialog
-} from '@material-tailwind/react'
+import { Menu, MenuHandler, MenuList, MenuItem, Button, Typography } from '@material-tailwind/react'
 import {
   EllipsisVerticalIcon,
   PaperAirplaneIcon,
@@ -19,7 +11,6 @@ import PropTypes from 'prop-types'
 import { useState } from 'react'
 import RequestDialog from './RequestDialog'
 import FileDetailDialog from './FileDetailDialog'
-import toast from 'react-hot-toast'
 import DeleteDialog from './DeleteDialog'
 import MoveDialog from './MoveDialog'
 
@@ -38,7 +29,6 @@ function FileOptionMenu({
   const [moveOpen, setMoveOpen] = useState(false)
 
   function downloadHandler() {
-    // toast.loading(`Downloading ${fileData.name}`)
     window.electronAPI.askDownloadFile(fileData.fileId)
   }
 

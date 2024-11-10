@@ -39,7 +39,6 @@ function ProfileDialog({ open, setOpen }) {
       window.electronAPI.askRegister({ name, email })
     }
     setOpen(!open)
-    // toast.success('更新成功')
   }
   return (
     <Dialog open={open} handler={dialogHandler}>

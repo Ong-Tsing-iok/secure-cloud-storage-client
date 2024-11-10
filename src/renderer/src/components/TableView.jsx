@@ -1,7 +1,6 @@
 import { Card } from '@material-tailwind/react'
 // import { TableHeadContent } from "./Settings";
 import PropTypes from 'prop-types'
-import { HeadText } from './Types'
 
 export const TableHeadContent = Object.freeze({
   name: { text: '名稱', className: '' },

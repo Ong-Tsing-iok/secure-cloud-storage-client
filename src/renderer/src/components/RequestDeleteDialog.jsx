@@ -7,11 +7,9 @@ import {
   Typography
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
-import toast from 'react-hot-toast'
 
 function RequestDeleteDialog({ open, setOpen, requestId, fileId }) {
   function deleteHandler() {
-    // toast.success('成功刪除請求')
     window.electronAPI.askDeleteRequest(requestId)
     setOpen(!open)
   }
