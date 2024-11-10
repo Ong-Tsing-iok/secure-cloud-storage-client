@@ -33,7 +33,7 @@ class GlobalValueManager {
     // global values
     this.mainWindow = null
     this.curFolderId = null
-    this.userId = null
+    this.userInfo = null
     logger.info('Global value manager initialized')
   }
 
@@ -43,6 +43,13 @@ class GlobalValueManager {
 
   get httpsUrl() {
     return `https://${this.serverConfig.host}:${this.serverConfig.port.https}`
+  }
+
+  get userId() {
+    if (this.userInfo) {
+      return this.userInfo.userId
+    }
+    return null
   }
 
   updateConfig(field, value) {

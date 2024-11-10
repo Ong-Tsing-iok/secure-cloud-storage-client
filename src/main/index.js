@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { login, sendMessage } from './MessageManager'
+import { login, register, sendMessage } from './MessageManager'
 import { logger } from './Logger'
 import {
   uploadFileProcess,
@@ -127,6 +127,7 @@ app.whenReady().then(() => {
   ipcMain.handle('get-public-files', async () => {
     return await getAllPublicFilesProcess()
   })
+  ipcMain.on('register', (_event, registerInfo) => register(registerInfo))
   ipcMain.on('update-user-config', (_event, config) => {
     GlobalValueManager.updateUser(config)
   })

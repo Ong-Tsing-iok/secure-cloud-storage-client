@@ -20,7 +20,8 @@ import { useState, useContext } from 'react'
 import RequestDialog from './RequestDialog'
 import ProfileDialog from './ProfileDialog'
 import { PageType, ResponseType } from './Types'
-import { RequestContext } from './Contexts'
+import { ProfileContext, RequestContext } from './Contexts'
+import { checkIsLoggedIn } from './Utils'
 // import { store } from './Types'
 
 const pageList = [PageType.public, PageType.file, PageType.reply, PageType.request]
@@ -32,6 +33,7 @@ function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
     requestListC: [requestList],
     requestedListC: [requestedList]
   } = useContext(RequestContext)
+  const { userIdC: userId } = useContext(ProfileContext)
 
   return (
     <>
@@ -124,7 +126,7 @@ function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
             <ListItemPrefix>
               <UserCircleIcon className="h-5 w-5" />
             </ListItemPrefix>
-            使用者資料
+            {checkIsLoggedIn(userId) ? '使用者資料' : '註冊帳號'}
           </ListItem>
         </List>
       </Card>

@@ -8,8 +8,8 @@ import {
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
 import { useState, useContext, useEffect } from 'react'
-import toast from 'react-hot-toast'
 import { ProfileContext } from './Contexts'
+import { checkEmailValid, checkIsLoggedIn, checkNameValid } from './Utils'
 
 function ProfileDialog({ open, setOpen }) {
   const { storedNameC, storedEmailC, userIdC: userId } = useContext(ProfileContext)
@@ -30,22 +30,34 @@ function ProfileDialog({ open, setOpen }) {
   function updateHandler() {
     setStoredName(name)
     setStoredEmail(email)
-    window.electronAPI.updateUserConfig({ name, email })
+    if (!checkIsLoggedIn(userId)) {
+      window.electronAPI.askRegister({ name, email })
+    }
     setOpen(!open)
     // toast.success('更新成功')
   }
   // TODO: add name and email validation
-  // TODO: add notice about storing only in local storage
   return (
     <Dialog open={open} handler={dialogHandler}>
       <DialogHeader>使用者資料</DialogHeader>
       <DialogBody className="space-y-2">
-        <Input label="使用者ID" size="lg" readOnly value={userId} tabIndex={-1} />
-        <Input label="名字" size="lg" value={name} onChange={(e) => setName(e.target.value)} />
+        {checkIsLoggedIn(userId) && (
+          <Input label="使用者ID" size="lg" readOnly value={userId} tabIndex={-1} />
+        )}
+        <Input
+          label="名字"
+          size="lg"
+          value={name}
+          error={!checkNameValid(name)}
+          readOnly={checkIsLoggedIn(userId)}
+          onChange={(e) => setName(e.target.value)}
+        />
         <Input
           label="電子信箱"
           size="lg"
           value={email}
+          error={!checkEmailValid(email)}
+          readOnly={checkIsLoggedIn(userId)}
           onChange={(e) => setEmail(e.target.value)}
         />
       </DialogBody>
@@ -54,7 +66,7 @@ function ProfileDialog({ open, setOpen }) {
           取消
         </Button>
         <Button variant="gradient" color="black" onClick={updateHandler}>
-          更新
+          {checkIsLoggedIn(userId) ? '確定' : '註冊'}
         </Button>
       </DialogFooter>
     </Dialog>

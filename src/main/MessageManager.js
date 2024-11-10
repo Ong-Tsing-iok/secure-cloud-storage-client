@@ -51,15 +51,15 @@ async function respondToAuth(cipher) {
   const decryptedValue = await decrypt(cipher)
   logger.debug(`decryptedValue: ${decryptedValue}`)
   logger.info('Finish decrypting. Sending response back to server')
-  socket.emit('auth-res', decryptedValue, (error, userId) => {
+  socket.emit('auth-res', decryptedValue, (error, userInfo) => {
     if (error) {
       logger.error(`Authentication response failed because of following error: ${error}`)
       GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to authenticate', 'error')
       return
     }
-    if (userId) {
+    if (userInfo) {
       logger.info('Login succeeded')
-      GlobalValueManager.userId = userId
+      GlobalValueManager.userInfo = userInfo
       // TODO: invoke all process of getting list
       // TODO: make it a function so that it can be called when login/reconnect
       //? can we ensure we logged in first?
@@ -68,9 +68,7 @@ async function respondToAuth(cipher) {
       getRequestedListProcess()
       // TODO: send userId and other stored name, email to renderer
       GlobalValueManager.mainWindow?.webContents.send('user-info', {
-        name: GlobalValueManager.userConfig.name,
-        email: GlobalValueManager.userConfig.email,
-        userId: GlobalValueManager.userId
+        userInfo
       })
       GlobalValueManager.mainWindow?.webContents.send('request-value', {
         seenReplies: GlobalValueManager.requestConfig.seenReplies,
@@ -102,7 +100,7 @@ async function login() {
   }
 }
 
-async function register(name, email) {
+async function register({ name, email }) {
   // only register after window is ready to show
   try {
     await initKeys()

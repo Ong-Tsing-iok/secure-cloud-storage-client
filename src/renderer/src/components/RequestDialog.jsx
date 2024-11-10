@@ -15,22 +15,10 @@ function RequestDialog({ open, setOpen, defaultId = '' }) {
   const [fileId, setFileId] = useState(defaultId)
   const [remark, setRemark] = useState('')
 
-  function checkEmail(email) {
-    return (
-      String(email).match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      ) || email === ''
-    )
-  }
-
   function checkFileId(fileId) {
     return String(fileId).match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
   }
 
-  function checkName(name) {
-    return String(name).length <= 20
-    // check name with regex?
-  }
   function checkRemark(remark) {
     return String(remark).length <= 500
   }

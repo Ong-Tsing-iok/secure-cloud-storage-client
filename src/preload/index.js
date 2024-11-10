@@ -30,6 +30,7 @@ if (process.contextIsolated) {
       askAllFolder: () => ipcRenderer.invoke('get-folders'),
       askMoveFile: (uuid, targetFolderId) => ipcRenderer.send('move-file', uuid, targetFolderId),
       askAllPublicFile: () => ipcRenderer.invoke('get-public-files'),
+      askRegister: (registerInfo) => ipcRenderer.send('register', registerInfo),
       onUserConfig: (callback) => ipcRenderer.on('user-info', (_event, result) => callback(result)),
       onRequestValue: (callback) =>
         ipcRenderer.on('request-value', (_event, result) => callback(result)),
