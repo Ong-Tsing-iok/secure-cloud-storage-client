@@ -30,14 +30,6 @@ async function respondToAuth(cipher) {
       GlobalValueManager.mainWindow?.webContents.send('user-info', {
         userInfo
       })
-      GlobalValueManager.mainWindow?.webContents.send('request-value', {
-        seenReplies: GlobalValueManager.requestConfig.seenReplies,
-        seenRequests: GlobalValueManager.requestConfig.seenRequests
-      })
-      GlobalValueManager.mainWindow?.webContents.send('user-list', {
-        whiteList: GlobalValueManager.userListConfig.whiteList,
-        blackList: GlobalValueManager.userListConfig.blackList
-      })
     }
   })
 }

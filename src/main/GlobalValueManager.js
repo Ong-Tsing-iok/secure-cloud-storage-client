@@ -19,13 +19,14 @@ class GlobalValueManager {
   constructor() {
     // TODO: first check if exist
     // TODO: if not exist, create
+    // TODO: use has to check if exist?
     try {
-      this.serverConfig = config.get('server')
+      this.serverConfig = config.server
       this.keysConfig = config.get('keys')
       this.userConfig = config.get('user')
       this.directoryConfig = config.get('directories')
-      this.requestConfig = config.get('request')
-      this.userListConfig = config.get('userList')
+      this.requestConfig = config.request
+      this.userListConfig = config.userList
     } catch (error) {
       logger.error(`Failed to load config: ${error}`)
     }
@@ -77,9 +78,11 @@ class GlobalValueManager {
   }
 
   updateUserList(users) {
+    //? Maybe should handle checks here
     try {
       this.updateConfig('userList', users)
-      this.userListConfig = config.get('userList')
+      this.userListConfig = users
+      console.log(this.userListConfig)
       // this.mainWindow?.webContents.send('notice', 'Success to update user list', 'success')
     } catch (error) {
       logger.error(`Failed to update user list: ${error}`)

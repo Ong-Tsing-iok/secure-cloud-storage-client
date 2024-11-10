@@ -47,6 +47,14 @@ function createWindow() {
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
     login()
+    GlobalValueManager.mainWindow?.webContents.send('request-value', {
+      seenReplies: GlobalValueManager.requestConfig.seenReplies,
+      seenRequests: GlobalValueManager.requestConfig.seenRequests
+    })
+    GlobalValueManager.mainWindow?.webContents.send('user-list', {
+      whiteList: GlobalValueManager.userListConfig.whiteList,
+      blackList: GlobalValueManager.userListConfig.blackList
+    })
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -137,6 +145,7 @@ app.whenReady().then(() => {
   })
   ipcMain.on('update-user-list', (_event, users) => {
     GlobalValueManager.updateUserList(users)
+    getRequestedListProcess()
   })
   ipcMain.on('update-file-desc-perm', (_event, fileId, desc, perm) => {
     updateFileDescPermProcess(fileId, desc, perm)

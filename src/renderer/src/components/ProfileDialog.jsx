@@ -41,7 +41,6 @@ function ProfileDialog({ open, setOpen }) {
     setOpen(!open)
     // toast.success('更新成功')
   }
-  // TODO: add name and email validation
   return (
     <Dialog open={open} handler={dialogHandler}>
       <DialogHeader>使用者資料</DialogHeader>

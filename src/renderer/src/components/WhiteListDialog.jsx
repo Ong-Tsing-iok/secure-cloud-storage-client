@@ -38,7 +38,7 @@ function WhiteListDialog({ open, setOpen }) {
     }
   }
   function removeWhiteListHandler(index) {
-    setWhiteList(whiteList.splice(index, index))
+    setWhiteList(whiteList.slice(0, index).concat(whiteList.slice(index + 1)))
     toast.success('成功移除白名單')
   }
 

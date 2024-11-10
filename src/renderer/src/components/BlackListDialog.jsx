@@ -39,8 +39,8 @@ function BlackListDialog({ open, setOpen }) {
     }
   }
   function removeBlackListHandler(index) {
+    setBlackList(blackList.slice(0, index).concat(blackList.slice(index + 1)))
     toast.success('成功移除黑名單')
-    setBlackList(blackList.splice(index, index))
   }
 
   return (
