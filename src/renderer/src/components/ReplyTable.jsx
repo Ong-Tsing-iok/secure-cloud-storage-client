@@ -1,13 +1,13 @@
 import { Typography } from '@material-tailwind/react'
 import TableView from './TableView'
-import { ResponseType, searchFilter } from './Types'
+import { searchFilter } from './Types'
 import RequestOptionMenu from './RequestOptionMenu'
 import { useContext, useEffect, useState } from 'react'
 import { SearchContext } from './Contexts'
 import propTypes from 'prop-types'
+import { statusToColor } from './Utils'
 
 const tableHead = ['fileId', 'reqDate', 'resDate', 'status', 'end']
-
 function ReplyTable({ replyList }) {
   const [tableContent, setTableContent] = useState([])
   const {
@@ -33,16 +33,7 @@ function ReplyTable({ replyList }) {
             <Typography>{row.resDate || '無'}</Typography>
           </td>
           <td>
-            <Typography
-              color={
-                row.status === ResponseType.A
-                  ? 'green'
-                  : row.status === ResponseType.R
-                    ? 'red'
-                    : 'black'
-              }
-              className="font-bold"
-            >
+            <Typography color={statusToColor(row.status)} className="font-bold">
               {row.status}
             </Typography>
           </td>

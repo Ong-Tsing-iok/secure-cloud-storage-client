@@ -1,6 +1,6 @@
-import { useContext, useState, useEffect } from 'react'
-import { PageContext, SearchContext } from './Contexts'
-import { PageType, parseFileList, parseRequestList, ResponseType, SearchType } from './Types'
+import { useContext, useState, useEffect, useMemo } from 'react'
+import { PageContext } from './Contexts'
+import { PageType, parseFileList, parseRequestList } from './Types'
 import PublicTable from './PublicTable'
 import FileTable from './FileTable'
 import ReplyTable from './ReplyTable'
@@ -24,6 +24,15 @@ function MainView() {
     requestedListC: [requestedList, setRequestedList]
   } = useContext(RequestContext)
   const [pageType] = useContext(PageContext)
+
+  const userListContextValue = useMemo(
+    () => ({
+      whiteListC: [whiteList, setWhiteListHandler],
+      blackListC: [blackList, setBlackListHandler]
+    }),
+    [whiteList, blackList]
+  )
+  const curPathContextValue = useMemo(() => ({ curPath, setCurPath: setPathHandler }), [curPath])
 
   useEffect(() => {
     window.electronAPI.onFileListRes((result) => {
@@ -92,13 +101,8 @@ function MainView() {
   }
 
   return (
-    <CurPathContext.Provider value={{ curPath, setCurPath: setPathHandler }}>
-      <UserListContext.Provider
-        value={{
-          whiteListC: [whiteList, setWhiteListHandler],
-          blackListC: [blackList, setBlackListHandler]
-        }}
-      >
+    <CurPathContext.Provider value={curPathContextValue}>
+      <UserListContext.Provider value={userListContextValue}>
         <Card className="flex grow gap-2 pt-2 items-start overflow-auto">
           <div className="flex flex-row w-full gap-4 px-2">
             <SearchBar />

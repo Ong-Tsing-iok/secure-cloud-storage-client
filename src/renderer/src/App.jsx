@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import NavBar, { PageType } from './components/NavBar.jsx'
 import MainView from './components/MainView.jsx'
 import ProgressView from './components/ProgressView.jsx'
@@ -26,6 +26,29 @@ function App() {
   const [seenRequests, setSeenRequests] = useState(0)
   const [seenReplies, setSeenReplies] = useState(0)
 
+  const profileContextValue = useMemo(
+    () => ({
+      storedNameC: [storedName, setStoredName],
+      storedEmailC: [storedEmail, setStoredEmail],
+      userIdC: userId
+    }),
+    [storedName, storedEmail, userId]
+  )
+  const requestContextValue = useMemo(
+    () => ({
+      requestListC: [requestList, setRequestList],
+      requestedListC: [requestedList, setRequestedList]
+    }),
+    [requestList, requestedList]
+  )
+  const searchContextValue = useMemo(
+    () => ({
+      searchTypeC: [searchType, setSearchType],
+      searchTermC: [searchTerm, setSearchTerm]
+    }),
+    [searchType, searchTerm]
+  )
+  const pageContextValue = useMemo(() => [pageType, swapPageHandler], [pageType])
   useEffect(() => {
     window.electronAPI.onNotice((result, level) => {
       if (level === 'error') {
@@ -89,26 +112,10 @@ function App() {
   return (
     <>
       <Toaster position="bottom-left" containerClassName="font-sans" reverseOrder={false} />
-      <ProfileContext.Provider
-        value={{
-          storedNameC: [storedName, setStoredName],
-          storedEmailC: [storedEmail, setStoredEmail],
-          userIdC: userId
-        }}
-      >
-        <PageContext.Provider value={[pageType, swapPageHandler]}>
-          <RequestContext.Provider
-            value={{
-              requestListC: [requestList, setRequestList],
-              requestedListC: [requestedList, setRequestedList]
-            }}
-          >
-            <SearchContext.Provider
-              value={{
-                searchTypeC: [searchType, setSearchType],
-                searchTermC: [searchTerm, setSearchTerm]
-              }}
-            >
+      <ProfileContext.Provider value={profileContextValue}>
+        <PageContext.Provider value={pageContextValue}>
+          <RequestContext.Provider value={requestContextValue}>
+            <SearchContext.Provider value={searchContextValue}>
               <div className="flex flex-row h-screen w-screen justify-center">
                 <NavBar
                   pageType={pageType}
