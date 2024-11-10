@@ -53,7 +53,7 @@ class GlobalValueManager {
     return null
   }
 
-  updateConfig(field, value) {
+  updateConfigFile(field, value) {
     try {
       const filename = `./config/local-${process.env.NODE_APP_INSTANCE}.json`
       console.log(filename)
@@ -68,7 +68,7 @@ class GlobalValueManager {
 
   updateUser(user) {
     try {
-      this.updateConfig('user', user)
+      this.updateConfigFile('user', user)
       this.userConfig = config.get('user')
       this.mainWindow?.webContents.send('notice', 'Success to update user info', 'success')
     } catch (error) {
@@ -80,7 +80,7 @@ class GlobalValueManager {
   updateUserList(users) {
     //? Maybe should handle checks here
     try {
-      this.updateConfig('userList', users)
+      this.updateConfigFile('userList', users)
       this.userListConfig = users
       console.log(this.userListConfig)
       // this.mainWindow?.webContents.send('notice', 'Success to update user list', 'success')
@@ -92,8 +92,8 @@ class GlobalValueManager {
 
   updateRequest(req) {
     try {
-      this.updateConfig('request', req)
-      this.requestConfig = config.get('request')
+      this.updateConfigFile('request', req)
+      this.requestConfig = req
       // this.mainWindow?.webContents.send('notice', 'Success to update request info', 'success')
     } catch (error) {
       logger.error(`Failed to update request: ${error}`)

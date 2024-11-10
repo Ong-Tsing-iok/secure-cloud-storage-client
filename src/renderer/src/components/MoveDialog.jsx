@@ -15,12 +15,12 @@ import { useState, useEffect } from 'react'
 import toast, { Toaster } from 'react-hot-toast'
 import CurPathBreadcrumbs from './CurPathBreadcrumbs'
 
-const rootFolder = { name: 'root', id: null }
+const homeFolder = { name: 'home', id: null }
 
 function MoveDialog({ open, setOpen, fileData }) {
   // TODO: it's possible to make a file view in this dialog
   const [paths, setPaths] = useState([])
-  const [selectedPath, setSelectedPath] = useState([rootFolder])
+  const [selectedPath, setSelectedPath] = useState([homeFolder])
   function moveHandler() {
     // toast.success(`成功移動檔案至${selectedPath}`)
     window.electronAPI.askMoveFile(fileData.fileId, selectedPath.id)
@@ -31,7 +31,7 @@ function MoveDialog({ open, setOpen, fileData }) {
   useEffect(() => {
     async function getAllFolders() {
       const allFolders = await window.electronAPI.askAllFolder()
-      setPaths([rootFolder, ...JSON.parse(allFolders)])
+      setPaths([homeFolder, ...JSON.parse(allFolders)])
     }
     if (open) getAllFolders()
   }, [open])

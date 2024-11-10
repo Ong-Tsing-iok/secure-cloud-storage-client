@@ -62,7 +62,7 @@ const uploadFileProcess = async (parentFolderId) => {
 }
 
 const getFileListProcess = (parentFolderId) => {
-  logger.info(`Getting file list for ${parentFolderId || 'root'}...`)
+  logger.info(`Getting file list for ${parentFolderId || 'home'}...`)
   socket.emit('get-file-list', parentFolderId, (fileList, error) => {
     if (error) {
       logger.error(`Failed to get file list: ${error}`)
