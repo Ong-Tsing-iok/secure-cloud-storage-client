@@ -25,9 +25,9 @@ function FileTable({ fileList, folderList }) {
 
   return (
     <TableView tableHead={TABLE_HEAD}>
-      {folderContent.map((row, index) => (
+      {folderContent.map((row) => (
         <tr
-          key={index}
+          key={row.folderId}
           onDoubleClick={() => setCurPath([...curPath, { name: row.name, folderId: row.folderId }])}
           className="border-t"
         >
@@ -51,8 +51,8 @@ function FileTable({ fileList, folderList }) {
           </td>
         </tr>
       ))}
-      {tableContent.map((row, index) => (
-        <tr key={index} className="border-t">
+      {tableContent.map((row) => (
+        <tr key={row.fileId} className="border-t">
           <td>
             <DocumentTextIcon className="size-5" />
           </td>

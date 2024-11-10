@@ -24,7 +24,7 @@ function CurPathBreadcrumbs() {
   }
   function renderItem(item, index) {
     return (
-      <Typography key={index} onClick={() => setPathHandler(index)}>
+      <Typography key={item.id} onClick={() => setPathHandler(index)}>
         {item.name}
       </Typography>
     )
@@ -36,7 +36,7 @@ function CurPathBreadcrumbs() {
       <Breadcrumbs>
         {curPath.map((item, index) => {
           return index === 0 ? (
-            <HomeIcon key={index} onClick={() => setPathHandler(index)} className="size-6" />
+            <HomeIcon key={0} onClick={() => setPathHandler(index)} className="size-6" />
           ) : (
             renderItem(item, index)
           )
@@ -57,7 +57,7 @@ function CurPathBreadcrumbs() {
         <MenuList className="max-h-96 overflow-auto">
           {curPath.slice(3, -2).map((item, index) => {
             return (
-              <MenuItem key={index} onClick={() => setPathHandler(index + 3)}>
+              <MenuItem key={item.id} onClick={() => setPathHandler(index + 3)}>
                 {item.name}
               </MenuItem>
             )

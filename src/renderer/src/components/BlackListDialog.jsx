@@ -77,7 +77,7 @@ function BlackListDialog({ open, setOpen }) {
         </div>
         <List className="flex flex-col grow overflow-auto">
           {blackList.map((item, index) => (
-            <ListItem key={index} ripple={false}>
+            <ListItem key={item} ripple={false}>
               <Typography>{item}</Typography>
               <ListItemSuffix>
                 <Button

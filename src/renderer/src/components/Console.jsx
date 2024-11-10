@@ -1,4 +1,4 @@
-import { Card, Textarea, Typography } from '@material-tailwind/react'
+import { Card, Typography } from '@material-tailwind/react'
 import { useState, useEffect, useRef } from 'react'
 
 function Console() {
@@ -7,8 +7,8 @@ function Console() {
 
   useEffect(() => {
     window.electronAPI.onLog((result) => {
-      setLogs((prevLogs) => [...prevLogs, result])
-      // TODO: limit the total number of logs? (remove the oldest one)
+      setLogs((prevLogs) => [...prevLogs, { ...result, id: prevLogs.length }])
+      //? limit the total number of logs? (remove the oldest one)
     })
   }, [])
 
@@ -38,7 +38,7 @@ function Console() {
         <Typography
           ref={(el) => (logsRef.current[index] = el)}
           className="w-full h-full text-left whitespace-pre-wrap break-all"
-          key={index}
+          key={log.id}
           color={getColorForLevel(log.level)}
         >
           {log.message + '\n'}

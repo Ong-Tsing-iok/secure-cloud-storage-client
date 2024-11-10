@@ -25,7 +25,6 @@ function MoveDialog({ open, setOpen, fileData }) {
     // toast.success(`成功移動檔案至${selectedPath}`)
     window.electronAPI.askMoveFile(fileData.fileId, selectedPath.id)
     setOpen(!open)
-    // TODO: call move api
   }
 
   useEffect(() => {
@@ -48,13 +47,13 @@ function MoveDialog({ open, setOpen, fileData }) {
       <DialogBody className="flex w-full grow overflow-auto">
         {/**Search box // TODO also set path in input box when selected*/}
         <List className="overflow-auto w-full">
-          {paths.map((item, index) => {
+          {paths.map((item) => {
             return (
               <ListItem
-                key={index}
+                key={item.id}
                 ripple={false}
-                selected={selectedPath.id === paths[index].id}
-                onClick={() => setSelectedPath(paths[index])}
+                selected={selectedPath.id === item.id}
+                onClick={() => setSelectedPath(item)}
                 className="flex flex-row w-full"
               >
                 <ListItemPrefix>
@@ -72,7 +71,7 @@ function MoveDialog({ open, setOpen, fileData }) {
         <Button variant="text" color="red" onClick={() => setOpen(!open)}>
           取消
         </Button>
-        <Button variant="gradient" color="black" onClick={() => moveHandler(selectedPath)}>
+        <Button variant="gradient" color="black" onClick={() => moveHandler()}>
           移動
         </Button>
       </DialogFooter>

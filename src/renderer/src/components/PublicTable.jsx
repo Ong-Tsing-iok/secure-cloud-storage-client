@@ -31,8 +31,8 @@ function PublicTable() {
   }, [searchTerm, searchType, publicFileList])
   return (
     <TableView tableHead={TABLE_HEAD}>
-      {tableContent.map((row, index) => (
-        <tr key={index} className="border-t">
+      {tableContent.map((row) => (
+        <tr key={row.fileId} className="border-t">
           <td>
             <Typography className="truncate pr-4">{row.name}</Typography>
           </td>

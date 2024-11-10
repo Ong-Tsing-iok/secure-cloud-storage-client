@@ -1,5 +1,3 @@
-// import Versions from './components/Versions'
-import LogViewer from './components/LogViewer'
 import { useState, useEffect } from 'react'
 import NavBar, { PageType } from './components/NavBar.jsx'
 import MainView from './components/MainView.jsx'

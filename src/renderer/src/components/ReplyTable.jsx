@@ -21,8 +21,8 @@ function ReplyTable({ replyList }) {
 
   return (
     <TableView tableHead={tableHead}>
-      {tableContent.map((row, index) => (
-        <tr key={index} className="border-t">
+      {tableContent.map((row) => (
+        <tr key={row.requestId} className="border-t">
           <td>
             <Typography className="truncate pr-4">{row.fileId}</Typography>
           </td>
