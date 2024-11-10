@@ -3,14 +3,12 @@ export function checkIsLoggedIn(userId) {
 }
 
 export function checkNameValid(name) {
-  return String(name).length <= 50
+  return String(name).length <= 50 && String(name).length > 0
   // check name with regex?
 }
 
 export function checkEmailValid(email) {
-  return (
-    String(email).match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    ) || email === ''
+  return String(email).match(
+    /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
   )
 }

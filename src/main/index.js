@@ -2,7 +2,8 @@ import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { login, register, sendMessage } from './MessageManager'
+import { sendMessage } from './MessageManager'
+import { login, register } from './LoginManager'
 import { logger } from './Logger'
 import {
   uploadFileProcess,

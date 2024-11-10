@@ -1,7 +1,6 @@
 import { socket } from './MessageManager'
 import { logger } from './Logger'
 import { rekeyGen } from './KeyManager'
-import { error } from 'winston'
 import GlobalValueManager from './GlobalValueManager'
 
 const requestFileProcess = (requestInfo) => {

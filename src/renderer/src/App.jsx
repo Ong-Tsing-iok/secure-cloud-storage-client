@@ -17,7 +17,7 @@ import toast from 'react-hot-toast'
 // import { store } from './components/Types.jsx'
 
 function App() {
-  const [pageType, setPageType] = useState(PageType.file)
+  const [pageType, setPageType] = useState('')
   const [storedName, setStoredName] = useState('')
   const [storedEmail, setStoredEmail] = useState('')
   const [userId, setUserId] = useState('')

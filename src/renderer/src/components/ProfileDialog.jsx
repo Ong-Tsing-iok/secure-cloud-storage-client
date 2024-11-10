@@ -10,6 +10,7 @@ import PropTypes from 'prop-types'
 import { useState, useContext, useEffect } from 'react'
 import { ProfileContext } from './Contexts'
 import { checkEmailValid, checkIsLoggedIn, checkNameValid } from './Utils'
+import toast from 'react-hot-toast'
 
 function ProfileDialog({ open, setOpen }) {
   const { storedNameC, storedEmailC, userIdC: userId } = useContext(ProfileContext)
@@ -28,6 +29,10 @@ function ProfileDialog({ open, setOpen }) {
   }
 
   function updateHandler() {
+    if (!checkNameValid(name) || !checkEmailValid(email)) {
+      toast.error('請檢查輸入格式')
+      return
+    }
     setStoredName(name)
     setStoredEmail(email)
     if (!checkIsLoggedIn(userId)) {

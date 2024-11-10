@@ -1,12 +1,11 @@
-import { dialog, BrowserWindow } from 'electron'
+import { dialog } from 'electron'
 import { socket } from './MessageManager'
 import { createReadStream, mkdirSync, createWriteStream, unlink, statSync } from 'node:fs'
 import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
 import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
 import { encrypt, decrypt } from './AESModule'
-import { __download_dir_path } from './Constants'
-import path, { join } from 'node:path'
+import { join } from 'node:path'
 import { createPipeProgress } from './util/PipeProgress'
 import cq from 'concurrent-queue'
 import GlobalValueManager from './GlobalValueManager'
@@ -61,14 +60,6 @@ const uploadFileProcess = async (parentFolderId) => {
     }
   }
 }
-socket.on('upload-file-res', (error) => {
-  if (error) {
-    logger.error(`Failed to upload file: ${error}. Upload aborted.`)
-    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
-  } else {
-    GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to upload file', 'success')
-  }
-})
 
 const getFileListProcess = (parentFolderId) => {
   logger.info(`Getting file list for ${parentFolderId || 'root'}...`)
@@ -81,10 +72,6 @@ const getFileListProcess = (parentFolderId) => {
     }
   })
 }
-socket.on('file-list-res', (fileList) => {
-  GlobalValueManager.mainWindow?.webContents.send('file-list-res', fileList)
-  // logger.info(`File list: ${fileList}`)
-})
 
 const downloadFileProcess = (uuid) => {
   logger.info(`Asking for file ${uuid}...`)
@@ -192,7 +179,7 @@ const deleteFolderProcess = (folderId) => {
 
 const getAllFoldersProcess = () => {
   logger.info('Asking for all folders...')
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     socket.emit('get-all-folders', (folders, error) => {
       if (error) {
         logger.error(`Failed to get all folders: ${error}`)
@@ -225,7 +212,7 @@ const moveFileProcess = (uuid, targetFolderId) => {
 
 const getAllPublicFilesProcess = () => {
   logger.info('Asking for all public files...')
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     socket.emit('get-public-files', (files, error) => {
       if (error) {
         logger.error(`Failed to get all public files: ${error}`)
