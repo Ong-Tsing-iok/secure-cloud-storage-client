@@ -75,9 +75,10 @@ function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
             回覆列表
             <ListItemSuffix>
               <Chip
-                value={
-                  requestList.filter((file) => file.status !== ResponseType.N).length - seenReply
-                }
+                value={Math.max(
+                  requestList.filter((file) => file.status !== ResponseType.N).length - seenReply,
+                  0
+                )}
                 size="sm"
                 variant="ghost"
                 color="blue-gray"
@@ -97,7 +98,7 @@ function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
             請求列表
             <ListItemSuffix>
               <Chip
-                value={requestedList.length - seenRequest}
+                value={Math.max(requestedList.length - seenRequest, 0)}
                 size="sm"
                 variant="ghost"
                 color="blue-gray"
@@ -118,7 +119,7 @@ function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
           <ListItem
             onClick={() => setProfileOpen(!profileOpen)}
             ripple={false}
-            className={checkIsLoggedIn(userId) ? 'focus:bg-white' : 'bg-red-100'}
+            className={checkIsLoggedIn(userId) ? 'focus:bg-white' : 'bg-red-100 focus:bg-red-100'}
           >
             <ListItemPrefix>
               <UserCircleIcon className="h-5 w-5" />

@@ -5,7 +5,7 @@ import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
 import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
 import { encrypt, decrypt } from './AESModule'
-import { join } from 'node:path'
+import { basename, join } from 'node:path'
 import { createPipeProgress } from './util/PipeProgress'
 import cq from 'concurrent-queue'
 import GlobalValueManager from './GlobalValueManager'
@@ -34,7 +34,7 @@ const uploadQueue = cq()
         return
       }
       logger.info(
-        `Uploading file ${filePath} with protocol ${GlobalValueManager.serverConfig.protocol}`
+        `Uploading file ${basename(filePath)} with protocol ${GlobalValueManager.serverConfig.protocol}`
       )
       // upload progress
       if (GlobalValueManager.serverConfig.protocol === 'https') {
@@ -60,6 +60,15 @@ const uploadFileProcess = async (parentFolderId) => {
     }
   }
 }
+
+socket.on('upload-file-res', (error) => {
+  if (error) {
+    logger.error(`Failed to upload file: ${error}. Upload aborted.`)
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
+  } else {
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to upload file', 'success')
+  }
+})
 
 const getFileListProcess = (parentFolderId) => {
   logger.info(`Getting file list for ${parentFolderId || 'home'}...`)
@@ -107,7 +116,13 @@ const downloadFileProcess2 = async (uuid, filename, key, iv, size) => {
   writeStream.on('error', (err) => {
     logger.error(`Failed to write file ${filename}: ${err}. Download aborted.`)
     GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
-    unlink(filePath)
+    try {
+      unlink(filePath)
+    } catch (error) {
+      if (error.code !== 'ENOENT') {
+        throw error
+      }
+    }
   })
   writeStream.on('finish', () => {
     logger.info(`Downloaded file ${filename} to ${filePath}`)
@@ -213,7 +228,7 @@ const moveFileProcess = (uuid, targetFolderId) => {
 const getAllPublicFilesProcess = () => {
   logger.info('Asking for all public files...')
   return new Promise((resolve) => {
-    socket.emit('get-public-files', (files, error) => {
+    socket.emit('get-public-files', (error, files) => {
       if (error) {
         logger.error(`Failed to get all public files: ${error}`)
         GlobalValueManager.mainWindow?.webContents.send(

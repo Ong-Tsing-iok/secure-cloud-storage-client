@@ -11,13 +11,14 @@ import {
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
-import { PageContext } from './Contexts'
+import { PageContext, ProfileContext } from './Contexts'
 import { PageType, PermissionType, bytesToSize } from './Types'
 
 function FileDetailDialog({ open, setOpen, fileData }) {
   const [desc, setDesc] = useState(fileData.desc)
   const [pageType] = useContext(PageContext)
   const [permission, setPermission] = useState(fileData.perm)
+  const { userIdC: userId } = useContext(ProfileContext)
 
   function updateHandler() {
     window.electronAPI.updateFileDescPerm(fileData.fileId, desc, parseInt(permission))
@@ -43,7 +44,7 @@ function FileDetailDialog({ open, setOpen, fileData }) {
         <Typography variant="h5" className="pt-4">
           擁有者
         </Typography>
-        <Typography variant="small">{fileData.owner}</Typography>
+        <Typography variant="small">{userId === fileData.owner ? '您' : fileData.owner}</Typography>
 
         <Typography variant="h5" className="pt-4">
           大小
@@ -59,7 +60,7 @@ function FileDetailDialog({ open, setOpen, fileData }) {
           原始擁有者
         </Typography>
         <Typography variant="small">
-          {fileData.originOwner === fileData.owner ? '您' : fileData.originOwner}
+          {userId === fileData.originOwner ? '您' : fileData.originOwner}
         </Typography>
 
         <Typography variant="h5" className="pt-4">

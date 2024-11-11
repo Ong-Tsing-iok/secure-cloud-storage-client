@@ -7,31 +7,32 @@ import { socket } from './MessageManager'
 
 async function respondToAuth(cipher) {
   logger.info('Getting login response from server. Decrypting auth key...')
-
-  const decryptedValue = await decrypt(cipher)
-  logger.debug(`decryptedValue: ${decryptedValue}`)
-  logger.info('Finish decrypting. Sending response back to server')
-  socket.emit('auth-res', decryptedValue, (error, userInfo) => {
-    if (error) {
-      logger.error(`Authentication response failed because of following error: ${error}`)
-      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to authenticate', 'error')
-      return
-    }
-    if (userInfo) {
-      logger.info('Login succeeded')
-      GlobalValueManager.userInfo = userInfo
-      // TODO: invoke all process of getting list
-      // TODO: make it a function so that it can be called when login/reconnect
-      //? can we ensure we logged in first?
-      getFileListProcess(null)
-      getRequestListProcess()
-      getRequestedListProcess()
-      // TODO: send userId and other stored name, email to renderer
-      GlobalValueManager.mainWindow?.webContents.send('user-info', {
-        userInfo
-      })
-    }
-  })
+  console.log(cipher)
+  try {
+    const decryptedValue = await decrypt(cipher)
+    logger.debug(`decryptedValue: ${decryptedValue}`)
+    logger.info('Finish decrypting. Sending response back to server')
+    socket.emit('auth-res', decryptedValue, (error, userInfo) => {
+      if (error) {
+        logger.error(`Authentication response failed because of following error: ${error}`)
+        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to authenticate', 'error')
+        return
+      }
+      if (userInfo) {
+        logger.info('Login succeeded')
+        GlobalValueManager.userInfo = userInfo
+        //? can we ensure we logged in first?
+        getFileListProcess(null)
+        getRequestListProcess()
+        getRequestedListProcess()
+        // send userId and other stored name, email to renderer
+        GlobalValueManager.mainWindow?.webContents.send('user-info', userInfo)
+      }
+    })
+  } catch (error) {
+    logger.error(`Authentication response failed because of following error: ${error}`)
+    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to authenticate', 'error')
+  }
 }
 async function login() {
   // only login after window is ready to show
