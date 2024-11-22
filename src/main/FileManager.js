@@ -97,11 +97,12 @@ const downloadFileProcess = (uuid) => {
       return
     }
     const { id, name, keyCipher, ivCipher, size } = fileInfo
-    downloadFileProcess2(id, name, keyCipher, ivCipher, size)
+    const proxied = fileInfo.ownerId !== fileInfo.originOwnerId
+    downloadFileProcess2(id, name, keyCipher, ivCipher, size, proxied)
   })
 }
 
-const downloadFileProcess2 = async (uuid, filename, key, iv, size) => {
+const downloadFileProcess2 = async (uuid, filename, key, iv, size, proxied) => {
   try {
     mkdirSync(GlobalValueManager.downloadDir, { recursive: false })
   } catch (error) {
@@ -128,7 +129,7 @@ const downloadFileProcess2 = async (uuid, filename, key, iv, size) => {
     logger.info(`Downloaded file ${filename} to ${filePath}`)
     GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to download file', 'success')
   })
-  const decipher = await decrypt(key, iv, writeStream)
+  const decipher = await decrypt(key, iv, writeStream, proxied)
   logger.info(
     `Downloading file ${uuid} with protocol ${GlobalValueManager.serverConfig.protocol}...`
   )

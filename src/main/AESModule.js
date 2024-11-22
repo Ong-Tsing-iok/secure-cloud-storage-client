@@ -14,10 +14,10 @@ const encrypt = async (readstream) => {
   return { key: keyCipher, iv: ivCipher, encryptedStream }
 }
 
-const decrypt = async (keyCipher, ivCipher) => {
+const decrypt = async (keyCipher, ivCipher, proxied = false) => {
   // decode key and iv
-  const keyDecipher = await KeyManager.decrypt(keyCipher)
-  const ivDecipher = await KeyManager.decrypt(ivCipher)
+  const keyDecipher = await KeyManager.decrypt(keyCipher, proxied)
+  const ivDecipher = await KeyManager.decrypt(ivCipher, proxied)
   // console.log(keyDecipher.toString(16).length, ivDecipher.toString(16).length)
   const decipher = crypto.createDecipheriv(
     'aes-256-cbc',
