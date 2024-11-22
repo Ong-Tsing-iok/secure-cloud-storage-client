@@ -10,7 +10,7 @@ export default defineConfig({
       viteStaticCopy({
         targets: [
           {
-            src: 'src/main/py/crypto.py',
+            src: 'src/main/py/crypto',
             dest: 'py'
           }
         ]

@@ -1,8 +1,9 @@
 import { logger } from './Logger'
 import { readFile, writeFile } from 'node:fs/promises'
-import { PythonShell } from 'python-shell'
-import { join } from 'node:path'
+import { execFile } from 'node:child_process'
+import { promisify } from 'node:util'
 import GlobalValueManager from './GlobalValueManager'
+const exec = promisify(execFile)
 
 //TODO: check argument format before executing PythonShell
 //TODO: maybe should be stored and read from file
@@ -30,10 +31,9 @@ const initKeys = async () => {
   } catch (error) {
     if (error.code === 'ENOENT') {
       logger.info('Keys not found. Creating keys...')
-      const genKeys = await PythonShell.run(join(__dirname, 'py', 'crypto.py'), {
-        args: ['--keygen', '-P', `${params}`]
-      })
-      await writeFile(keyFilePath, genKeys.join('\n'))
+      const { stdout } = await exec(GlobalValueManager.cryptoPath, ['--keygen', '-P', `${params}`])
+      await writeFile(keyFilePath, stdout)
+      const genKeys = stdout.split('\n')
       keys['p'] = genKeys[0]
       keys['s'] = genKeys[1]
     } else {
@@ -55,11 +55,17 @@ const initKeys = async () => {
 const encrypt = async (message) => {
   checkInit()
   logger.info('Encrypting message...')
-  const cipher = await PythonShell.run(join(__dirname, 'py', 'crypto.py'), {
-    args: ['--encrypt', '-P', `${params}`, '-p', `${keys['p']}`, '-m', `${message}`]
-  })
+  const { stdout: cipher } = await exec(GlobalValueManager.cryptoPath, [
+    '--encrypt',
+    '-P',
+    `${params}`,
+    '-p',
+    `${keys['p']}`,
+    '-m',
+    `${message}`
+  ])
   logger.info('Message encrypted.')
-  return cipher[0]
+  return cipher
 }
 
 /**
@@ -71,22 +77,20 @@ const encrypt = async (message) => {
 const decrypt = async (cipher, proxied = false) => {
   checkInit()
   logger.info('Decrypting message...')
-  const message = await PythonShell.run(join(__dirname, 'py', 'crypto.py'), {
-    args: [
-      '--decrypt',
-      '-P',
-      `${params}`,
-      '-p',
-      `${keys['p']}`,
-      '-s',
-      `${keys['s']}`,
-      '-c',
-      `${cipher}`,
-      ...(proxied ? [] : ['--owned'])
-    ]
-  })
+  const { stdout: message } = await exec(GlobalValueManager.cryptoPath, [
+    '--decrypt',
+    '-P',
+    `${params}`,
+    '-p',
+    `${keys['p']}`,
+    '-s',
+    `${keys['s']}`,
+    '-c',
+    `${cipher}`,
+    ...(proxied ? [] : ['--owned'])
+  ])
   logger.info('Message decrypted.')
-  return message[0]
+  return message
 }
 
 /**
@@ -97,11 +101,15 @@ const decrypt = async (cipher, proxied = false) => {
 const rekeyGen = async (requesterPublicKey) => {
   checkInit()
   logger.info('Generating rekey...')
-  const rekey = await PythonShell.run(join(__dirname, 'py', 'crypto.py'), {
-    args: ['--rekeygen', '-p', `${requesterPublicKey}`, '-s', `${keys['s']}`]
-  })
+  const { stdout: rekey } = await exec(GlobalValueManager.cryptoPath, [
+    '--rekeygen',
+    '-p',
+    `${requesterPublicKey}`,
+    '-s',
+    `${keys['s']}`
+  ])
   logger.info('Rekey generated.')
-  return rekey[0]
+  return rekey
 }
 /**
  *

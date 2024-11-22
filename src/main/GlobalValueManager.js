@@ -1,6 +1,7 @@
 import config from 'config'
 import { logger } from './Logger'
 import { writeFileSync, readFileSync } from 'node:original-fs'
+import { join } from 'node:path'
 
 // TODO: check overwrite, if not exist then use default
 // TODO: maybe need to set config path?
@@ -25,6 +26,10 @@ class GlobalValueManager {
     this.curFolderId = null
     this.userInfo = null
     logger.info('Global value manager initialized')
+  }
+
+  get cryptoPath() {
+    return join(__dirname, 'py', 'crypto')
   }
 
   get downloadDir() {
