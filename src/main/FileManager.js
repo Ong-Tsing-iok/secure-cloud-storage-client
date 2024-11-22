@@ -31,20 +31,24 @@ const uploadQueue = cq()
     socket.emit('upload-file-pre', key, iv, parentFolderId, (error, uploadId) => {
       if (error) {
         logger.error(`Failed to upload file: ${error}. Upload aborted.`)
+        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
         return
       }
       logger.info(
         `Uploading file ${basename(filePath)} with protocol ${GlobalValueManager.serverConfig.protocol}`
       )
-      // upload progress
-      if (GlobalValueManager.serverConfig.protocol === 'https') {
-        const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
-        encryptedStream.pipe(PipeProgress)
-        uploadFileProcessHttps(PipeProgress, filePath, uploadId)
-      } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
-        uploadFileProcessFtps(encryptedStream, filePath, uploadId)
-      } else {
-        logger.error('Invalid file protocol')
+      try {
+        if (GlobalValueManager.serverConfig.protocol === 'https') {
+          const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
+          encryptedStream.pipe(PipeProgress)
+          uploadFileProcessHttps(PipeProgress, filePath, uploadId)
+        } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
+          uploadFileProcessFtps(encryptedStream, filePath, uploadId)
+        } else {
+          logger.error('Invalid file protocol')
+        }
+      } catch (error) {
+        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
       }
     })
   })
@@ -104,45 +108,51 @@ const downloadFileProcess = (uuid) => {
 
 const downloadFileProcess2 = async (uuid, filename, key, iv, size, proxied) => {
   try {
-    mkdirSync(GlobalValueManager.downloadDir, { recursive: false })
-  } catch (error) {
-    if (error.code !== 'EEXIST') {
-      logger.error(`Failed to create downloads directory: ${error}. Download aborted.`)
-      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
-      return
-    }
-  }
-  const filePath = join(GlobalValueManager.downloadDir, filename)
-  const writeStream = createWriteStream(filePath)
-  writeStream.on('error', (err) => {
-    logger.error(`Failed to write file ${filename}: ${err}. Download aborted.`)
-    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
     try {
-      unlink(filePath)
+      mkdirSync(GlobalValueManager.downloadDir, { recursive: false })
     } catch (error) {
-      if (error.code !== 'ENOENT') {
+      if (error.code !== 'EEXIST') {
         throw error
       }
     }
-  })
-  writeStream.on('finish', () => {
-    logger.info(`Downloaded file ${filename} to ${filePath}`)
-    GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to download file', 'success')
-  })
-  const decipher = await decrypt(key, iv, writeStream, proxied)
-  logger.info(
-    `Downloading file ${uuid} with protocol ${GlobalValueManager.serverConfig.protocol}...`
-  )
-  // download progress
-  const PipeProgress = createPipeProgress({ total: size }, logger)
-  PipeProgress.pipe(decipher)
-  decipher.pipe(writeStream)
-  if (GlobalValueManager.serverConfig.protocol === 'https') {
-    downloadFileProcessHttps(uuid, PipeProgress, filePath)
-  } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
-    downloadFileProcessFtps(uuid, PipeProgress, filePath)
-  } else {
-    logger.error('Invalid file protocol')
+    const filePath = join(GlobalValueManager.downloadDir, filename)
+    const writeStream = createWriteStream(filePath)
+    writeStream.on('error', (err) => {
+      logger.error(`Failed to write file ${filename}: ${err}. Download aborted.`)
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
+      try {
+        unlink(filePath)
+      } catch (error) {
+        if (error.code !== 'ENOENT') {
+          throw error
+        }
+      }
+    })
+    writeStream.on('finish', () => {
+      logger.info(`Downloaded file ${filename} to ${filePath}`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Success to download file',
+        'success'
+      )
+    })
+    const decipher = await decrypt(key, iv, writeStream, proxied)
+    logger.info(
+      `Downloading file ${uuid} with protocol ${GlobalValueManager.serverConfig.protocol}...`
+    )
+    // download progress
+    const PipeProgress = createPipeProgress({ total: size }, logger)
+    PipeProgress.pipe(decipher)
+    decipher.pipe(writeStream)
+    if (GlobalValueManager.serverConfig.protocol === 'https') {
+      downloadFileProcessHttps(uuid, PipeProgress, filePath)
+    } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
+      downloadFileProcessFtps(uuid, PipeProgress, filePath)
+    } else {
+      throw new Error('Invalid file protocol')
+    }
+  } catch (error) {
+    logger.error(`Failed to download file: ${error}. Download aborted.`)
     GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
   }
 }
