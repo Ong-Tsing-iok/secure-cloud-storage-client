@@ -14,7 +14,7 @@ import { ResponseType, SearchType } from './components/Types.jsx'
 import toast from 'react-hot-toast'
 
 function App() {
-  const [pageType, setPageType] = useState('')
+  const [pageType, setPageType] = useState(PageType.file)
   const [storedName, setStoredName] = useState('')
   const [storedEmail, setStoredEmail] = useState('')
   const [userId, setUserId] = useState('')

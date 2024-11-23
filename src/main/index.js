@@ -98,7 +98,7 @@ app.whenReady().then(() => {
   ipcMain.on('upload', (_event, parentFolderId) => uploadFileProcess(parentFolderId))
   ipcMain.on('change-cur-folder', (_event, curFolderId) => {
     GlobalValueManager.curFolderId = curFolderId
-    getFileListProcess(curFolderId)
+    if (GlobalValueManager.loggedIn) getFileListProcess(curFolderId)
   })
   ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
   ipcMain.on('delete', (_event, uuid) => deleteFileProcess(uuid))

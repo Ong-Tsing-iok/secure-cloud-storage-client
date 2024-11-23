@@ -29,11 +29,14 @@ socket.io.on('reconnect_failed', () => {
 
 socket.io.on('reconnect', () => {
   logger.info('server reconnected')
+  GlobalValueManager.mainWindow?.webContents.send('notice', 'Server reconnected', 'success')
   // login()
 })
 
 socket.io.on('close', () => {
   logger.info('connection closed')
+  GlobalValueManager.loggedIn = false
+  GlobalValueManager.mainWindow?.webContents.send('notice', 'Server connection closed', 'error')
 })
 
 export function sendMessage(message) {

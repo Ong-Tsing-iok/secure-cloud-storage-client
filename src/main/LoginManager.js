@@ -7,7 +7,7 @@ import { socket } from './MessageManager'
 
 async function respondToAuth(cipher) {
   logger.info('Getting login response from server. Decrypting auth key...')
-  console.log(cipher)
+  // console.log(cipher)
   try {
     const decryptedValue = await decrypt(cipher)
     logger.debug(`decryptedValue: ${decryptedValue}`)
@@ -21,7 +21,7 @@ async function respondToAuth(cipher) {
       if (userInfo) {
         logger.info('Login succeeded')
         GlobalValueManager.userInfo = userInfo
-        //? can we ensure we logged in first?
+        GlobalValueManager.loggedIn = true
         getFileListProcess(null)
         getRequestListProcess()
         getRequestedListProcess()

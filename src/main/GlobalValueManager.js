@@ -25,6 +25,7 @@ class GlobalValueManager {
     this.mainWindow = null
     this.curFolderId = null
     this.userInfo = null
+    this.loggedIn = false
     logger.info('Global value manager initialized')
   }
 

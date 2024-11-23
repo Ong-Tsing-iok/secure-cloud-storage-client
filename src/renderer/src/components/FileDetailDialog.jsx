@@ -25,6 +25,12 @@ function FileDetailDialog({ open, setOpen, fileData }) {
     setOpen(!open)
   }
 
+  function parseOriginalOwner(originOwner) {
+    if (!originOwner) return '用戶不存在'
+    if (userId === originOwner) return '您'
+    return originOwner
+  }
+
   return (
     <Dialog
       open={open}
@@ -59,9 +65,7 @@ function FileDetailDialog({ open, setOpen, fileData }) {
         <Typography variant="h5" className="pt-4">
           原始擁有者
         </Typography>
-        <Typography variant="small">
-          {userId === fileData.originOwner ? '您' : fileData.originOwner}
-        </Typography>
+        <Typography variant="small">{parseOriginalOwner(fileData.originOwner)}</Typography>
 
         <Typography variant="h5" className="pt-4">
           權限
