@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import NavBar, { PageType } from './components/NavBar.jsx'
 import MainView from './components/MainView.jsx'
-import ProgressView from './components/ProgressView.jsx'
+// import ProgressView from './components/ProgressView.jsx'
 import Console from './components/Console.jsx'
 import {
   ProfileContext,
@@ -9,9 +9,8 @@ import {
   SearchContext,
   RequestContext
 } from './components/Contexts.jsx'
-import { Toaster } from 'react-hot-toast'
+import toast, { Toaster } from 'react-hot-toast'
 import { ResponseType, SearchType } from './components/Types.jsx'
-import toast from 'react-hot-toast'
 
 function App() {
   const [pageType, setPageType] = useState(PageType.file)

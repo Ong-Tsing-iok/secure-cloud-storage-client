@@ -1,5 +1,4 @@
 import { useContext, useState, useEffect, useMemo } from 'react'
-import { PageContext } from './Contexts'
 import { PageType, parseFileList, parseRequestList } from './Types'
 import PublicTable from './PublicTable'
 import FileTable from './FileTable'
@@ -10,7 +9,7 @@ import FileViewButtonGroup from './FileViewButtonGroup'
 import RequestViewButtonGroup from './RequestViewButtonGroup'
 import CurPathBreadcrumbs from './CurPathBreadcrumbs'
 import RequestTable from './RequestTable'
-import { CurPathContext, RequestContext, UserListContext } from './Contexts'
+import { CurPathContext, RequestContext, UserListContext, PageContext } from './Contexts'
 
 function MainView() {
   const [curPath, setCurPath] = useState([{ name: '', folderId: null }])

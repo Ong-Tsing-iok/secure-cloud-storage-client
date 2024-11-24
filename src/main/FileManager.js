@@ -136,7 +136,7 @@ const downloadFileProcess2 = async (uuid, filename, key, iv, size, proxied) => {
         'success'
       )
     })
-    const decipher = await decrypt(key, iv, writeStream, proxied)
+    const decipher = await decrypt(key, iv, proxied)
     logger.info(
       `Downloading file ${uuid} with protocol ${GlobalValueManager.serverConfig.protocol}...`
     )

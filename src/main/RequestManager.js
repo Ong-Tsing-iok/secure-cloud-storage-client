@@ -147,7 +147,7 @@ const respondRequestProcess = async (responseInfo, refresh = true) => {
           'Failed to respond request',
           'error'
         )
-        reject()
+        resolve()
       } else {
         logger.info(`Success to respond request for ${responseInfo.requestId}`)
         if (refresh) {

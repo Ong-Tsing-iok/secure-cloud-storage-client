@@ -8,9 +8,9 @@ const encrypt = async (readstream) => {
   const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
   const encryptedStream = Readable.from(readstream.pipe(cipher))
   // encode key and iv
-  const keyCipher = await KeyManager.encrypt(key.toString('hex'))
-  const ivCipher = await KeyManager.encrypt(iv.toString('hex'))
-  // console.log(key.toString('hex'), iv.toString('hex'))
+  const keyCipher = await KeyManager.encrypt(key.toString('base64'))
+  const ivCipher = await KeyManager.encrypt(iv.toString('base64'))
+  console.log(key.toString('hex'), iv.toString('hex'))
   return { key: keyCipher, iv: ivCipher, encryptedStream }
 }
 
@@ -18,11 +18,11 @@ const decrypt = async (keyCipher, ivCipher, proxied = false) => {
   // decode key and iv
   const keyDecipher = await KeyManager.decrypt(keyCipher, proxied)
   const ivDecipher = await KeyManager.decrypt(ivCipher, proxied)
-  // console.log(keyDecipher.toString(16).length, ivDecipher.toString(16).length)
+  console.log(keyDecipher.toString(16).length, ivDecipher.toString(16).length)
   const decipher = crypto.createDecipheriv(
     'aes-256-cbc',
-    Buffer.from(keyDecipher.toString(16).padStart(64, '0'), 'hex'),
-    Buffer.from(ivDecipher.toString(16).padStart(32, '0'), 'hex')
+    Buffer.from(keyDecipher, 'base64'),
+    Buffer.from(ivDecipher, 'base64')
   )
   return decipher
 }
