@@ -8,18 +8,13 @@ const exeDir = dirname(app.getPath('exe'))
 process.env['NODE_CONFIG_DIR'] =
   `${app.getAppPath()}/config${path.delimiter}${path.join(exeDir, 'config')}`
 const config = require('config')
-// TODO: check overwrite, if not exist then use default
-// TODO: maybe need to set config path?
+
 class GlobalValueManager {
   constructor() {
-    // TODO: first check if exist
-    // TODO: if not exist, create
-    // TODO: use has to check if exist?
     try {
       this.serverConfig = config.server
       this.keysConfig = config.get('keys')
       this.userConfig = config.get('user')
-      this.directoryConfig = config.get('directories')
       this.requestConfig = config.request
       this.userListConfig = config.userList
     } catch (error) {
@@ -36,10 +31,6 @@ class GlobalValueManager {
 
   get cryptoPath() {
     return `${__dirname}/py/crypto`
-  }
-
-  get downloadDir() {
-    return this.directoryConfig.downloads
   }
 
   get httpsUrl() {

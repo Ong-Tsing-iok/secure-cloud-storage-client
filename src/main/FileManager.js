@@ -108,14 +108,15 @@ const downloadFileProcess = (uuid) => {
 
 const downloadFileProcess2 = async (uuid, filename, key, iv, size, proxied) => {
   try {
-    try {
-      mkdirSync(GlobalValueManager.downloadDir, { recursive: false })
-    } catch (error) {
-      if (error.code !== 'EEXIST') {
-        throw error
-      }
+    const { filePath, canceled } = await dialog.showSaveDialog({
+      defaultPath: filename,
+      properties: ['showOverwriteConfirmation', 'createDirectory']
+    })
+    if (canceled) {
+      logger.info('Download canceled.')
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Download canceled', 'error')
+      return
     }
-    const filePath = join(GlobalValueManager.downloadDir, filename)
     const writeStream = createWriteStream(filePath)
     writeStream.on('error', (err) => {
       logger.error(`Failed to write file ${filename}: ${err}. Download aborted.`)
