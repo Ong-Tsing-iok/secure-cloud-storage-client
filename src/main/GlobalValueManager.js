@@ -1,8 +1,13 @@
-import config from 'config'
 import { logger } from './Logger'
 import { writeFileSync, readFileSync } from 'node:original-fs'
-import { join } from 'node:path'
+import path, { join, dirname } from 'node:path'
+import { app } from 'electron'
+import { mkdirSync } from 'node:fs'
 
+const exeDir = dirname(app.getPath('exe'))
+process.env['NODE_CONFIG_DIR'] =
+  `${app.getAppPath()}/config${path.delimiter}${path.join(exeDir, 'config')}`
+const config = require('config')
 // TODO: check overwrite, if not exist then use default
 // TODO: maybe need to set config path?
 class GlobalValueManager {
@@ -30,7 +35,7 @@ class GlobalValueManager {
   }
 
   get cryptoPath() {
-    return join(__dirname, 'py', 'crypto')
+    return `${__dirname}/py/crypto`
   }
 
   get downloadDir() {
@@ -50,11 +55,25 @@ class GlobalValueManager {
 
   updateConfigFile(field, value) {
     try {
-      const filename = `./config/local-${process.env.NODE_APP_INSTANCE}.json`
-      console.log(filename)
-      const current = JSON.parse(readFileSync(filename))
+      // const appNum = process.env.NODE_APP_INSTANCE ? `-${process.env.NODE_APP_INSTANCE}` : ''
+      const filepath = join('config', `${process.env.NODE_ENV}.json`)
+      // console.log(filepath)
+      let configStr = '{}'
+      try {
+        configStr = readFileSync(filepath)
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          mkdirSync(dirname(filepath), { recursive: true })
+          writeFileSync(filepath, JSON.stringify({}, null, 2))
+        } else {
+          throw error
+        }
+      }
+
+      const current = JSON.parse(configStr)
+
       current[field] = value
-      writeFileSync(filename, JSON.stringify(current, null, 2))
+      writeFileSync(filepath, JSON.stringify(current, null, 2))
       // config.set(field, value)
     } catch (error) {
       logger.error(`Failed to update config: ${error}`)

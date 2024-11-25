@@ -11,7 +11,7 @@
     "start": "electron-vite preview",
     "dev": "electron-vite dev",
     "test": "jest ./test",
-    "build": "electron-vite build",
+    "build": "NODE_ENV=production electron-vite build",
     "postinstall": "electron-builder install-app-deps",
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",

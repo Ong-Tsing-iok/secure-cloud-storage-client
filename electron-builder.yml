@@ -8,6 +8,16 @@ files:
   - '!electron.vite.config.{js,ts,mjs,cjs}'
   - '!{.eslintignore,.eslintrc.cjs,.prettierignore,.prettierrc.yaml,dev-app-update.yml,CHANGELOG.md,README.md}'
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
+  - '!.scannerwork/**'
+  - '!sonar-project.properties'
+  - '!downloads/**'
+  - '!{test/**,jest.config.js}'
+  - '!*.log'
+  - '!*.keys'
+  - '!*.py'
+# extraFiles:
+#   - config/**
+#   - py/**
 asarUnpack:
   - resources/**
 win:
@@ -30,8 +40,8 @@ dmg:
 linux:
   target:
     - AppImage
-    - snap
-    - deb
+    # - snap
+    # - deb
   maintainer: electronjs.org
   category: Utility
 appImage:
