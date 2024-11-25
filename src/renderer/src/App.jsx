@@ -70,19 +70,19 @@ function App() {
   }, [])
 
   function swapPageHandler(newPageType) {
-    if (newPageType === PageType.reply || pageType === PageType.reply) {
+    if (newPageType === PageType.reply) {
       window.electronAPI.updateRequestValue({
         seenRequests: seenRequests,
         seenReplies: requestList.filter((file) => file.status !== ResponseType.N).length
       })
       setSeenReplies(requestList.filter((file) => file.status !== ResponseType.N).length)
     }
-    if (newPageType === PageType.request || pageType === PageType.request) {
+    if (newPageType === PageType.request) {
       window.electronAPI.updateRequestValue({
-        seenRequests: requestList.length,
+        seenRequests: requestedList.length,
         seenReplies: seenReplies
       })
-      setSeenRequests(requestList.length)
+      setSeenRequests(requestedList.length)
     }
     setSearchTerm('')
     switch (newPageType) {
