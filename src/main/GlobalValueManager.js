@@ -46,9 +46,7 @@ class GlobalValueManager {
 
   updateConfigFile(field, value) {
     try {
-      // const appNum = process.env.NODE_APP_INSTANCE ? `-${process.env.NODE_APP_INSTANCE}` : ''
-      const filepath = join('config', `${process.env.NODE_ENV}.json`)
-      // console.log(filepath)
+      const filepath = join('config', 'local.json')
       let configStr = '{}'
       try {
         configStr = readFileSync(filepath)
