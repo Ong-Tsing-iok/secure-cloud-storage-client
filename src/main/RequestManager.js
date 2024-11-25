@@ -165,9 +165,11 @@ const respondRequestProcess = async (responseInfo, refresh = true) => {
 }
 
 socket.on('new-request', () => {
+  logger.info('New request coming')
   getRequestedListProcess()
 })
 socket.on('new-response', () => {
+  logger.info('New response coming')
   getRequestListProcess()
 })
 

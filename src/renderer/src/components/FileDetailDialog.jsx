@@ -101,7 +101,9 @@ function FileDetailDialog({ open, setOpen, fileData }) {
             className="focus:!border-t-gray-900"
           ></Textarea>
         ) : (
-          <Typography variant="paragraph">{fileData.desc || '無'}</Typography>
+          <Typography variant="paragraph" className="text-wrap break-all">
+            {fileData.desc || '無'}
+          </Typography>
         )}
       </DialogBody>
       <DialogFooter>

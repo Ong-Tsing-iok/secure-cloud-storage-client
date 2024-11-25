@@ -105,7 +105,9 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
           <Typography variant="h5" className="pt-4">
             備註
           </Typography>
-          <Typography variant="paragraph">{requestData.reqDesc || '無'}</Typography>
+          <Typography variant="paragraph" className="text-wrap break-all">
+            {requestData.reqDesc || '無'}
+          </Typography>
         </div>
         <div className="flex flex-col w-1/2">
           {isRequest ? (
@@ -138,7 +140,9 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
               className="focus:!border-t-gray-900"
             ></Textarea>
           ) : (
-            <Typography variant="paragraph">{requestData.resDesc || '無'}</Typography>
+            <Typography variant="paragraph" className="text-wrap break-all">
+              {requestData.resDesc || '無'}
+            </Typography>
           )}
         </div>
       </DialogBody>

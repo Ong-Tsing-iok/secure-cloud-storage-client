@@ -13,30 +13,30 @@ import toast, { Toaster } from 'react-hot-toast'
 
 function RequestDialog({ open, setOpen, defaultId = '' }) {
   const [fileId, setFileId] = useState(defaultId)
-  const [remark, setRemark] = useState('')
+  const [description, setDescription] = useState('')
 
   function checkFileId(fileId) {
     return String(fileId).match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
   }
 
-  function checkRemark(remark) {
+  function checkDescription(remark) {
     return String(remark).length <= 500
   }
 
   function dialogHandler() {
     setFileId(defaultId)
-    setRemark('')
+    setDescription('')
     // toast.remove()
     setOpen(!open)
   }
 
   function submitHandler() {
-    if (!checkFileId(fileId) || !checkRemark(remark)) {
+    if (!checkFileId(fileId) || !checkDescription(description)) {
       toast.error('請檢查輸入格式')
       return
     }
     // console.log(fileId, name, email, remark)
-    window.electronAPI.askRequestFile({ fileId, remark })
+    window.electronAPI.askRequestFile({ fileId, description })
     dialogHandler()
     // toast.success('請求已送出')
   }
@@ -60,9 +60,9 @@ function RequestDialog({ open, setOpen, defaultId = '' }) {
           type="text"
           label="備註"
           //   maxLength={200}
-          error={!checkRemark(remark)}
-          value={remark}
-          onChange={(e) => setRemark(e.target.value)}
+          error={!checkDescription(description)}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
         />
       </DialogBody>
 
