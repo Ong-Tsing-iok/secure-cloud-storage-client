@@ -92,7 +92,7 @@ export function parseRequestList(requestList) {
 }
 
 export function searchFilter(fileList, searchType, searchTerm) {
-  return fileList.filter(
-    (file) => file[searchType] && file[searchType].toLowerCase().includes(searchTerm.toLowerCase())
+  return fileList.filter((file) =>
+    file[searchType]?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 }

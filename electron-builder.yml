@@ -15,6 +15,7 @@ files:
   - '!*.log'
   - '!*.keys'
   - '!*.py'
+  - '!config/local.json'
 # extraFiles:
 #   - config/**
 #   - py/**

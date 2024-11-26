@@ -5,7 +5,7 @@ const createPipeProgress = (options, logger) => {
   if (!options.total) {
     throw new Error('total is required')
   }
-  const total = options.total
+  // const total = options.total
   let current = 0
   const progress = new PassThrough(options)
   progress.on('data', (chunk) => {
