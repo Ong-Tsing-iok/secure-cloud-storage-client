@@ -8,3 +8,4 @@ downloads
 .scannerwork
 /config
 sonar-project.properties
+py/crypto

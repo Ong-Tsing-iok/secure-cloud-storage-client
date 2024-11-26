@@ -8,7 +8,6 @@ const exeDir = dirname(app.getPath('exe'))
 process.env['NODE_CONFIG_DIR'] =
   `${app.getAppPath()}/config${path.delimiter}${path.join(exeDir, 'config')}`
 const config = require('config')
-
 class GlobalValueManager {
   constructor() {
     try {
@@ -30,7 +29,7 @@ class GlobalValueManager {
   }
 
   get cryptoPath() {
-    return `${__dirname}/py/crypto`
+    return `${app.getAppPath()}/py/crypto`
   }
 
   get httpsUrl() {
