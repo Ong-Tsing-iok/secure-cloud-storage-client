@@ -1,0 +1,22 @@
+{
+  "keys": {
+    "path": "user.keys"
+  },
+  "server": {
+    "protocol": "https",
+    "host": "localhost",
+    "port": { "https": 3001, "ftps": 7002 }
+  },
+  "user": {
+    "name": "",
+    "email": ""
+  },
+  "request": {
+    "seenReplies": 0,
+    "seenRequests": 0
+  },
+  "userList" :{
+    "whiteList": [],
+    "blackList": []
+  }
+}
