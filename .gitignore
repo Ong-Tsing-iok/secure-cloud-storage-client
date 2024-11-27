@@ -6,6 +6,6 @@ out
 *.key*
 downloads
 .scannerwork
-/config
+/config/local.json
 sonar-project.properties
 py/crypto
