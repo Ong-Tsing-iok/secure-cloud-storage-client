@@ -1,5 +1,7 @@
 import winston, { format } from 'winston'
 import ScreenTransport from './ScreenTransport'
+import { app } from 'electron'
+import { join } from 'node:path'
 
 const logger = winston.createLogger({
   level: 'info',
@@ -14,11 +16,12 @@ const logger = winston.createLogger({
           // - Write all logs with importance level of `info` or less to `combined.log`
           //
           new winston.transports.File({
-            filename: 'error.log',
+            filename: join(app.getPath('logs'), 'error.log'),
             level: 'error'
           }),
           new winston.transports.File({
-            filename: 'combined.log'
+            filename: join(app.getPath('logs'), 'combined.log'),
+            options: { flags: 'w' }
           }),
           new ScreenTransport()
         ]

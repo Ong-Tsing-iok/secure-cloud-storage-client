@@ -11,7 +11,7 @@ import {
 } from '@aldenml/ecc'
 import GlobalValueManager from './GlobalValueManager'
 
-const keyFilePath = GlobalValueManager.keysConfig.path
+const keyFilePath = GlobalValueManager.keyPath
 let keys
 let signingKeys
 

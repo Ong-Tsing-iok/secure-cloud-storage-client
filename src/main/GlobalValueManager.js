@@ -1,12 +1,20 @@
 import { logger } from './Logger'
 import { writeFileSync, readFileSync } from 'node:original-fs'
-import path, { join, dirname } from 'node:path'
+import path, { join, dirname, resolve } from 'node:path'
 import { app } from 'electron'
 import { mkdirSync } from 'node:fs'
 
-const exeDir = dirname(app.getPath('exe'))
+// const localDir = '' // For linux, running from where this file is located as portable
+logger.debug(`app path: ${app.getAppPath()}`)
+logger.debug(`exe path: ${app.getPath('exe')}`)
+logger.debug(`userData path: ${app.getPath('userData')}`)
+logger.debug(`execute path: ${process.execPath}`)
+logger.debug(`resource path: ${process.resourcesPath}`)
+logger.debug(`cwd path: ${process.cwd()}`)
+logger.debug(`dirname: ${__dirname}`)
+logger.debug(`log path: ${app.getPath('logs')}`)
 process.env['NODE_CONFIG_DIR'] =
-  `${app.getAppPath()}/config${path.delimiter}${path.join(exeDir, 'config')}`
+  `${app.getAppPath()}/config${path.delimiter}${join(app.getPath('userData'), 'config')}`
 const config = require('config')
 class GlobalValueManager {
   constructor() {
@@ -39,14 +47,19 @@ class GlobalValueManager {
     return null
   }
 
+  get keyPath() {
+    return resolve(app.getPath('userData'), 'user.keys')
+  }
+
   updateConfigFile(field, value) {
     try {
-      const filepath = join('config', 'local.json')
+      const filepath = join(app.getPath('userData'), 'config', 'local.json')
       let configStr = '{}'
       try {
         configStr = readFileSync(filepath)
       } catch (error) {
         if (error.code === 'ENOENT') {
+          logger.info('Creating config file at ' + filepath)
           mkdirSync(dirname(filepath), { recursive: true })
           writeFileSync(filepath, JSON.stringify({}, null, 2))
         } else {
