@@ -12,7 +12,8 @@ export default defineConfig({
   renderer: {
     resolve: {
       alias: {
-        '@renderer': resolve('src/renderer/src')
+        '@renderer': resolve('src/renderer/src'),
+        '@aldenml/ecc': resolve('node_modules/@aldenml/ecc')
       }
     },
     plugins: [react()]
