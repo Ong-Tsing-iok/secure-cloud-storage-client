@@ -15,20 +15,20 @@ import GlobalValueManager from './GlobalValueManager'
 const uploadQueue = cq()
   .limit({ concurrency: 1 })
   .process(async ({ filePath, parentFolderId }) => {
-    let key = null
-    let iv = null
+    let cipher = null
+    let spk = null
     let encryptedStream = null
     let fileStream = null
     try {
       fileStream = createReadStream(filePath)
       logger.info('Encrypting file...')
-      ;({ key, iv, encryptedStream } = await encrypt(fileStream))
+      ;({ cipher, spk, encryptedStream } = await encrypt(fileStream))
     } catch (error) {
       logger.error(`Failed to create stream or encrypt file: ${error}. Upload aborted.`)
       return
     }
     logger.info('Sending key and iv to server...')
-    socket.emit('upload-file-pre', key, iv, parentFolderId, (error, uploadId) => {
+    socket.emit('upload-file-pre', cipher, spk, parentFolderId, (error, uploadId) => {
       if (error) {
         logger.error(`Failed to upload file: ${error}. Upload aborted.`)
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
@@ -100,13 +100,14 @@ const downloadFileProcess = (uuid) => {
       GlobalValueManager.mainWindow?.webContents.send('notice', 'File not found', 'error')
       return
     }
-    const { id, name, keyCipher, ivCipher, size } = fileInfo
+    console.log(fileInfo)
+    const { id, name, cipher, spk, size } = fileInfo
     const proxied = fileInfo.ownerId !== fileInfo.originOwnerId
-    downloadFileProcess2(id, name, keyCipher, ivCipher, size, proxied)
+    downloadFileProcess2(id, name, cipher, spk, size, proxied)
   })
 }
 
-const downloadFileProcess2 = async (uuid, filename, key, iv, size, proxied) => {
+const downloadFileProcess2 = async (uuid, filename, cipher, spk, size, proxied) => {
   try {
     const { filePath, canceled } = await dialog.showSaveDialog({
       defaultPath: filename,
@@ -137,7 +138,7 @@ const downloadFileProcess2 = async (uuid, filename, key, iv, size, proxied) => {
         'success'
       )
     })
-    const decipher = await decrypt(key, iv, proxied)
+    const decipher = await decrypt(cipher, spk, proxied)
     logger.info(
       `Downloading file ${uuid} with protocol ${GlobalValueManager.serverConfig.protocol}...`
     )

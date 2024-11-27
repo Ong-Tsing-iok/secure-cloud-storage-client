@@ -36,7 +36,8 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
       requestId: requestData.requestId,
       agreed,
       description: desc,
-      pk: requestData.pk
+      pk: requestData.pk,
+      spk: requestData.spk
     })
     setOpen(!open)
   }

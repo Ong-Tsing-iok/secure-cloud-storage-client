@@ -1,9 +1,9 @@
-import winston from 'winston'
+import winston, { format } from 'winston'
 import ScreenTransport from './ScreenTransport'
 
 const logger = winston.createLogger({
   level: 'info',
-  format: winston.format.json(),
+  format: winston.format.combine(format.errors({ stack: true }), format.timestamp(), format.json()),
   // defaultMeta: { service: 'user-service' },
   transports:
     process.env.NODE_ENV === 'test'
@@ -15,12 +15,10 @@ const logger = winston.createLogger({
           //
           new winston.transports.File({
             filename: 'error.log',
-            level: 'error',
-            format: winston.format.timestamp()
+            level: 'error'
           }),
           new winston.transports.File({
-            filename: 'combined.log',
-            format: winston.format.timestamp()
+            filename: 'combined.log'
           }),
           new ScreenTransport()
         ]

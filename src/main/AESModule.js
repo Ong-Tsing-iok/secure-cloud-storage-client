@@ -3,28 +3,35 @@ import { Readable } from 'stream'
 import * as KeyManager from './KeyManager'
 
 const encrypt = async (readstream) => {
-  const key = crypto.randomBytes(32)
-  const iv = crypto.randomBytes(16)
-  const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
-  const encryptedStream = Readable.from(readstream.pipe(cipher))
+  const { messageArray, cipher, spk } = await KeyManager.randCipher()
+  const key = messageArray.buffer.slice(0, 32)
+  const iv = messageArray.buffer.slice(32, 48)
+  const streamCipher = crypto.createCipheriv('aes-256-cbc', key, iv)
+  const encryptedStream = Readable.from(readstream.pipe(streamCipher))
   // encode key and iv
-  const keyCipher = await KeyManager.encrypt(key.toString('base64'))
-  const ivCipher = await KeyManager.encrypt(iv.toString('base64'))
-  console.log(key.toString('hex'), iv.toString('hex'))
-  return { key: keyCipher, iv: ivCipher, encryptedStream }
+  return {
+    cipher,
+    spk,
+    encryptedStream
+  }
 }
 
-const decrypt = async (keyCipher, ivCipher, proxied = false) => {
+/**
+ *
+ * @param {string} cipher
+ * @param {string} spk
+ * @param {boolean} proxied
+ * @returns crypto.Decipher
+ */
+const decrypt = async (cipher, spk, proxied = false) => {
+  const message = await KeyManager.decrypt(cipher, spk, proxied, true)
   // decode key and iv
-  const keyDecipher = await KeyManager.decrypt(keyCipher, proxied)
-  const ivDecipher = await KeyManager.decrypt(ivCipher, proxied)
-  console.log(keyDecipher.toString(16).length, ivDecipher.toString(16).length)
-  const decipher = crypto.createDecipheriv(
+  const streamDecipher = crypto.createDecipheriv(
     'aes-256-cbc',
-    Buffer.from(keyDecipher, 'base64'),
-    Buffer.from(ivDecipher, 'base64')
+    message.buffer.slice(0, 32),
+    message.buffer.slice(32, 48)
   )
-  return decipher
+  return streamDecipher
 }
 
 export { encrypt, decrypt }

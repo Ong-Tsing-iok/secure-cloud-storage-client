@@ -28,10 +28,6 @@ class GlobalValueManager {
     logger.info('Global value manager initialized')
   }
 
-  get cryptoPath() {
-    return `${app.getAppPath()}/py/crypto`
-  }
-
   get httpsUrl() {
     return `https://${this.serverConfig.host}:${this.serverConfig.port.https}`
   }

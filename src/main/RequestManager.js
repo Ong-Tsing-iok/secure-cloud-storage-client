@@ -68,7 +68,7 @@ const autoReplyProcess = async (result) => {
         // console.log('blacklisted item')
         changed = true
         await respondRequestProcess(
-          { requestId: item.requestId, agreed: false, description: '', pk: item.pk },
+          { requestId: item.requestId, agreed: false, description: '', pk: item.pk, spk: item.spk },
           false
         )
         // item.agreed = 0
@@ -76,7 +76,7 @@ const autoReplyProcess = async (result) => {
         changed = true
         console.log('whitelist item')
         await respondRequestProcess(
-          { requestId: item.requestId, agreed: true, description: '', pk: item.pk },
+          { requestId: item.requestId, agreed: true, description: '', pk: item.pk, spk: item.spk },
           false
         )
         // item.agreed = 1
@@ -126,7 +126,7 @@ const respondRequestProcess = async (responseInfo, refresh = true) => {
   let rekey = null
   if (responseInfo.agreed) {
     try {
-      rekey = await rekeyGen(responseInfo.pk)
+      rekey = await rekeyGen(responseInfo.pk, responseInfo.spk)
     } catch (error) {
       logger.error(`Failed to generate rekey: ${error}`)
       GlobalValueManager.mainWindow?.webContents.send(
@@ -138,6 +138,7 @@ const respondRequestProcess = async (responseInfo, refresh = true) => {
     }
   }
   delete responseInfo.pk
+  delete responseInfo.spk
   return new Promise((resolve, reject) => {
     socket.emit('respond-request', { ...responseInfo, rekey }, (error) => {
       if (error) {

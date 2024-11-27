@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from 'react'
 import FileOptionMenu from './FileOptionMenu'
 import TableView from './TableView'
 import { PageContext, SearchContext } from './Contexts'
-import { PageType, parseFileList, searchFilter } from './Types'
+import { PageType, parseFileList, searchFilter, bytesToSize } from './Types'
 const TABLE_HEAD = ['name', 'size', 'date', 'owner', 'end']
 
 function PublicTable() {
@@ -37,7 +37,7 @@ function PublicTable() {
             <Typography className="truncate pr-4">{row.name}</Typography>
           </td>
           <td>
-            <Typography>{row.size}</Typography>
+            <Typography>{bytesToSize(row.size)}</Typography>
           </td>
           <td>
             <Typography>{row.date}</Typography>
