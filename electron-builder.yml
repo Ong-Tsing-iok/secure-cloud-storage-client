@@ -14,12 +14,7 @@ files:
   - '!{test/**,jest.config.js}'
   - '!*.log'
   - '!*.keys'
-  - '!*.py'
-  - '!py/**'
   - '!config/local.json'
-# extraFiles:
-#   - config/**
-#   - py/**
 asarUnpack:
   - resources/**
 win:
