@@ -15,8 +15,13 @@
     "seenReplies": 0,
     "seenRequests": 0
   },
-  "userList" :{
+  "userList": {
     "whiteList": [],
     "blackList": []
+  },
+  "blockchain": {
+    "jsonRpcUrl" : "",
+    "abi": [],
+    "contractAddr" : ""
   }
 }
