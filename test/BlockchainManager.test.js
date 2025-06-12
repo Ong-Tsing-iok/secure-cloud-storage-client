@@ -96,20 +96,18 @@ describe('BlockchainManager', () => {
   })
 
   describe('uploadFileInfo', () => {
+    const fileId = 123
+    const fileHash = '456'
+    const metadata = 'some-metadata'
     let mockTx
 
-    beforeEach(() => {
+    beforeEach(async () => {
       mockTx = { wait: jest.fn() }
       mockContractInstance.uploadFile = jest.fn().mockResolvedValue(mockTx)
+      await blockchainManager.uploadFileInfo(fileId, fileHash, metadata)
     })
 
     test('should convert fileId and fileHash to BigInt and log debug info', async () => {
-      const fileId = 123
-      const fileHash = '456'
-      const metadata = 'some-metadata'
-
-      await blockchainManager.uploadFileInfo(fileId, fileHash, metadata)
-
       expect(logger.debug).toHaveBeenCalledTimes(1)
       expect(logger.debug).toHaveBeenCalledWith(
         `upload fileInfo with bfileId: ${BigInt(fileId)}, bfileHash: ${BigInt(fileHash)}, metadata: ${metadata}`
@@ -117,12 +115,6 @@ describe('BlockchainManager', () => {
     })
 
     test('should log success message after "upload"', async () => {
-      const fileId = 789
-      const fileHash = '1011'
-      const metadata = 'other-metadata'
-
-      await blockchainManager.uploadFileInfo(fileId, fileHash, metadata)
-
       expect(logger.info).toHaveBeenCalledTimes(1)
       expect(logger.info).toHaveBeenCalledWith(
         `fileInfo of Id ${fileId} uploaded to blockchain successfully`
@@ -130,13 +122,6 @@ describe('BlockchainManager', () => {
     })
 
     test('should call contract.uploadFile with correct arguments', async () => {
-      const fileId = 1
-      const fileHash = '2'
-      const metadata = 'test-metadata'
-      // Mock the upload method on your mock contract instance
-
-      await blockchainManager.uploadFileInfo(fileId, fileHash, metadata)
-
       expect(mockContractInstance.uploadFile).toHaveBeenCalledTimes(1)
       expect(mockContractInstance.uploadFile).toHaveBeenCalledWith(
         BigInt(fileId),
@@ -144,6 +129,16 @@ describe('BlockchainManager', () => {
         metadata
       )
       expect(mockTx.wait).toHaveBeenCalledTimes(1)
+    })
+
+    test('should throw error when transaction error occurs', async () => {
+      mockContractInstance.uploadFile = jest.fn().mockImplementationOnce(() => {
+        return Promise.reject(new Error('Transaction Error'))
+      })
+
+      await expect(blockchainManager.uploadFileInfo(fileId, fileHash, metadata)).rejects.toThrow(
+        'Transaction Error'
+      )
     })
   })
 
