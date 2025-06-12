@@ -27,6 +27,7 @@ import {
   respondRequestProcess
 } from './RequestManager'
 import GlobalValueManager from './GlobalValueManager'
+import BlockchainManager from './BlockchainManager'
 
 function createWindow() {
   // Create the browser window.
@@ -55,6 +56,8 @@ function createWindow() {
       whiteList: GlobalValueManager.userListConfig.whiteList,
       blackList: GlobalValueManager.userListConfig.blackList
     })
+    const blockchainManager = new BlockchainManager()
+    blockchainManager.printContractOwner().catch((error) => logger.error(error))
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
