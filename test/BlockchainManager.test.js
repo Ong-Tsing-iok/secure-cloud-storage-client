@@ -150,10 +150,10 @@ describe('BlockchainManager', () => {
   describe('getFileInfo', () => {
     const fileUploadRecord = {
       args: {
-        fileId: BigInt('0x124'),
-        fileHash: BigInt(0x456),
+        fileId: '0x124',
+        fileHash: BigInt('0x456'),
         metadata: 'file_metadata',
-        uploader: BigInt('0x789'),
+        uploader: '0x789',
         timestamp: BigInt('0x486787')
       }
     }
@@ -170,8 +170,8 @@ describe('BlockchainManager', () => {
     test('should call contract.filters.FileUploaded with correct arguments', () => {
       expect(mockContractInstance.filters.FileUploaded).toHaveBeenCalledTimes(1)
       expect(mockContractInstance.filters.FileUploaded).toHaveBeenCalledWith(
-        fileUploadRecord.args.fileId,
-        fileUploadRecord.args.uploader
+        BigInt(fileUploadRecord.args.fileId),
+        BigInt(fileUploadRecord.args.uploader)
       )
     })
 
@@ -202,8 +202,8 @@ describe('BlockchainManager', () => {
   describe('getFileVerification', () => {
     const fileVerificationRecord = {
       args: {
-        fileId: BigInt('0x124'),
-        uploader: BigInt('0x78843'),
+        fileId: '0x124',
+        uploader: '0x78843',
         verificationInfo: 'file_metadata',
         verifier: BigInt('0x789'),
         timestamp: BigInt('0x486787')
@@ -222,8 +222,8 @@ describe('BlockchainManager', () => {
     test('should call contract.filters.FileVerified with correct arguments', () => {
       expect(mockContractInstance.filters.FileVerified).toHaveBeenCalledTimes(1)
       expect(mockContractInstance.filters.FileVerified).toHaveBeenCalledWith(
-        fileVerificationRecord.args.fileId,
-        fileVerificationRecord.args.uploader
+        BigInt(fileVerificationRecord.args.fileId),
+        BigInt(fileVerificationRecord.args.uploader)
       )
     })
 
@@ -254,8 +254,8 @@ describe('BlockchainManager', () => {
   describe('getFileAuthRecord', () => {
     const fileAuthRecord = {
       args: {
-        fileId: BigInt('0x124'),
-        requestor: BigInt('0x78843'),
+        fileId: '0x124',
+        requestor: '0x78843',
         authorizationInfo: 'auth_info',
         authorizer: BigInt('0x789'),
         verifier: BigInt('0x7874589'),
@@ -275,8 +275,8 @@ describe('BlockchainManager', () => {
     test('should call contract.filters.FileAuthorizationAdded with correct arguments', () => {
       expect(mockContractInstance.filters.FileAuthorizationAdded).toHaveBeenCalledTimes(1)
       expect(mockContractInstance.filters.FileAuthorizationAdded).toHaveBeenCalledWith(
-        fileAuthRecord.args.fileId,
-        fileAuthRecord.args.requestor
+        BigInt(fileAuthRecord.args.fileId),
+        BigInt(fileAuthRecord.args.requestor)
       )
     })
 
