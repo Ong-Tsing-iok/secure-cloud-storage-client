@@ -47,8 +47,8 @@ class BlockchainManager {
   /**
    * Get hash and metadata of a file
    * @param {string | BigInt} fileId UUID of the file
-   * @param {string | BigInt} uploader Blockchain address of the file owner
-   * @returns First event log queried or null if not found
+   * @param {string | BigInt} uploader blockchain address of the file owner
+   * @returns first event log queried or null if not found
    */
   async getFileInfo(fileId, uploader) {
     const events = await this.contract.queryFilter(
@@ -65,8 +65,8 @@ class BlockchainManager {
   /**
    * Get verification information of a file
    * @param {string | Bigint} fileId UUID of the file
-   * @param {string | Bigint} uploader Blockchain address of the file owner
-   * @returns First event log queried or null if not found
+   * @param {string | Bigint} uploader blockchain address of the file owner
+   * @returns first event log queried or null if not found
    */
   async getFileVerification(fileId, uploader) {
     const events = await this.contract.queryFilter(
@@ -83,8 +83,8 @@ class BlockchainManager {
   /**
    * Get authentication records of a file
    * @param {string | Bigint} fileId UUID of the file
-   * @param {string | Bigint} requestor Blockchain address of the requestor
-   * @returns First event log queried or null if not found
+   * @param {string | Bigint} requestor blockchain address of the requestor
+   * @returns first event log queried or null if not found
    */
   async getFileAuthRecord(fileId, requestor) {
     const events = await this.contract.queryFilter(
