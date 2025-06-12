@@ -10,12 +10,15 @@ class BlockchainManager {
    * Connect to blockchain and smart contract
    */
   constructor() {
-    const abi = GlobalValueManager.blockchain.abi
-    const url = GlobalValueManager.blockchain.jsonRpcUrl
-    const contractAddr = GlobalValueManager.blockchain.contractAddr
-    const provider = new JsonRpcProvider(url)
-    // TODO: catch connection error
-    this.contract = new Contract(contractAddr, abi, provider)
+    try {
+      const abi = GlobalValueManager.blockchain.abi
+      const url = GlobalValueManager.blockchain.jsonRpcUrl
+      const contractAddr = GlobalValueManager.blockchain.contractAddr
+      const provider = new JsonRpcProvider(url)
+      this.contract = new Contract(contractAddr, abi, provider)
+    } catch (error) {
+      logger.error(error)
+    }
   }
 
   async printContractOwner() {

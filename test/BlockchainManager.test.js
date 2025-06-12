@@ -18,7 +18,8 @@ jest.mock('ethers', () => ({
 jest.mock('../src/main/Logger', () => ({
   logger: {
     info: jest.fn(),
-    debug: jest.fn()
+    debug: jest.fn(),
+    error: jest.fn()
   }
 }))
 
@@ -63,23 +64,18 @@ describe('BlockchainManager', () => {
       expect(blockchainManager.contract).toBe(mockContractInstance)
     })
 
-    // TODO: Test for connection error in constructor
-    // This would typically involve mocking the JsonRpcProvider constructor to throw an error,
-    // and then asserting that the catch block in the BlockchainManager handles it.
-    // However, given the current code, there isn't a direct catch for connection errors in the constructor.
-    // If you add a try-catch, you can test it like this:
-    /*
     test('should log error if JsonRpcProvider fails to connect', () => {
       JsonRpcProvider.mockImplementationOnce(() => {
-        throw new Error('Connection failed');
-      });
+        throw new Error('Connection failed')
+      })
+
+      blockchainManager = new BlockchainManager()
       // Depending on how you handle it, you might expect logger.error to be called
       // or the constructor to throw, which you would then catch in the test.
-      expect(() => new BlockchainManager()).toThrow('Connection failed'); // If you re-throw
+      // expect(() => new BlockchainManager()).toThrow('Connection failed') // If you re-throw
       // OR
-      // expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('Connection failed')); // If you log
-    });
-    */
+      expect(logger.error).toHaveBeenCalledWith(new Error('Connection failed')) // If you log
+    })
   })
 
   describe('printContractOwner', () => {
@@ -103,7 +99,7 @@ describe('BlockchainManager', () => {
 
     beforeEach(async () => {
       mockTx = { wait: jest.fn() }
-      mockContractInstance.uploadFile = jest.fn().mockResolvedValue(mockTx)
+      mockContractInstance.uploadFile = jest.fn().mockResolvedValueOnce(mockTx)
       await blockchainManager.uploadFileInfo(fileId, fileHash, metadata)
     })
 
@@ -132,9 +128,9 @@ describe('BlockchainManager', () => {
     })
 
     test('should throw error when transaction error occurs', async () => {
-      mockContractInstance.uploadFile = jest.fn().mockImplementationOnce(() => {
-        return Promise.reject(new Error('Transaction Error'))
-      })
+      mockContractInstance.uploadFile = jest
+        .fn()
+        .mockRejectedValueOnce(new Error('Transaction Error'))
 
       await expect(blockchainManager.uploadFileInfo(fileId, fileHash, metadata)).rejects.toThrow(
         'Transaction Error'
