@@ -27,6 +27,7 @@
     "basic-ftp": "^5.0.5",
     "concurrent-queue": "^7.0.2",
     "config": "^3.3.12",
+    "ethers": "^6.14.1",
     "form-data": "^4.0.0",
     "prop-types": "^15.8.1",
     "react-hot-toast": "^2.4.1",
