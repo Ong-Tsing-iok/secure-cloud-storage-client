@@ -1,14 +1,15 @@
 import { JsonRpcProvider, Contract } from 'ethers'
 import { logger } from './Logger'
+import GlobalValueManager from './GlobalValueManager'
 
 class BlockchainManager {
   constructor() {
-    const abi = []
-    const url = ''
-    const contractAddress = ''
+    const abi = GlobalValueManager.blockchain.abi
+    const url = GlobalValueManager.blockchain.jsonRpcUrl
+    const contractAddr = GlobalValueManager.blockchain.contractAddr
     const provider = new JsonRpcProvider(url)
     // TODO: catch connection error
-    this.contract = new Contract(contractAddress, abi, provider)
+    this.contract = new Contract(contractAddr, abi, provider)
   }
 
   async printContractOwner() {

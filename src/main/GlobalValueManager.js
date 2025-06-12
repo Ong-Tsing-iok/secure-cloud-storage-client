@@ -16,6 +16,7 @@ logger.debug(`log path: ${app.getPath('logs')}`)
 process.env['NODE_CONFIG_DIR'] =
   `${app.getAppPath()}/config${path.delimiter}${join(app.getPath('userData'), 'config')}`
 const config = require('config')
+
 class GlobalValueManager {
   constructor() {
     try {
@@ -24,6 +25,12 @@ class GlobalValueManager {
       this.userConfig = config.get('user')
       this.requestConfig = config.request
       this.userListConfig = config.userList
+
+      // Blockchain
+      this.blockchain = new Object()
+      this.blockchain.abi = config.get('blockchain.abi')
+      this.blockchain.jsonRpcUrl = config.get('blockchain.jsonRpcUrl')
+      this.blockchain.contractAddr = config.get('blockchain.contractAddr')
     } catch (error) {
       logger.error(`Failed to load config: ${error}`)
     }
