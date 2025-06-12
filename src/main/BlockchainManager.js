@@ -83,12 +83,12 @@ class BlockchainManager {
   /**
    * Get authentication records of a file
    * @param {string | Bigint} fileId UUID of the file
-   * @param {string | Bigint} requester Blockchain address of the requestor
+   * @param {string | Bigint} requestor Blockchain address of the requestor
    * @returns First event log queried or null if not found
    */
-  async getFileAuthRecord(fileId, requester) {
+  async getFileAuthRecord(fileId, requestor) {
     const events = await this.contract.queryFilter(
-      this.contract.filters.FileAuthorizationAdded(BigInt(fileId), BigInt(requester))
+      this.contract.filters.FileAuthorizationAdded(BigInt(fileId), BigInt(requestor))
     )
     logger.info(`retrieved file auth record for fileId ${fileId}`)
     if (events.length == 0) {

@@ -132,7 +132,7 @@ describe('BlockchainManager', () => {
         .fn()
         .mockRejectedValueOnce(new Error('Transaction Error'))
 
-      await expect(blockchainManager.uploadFileInfo(fileId, fileHash, metadata)).rejects.toThrow(
+      expect(blockchainManager.uploadFileInfo(fileId, fileHash, metadata)).rejects.toThrow(
         'Transaction Error'
       )
     })
