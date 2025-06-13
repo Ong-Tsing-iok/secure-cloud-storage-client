@@ -63,6 +63,24 @@ class BlockchainManager {
   }
 
   /**
+   * Get file hash and metadata of a reencrypted file
+   * @param {string | BigInt} fileId UUID of the file
+   * @param {string | BigInt} requestor blockchain address of the requestor
+   * @returns first event log queried or null if not found
+   */
+  async getReencryptFileInfo(fileId, requestor) {
+    const events = await this.contract.queryFilter(
+      this.contract.filters.ReencryptFileUploaded(BigInt(fileId), BigInt(requestor))
+    )
+    logger.info(`retrived reencrypt fileInfo for fileId ${fileId}`)
+    if (events.length == 0) {
+      return null
+    } else {
+      return events[0]
+    }
+  }
+
+  /**
    * Get verification information of a file
    * @param {string | Bigint} fileId UUID of the file
    * @param {string | Bigint} uploader blockchain address of the file owner
