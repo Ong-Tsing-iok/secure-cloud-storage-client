@@ -50,7 +50,6 @@ describe('BlockchainManager', () => {
     test('should initialize JsonRpcProvider and Contract with correct values', () => {
       expect(JsonRpcProvider).toHaveBeenCalledTimes(1)
       expect(JsonRpcProvider).toHaveBeenCalledWith(GlobalValueManager.blockchain.jsonRpcUrl)
-
       expect(Contract).toHaveBeenCalledTimes(1)
       expect(Contract).toHaveBeenCalledWith(
         GlobalValueManager.blockchain.contractAddr,
@@ -58,12 +57,10 @@ describe('BlockchainManager', () => {
         expect.any(Object) // The provider instance
       )
     })
-
     test('should set the contract property', () => {
       expect(blockchainManager.contract).toBeDefined()
       expect(blockchainManager.contract).toBe(mockContractInstance)
     })
-
     test('should log error if JsonRpcProvider fails to connect', () => {
       JsonRpcProvider.mockImplementationOnce(() => {
         throw new Error('Connection failed')
@@ -82,9 +79,7 @@ describe('BlockchainManager', () => {
     test('should call contract.owner() and log the result', async () => {
       const mockOwnerAddress = '0xmockOwnerAddress123'
       mockContractInstance.owner.mockResolvedValueOnce(mockOwnerAddress)
-
       await blockchainManager.printContractOwner()
-
       expect(mockContractInstance.owner).toHaveBeenCalledTimes(1)
       expect(logger.info).toHaveBeenCalledTimes(1)
       expect(logger.info).toHaveBeenCalledWith(`The owner of contract is ${mockOwnerAddress}`)
@@ -109,14 +104,12 @@ describe('BlockchainManager', () => {
         `upload fileInfo with bfileId: ${BigInt(fileId)}, bfileHash: ${BigInt(fileHash)}, metadata: ${metadata}`
       )
     })
-
     test('should log success message after "upload"', async () => {
       expect(logger.info).toHaveBeenCalledTimes(1)
       expect(logger.info).toHaveBeenCalledWith(
         `fileInfo of Id ${fileId} uploaded to blockchain successfully`
       )
     })
-
     test('should call contract.uploadFile with correct arguments', async () => {
       expect(mockContractInstance.uploadFile).toHaveBeenCalledTimes(1)
       expect(mockContractInstance.uploadFile).toHaveBeenCalledWith(
@@ -126,7 +119,6 @@ describe('BlockchainManager', () => {
       )
       expect(mockTx.wait).toHaveBeenCalledTimes(1)
     })
-
     test('should throw error when transaction error occurs', async () => {
       mockContractInstance.uploadFile = jest
         .fn()
@@ -149,6 +141,7 @@ describe('BlockchainManager', () => {
       }
     }
     let result
+
     beforeEach(async () => {
       mockContractInstance.filters.FileUploaded = jest.fn().mockReturnValueOnce({})
       mockContractInstance.queryFilter.mockResolvedValueOnce([fileUploadRecord])
@@ -165,28 +158,78 @@ describe('BlockchainManager', () => {
         BigInt(fileUploadRecord.args.uploader)
       )
     })
-
     test('should call contract.queryFilter with return value from contract.filters.FileUploaded', () => {
       expect(mockContractInstance.queryFilter).toHaveBeenCalledTimes(1)
       expect(mockContractInstance.queryFilter).toHaveBeenCalledWith(expect.any(Object))
     })
-
     test('should return correct result', () => {
       expect(result).toEqual(fileUploadRecord)
     })
-
     test('should return null if contract.queryFilter return empty array', async () => {
       mockContractInstance.queryFilter.mockResolvedValueOnce([])
       result = await blockchainManager.getFileInfo(
         fileUploadRecord.args.fileId,
         fileUploadRecord.args.uploader
       )
-
       expect(result).toEqual(null)
     })
-
     test('should log success message', () => {
       expect(logger.info).toHaveBeenCalledTimes(1)
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(`${fileUploadRecord.args.fileId}`)
+      )
+    })
+  })
+
+  describe('getReencryptFileInfo', () => {
+    const fileUploadRecord = {
+      args: {
+        fileId: '0x124',
+        fileHash: BigInt('0x456'),
+        metadata: 'file_metadata',
+        uploader: '0x789',
+        requestor: '0x997265',
+        timestamp: BigInt('0x486787')
+      }
+    }
+    let result
+
+    beforeEach(async () => {
+      mockContractInstance.filters.ReencryptFileUploaded = jest.fn().mockReturnValueOnce({})
+      mockContractInstance.queryFilter.mockResolvedValueOnce([fileUploadRecord])
+      result = await blockchainManager.getReencryptFileInfo(
+        fileUploadRecord.args.fileId,
+        fileUploadRecord.args.uploader
+      )
+    })
+
+    test('should call contract.filters.ReencryptFileUploaded with correct arguments', () => {
+      expect(mockContractInstance.filters.ReencryptFileUploaded).toHaveBeenCalledTimes(1)
+      expect(mockContractInstance.filters.ReencryptFileUploaded).toHaveBeenCalledWith(
+        BigInt(fileUploadRecord.args.fileId),
+        BigInt(fileUploadRecord.args.uploader)
+      )
+    })
+    test('should call contract.queryFilter with return value from contract.filters.ReencryptFileUploaded', () => {
+      expect(mockContractInstance.queryFilter).toHaveBeenCalledTimes(1)
+      expect(mockContractInstance.queryFilter).toHaveBeenCalledWith(expect.any(Object))
+    })
+    test('should return correct result', () => {
+      expect(result).toEqual(fileUploadRecord)
+    })
+    test('should return null if contract.queryFilter return empty array', async () => {
+      mockContractInstance.queryFilter.mockResolvedValueOnce([])
+      result = await blockchainManager.getReencryptFileInfo(
+        fileUploadRecord.args.fileId,
+        fileUploadRecord.args.uploader
+      )
+      expect(result).toEqual(null)
+    })
+    test('should log success message', () => {
+      expect(logger.info).toHaveBeenCalledTimes(1)
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(`${fileUploadRecord.args.fileId}`)
+      )
     })
   })
 
@@ -201,6 +244,7 @@ describe('BlockchainManager', () => {
       }
     }
     let result
+
     beforeEach(async () => {
       mockContractInstance.filters.FileVerified = jest.fn().mockReturnValueOnce({})
       mockContractInstance.queryFilter.mockResolvedValueOnce([fileVerificationRecord])
@@ -217,28 +261,26 @@ describe('BlockchainManager', () => {
         BigInt(fileVerificationRecord.args.uploader)
       )
     })
-
     test('should call contract.queryFilter with return value from contract.filters.FileVerified', () => {
       expect(mockContractInstance.queryFilter).toHaveBeenCalledTimes(1)
       expect(mockContractInstance.queryFilter).toHaveBeenCalledWith(expect.any(Object))
     })
-
     test('should return correct result', () => {
       expect(result).toEqual(fileVerificationRecord)
     })
-
     test('should return null if contract.queryFilter return empty array', async () => {
       mockContractInstance.queryFilter.mockResolvedValueOnce([])
       result = await blockchainManager.getFileVerification(
         fileVerificationRecord.args.fileId,
         fileVerificationRecord.args.uploader
       )
-
       expect(result).toEqual(null)
     })
-
     test('should log success message', () => {
       expect(logger.info).toHaveBeenCalledTimes(1)
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(`${fileVerificationRecord.args.fileId}`)
+      )
     })
   })
 
@@ -270,28 +312,26 @@ describe('BlockchainManager', () => {
         BigInt(fileAuthRecord.args.requestor)
       )
     })
-
     test('should call contract.queryFilter with return value from contract.filters.FileAuthorizationAdded', () => {
       expect(mockContractInstance.queryFilter).toHaveBeenCalledTimes(1)
       expect(mockContractInstance.queryFilter).toHaveBeenCalledWith(expect.any(Object))
     })
-
     test('should return correct result', () => {
       expect(result).toEqual(fileAuthRecord)
     })
-
     test('should return null if contract.queryFilter return empty array', async () => {
       mockContractInstance.queryFilter.mockResolvedValueOnce([])
       result = await blockchainManager.getFileAuthRecord(
         fileAuthRecord.args.fileId,
         fileAuthRecord.args.requestor
       )
-
       expect(result).toEqual(null)
     })
-
     test('should log success message', () => {
       expect(logger.info).toHaveBeenCalledTimes(1)
+      expect(logger.info).toHaveBeenCalledWith(
+        expect.stringContaining(`${fileAuthRecord.args.fileId}`)
+      )
     })
   })
 })
