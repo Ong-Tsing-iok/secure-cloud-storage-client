@@ -22,6 +22,7 @@
   "blockchain": {
     "jsonRpcUrl" : "",
     "abi": [],
-    "contractAddr" : ""
+    "contractAddr" : "",
+    "walletKeyFilename": "wallet.key"
   }
 }

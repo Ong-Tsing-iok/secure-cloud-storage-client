@@ -1,4 +1,5 @@
-import { JsonRpcProvider, Contract } from 'ethers'
+import { JsonRpcProvider, Contract, Wallet, ethers } from 'ethers'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { logger } from './Logger'
 import GlobalValueManager from './GlobalValueManager'
 
@@ -11,13 +12,36 @@ class BlockchainManager {
    */
   constructor() {
     try {
-      const abi = GlobalValueManager.blockchain.abi
       const url = GlobalValueManager.blockchain.jsonRpcUrl
+      const abi = GlobalValueManager.blockchain.abi
       const contractAddr = GlobalValueManager.blockchain.contractAddr
       const provider = new JsonRpcProvider(url)
-      this.contract = new Contract(contractAddr, abi, provider)
+      const wallet = this.readOrCreateWallet(GlobalValueManager.blockchain.walletKeyPath, provider)
+      this.contract = new Contract(contractAddr, abi, wallet)
     } catch (error) {
       logger.error(error)
+    }
+  }
+
+  /**
+   * Reads the wallet key and create wallet from path.
+   * If key file not found, create a random wallet and store the key in key file.
+   * @param {string} filepath the file path to the wallet key
+   * @param {JsonRpcProvider} provider the provider of connected blockchain
+   * @returns a wallet connect to the provider
+   */
+  readOrCreateWallet(filepath, provider) {
+    try {
+      const key = readFileSync(filepath, 'utf-8').trim()
+      return new Wallet(key, provider)
+    } catch (error) {
+      if (error.code == 'ENOENT') {
+        const wallet = Wallet.createRandom(provider)
+        writeFileSync(filepath, wallet.privateKey)
+        return wallet
+      } else {
+        throw error
+      }
     }
   }
 
