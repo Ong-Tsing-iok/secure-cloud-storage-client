@@ -3,7 +3,7 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { sendMessage } from './MessageManager'
-import { login, register } from './LoginManager'
+import LoginManager from './LoginManager'
 import { logger } from './Logger'
 import {
   uploadFileProcess,
@@ -29,6 +29,9 @@ import {
 import GlobalValueManager from './GlobalValueManager'
 import BlockchainManager from './BlockchainManager'
 
+// Initilize class instances
+const loginManager = new LoginManager()
+
 function createWindow() {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
@@ -47,7 +50,7 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
-    login()
+    loginManager.login()
     GlobalValueManager.mainWindow?.webContents.send('request-value', {
       seenReplies: GlobalValueManager.requestConfig.seenReplies,
       seenRequests: GlobalValueManager.requestConfig.seenRequests
@@ -97,7 +100,7 @@ app.whenReady().then(() => {
   //     console.log(result.export(false))
   //   })
   // )
-  ipcMain.on('login', () => login())
+  ipcMain.on('login', () => loginManager.login())
   ipcMain.on('upload', (_event, parentFolderId) => uploadFileProcess(parentFolderId))
   ipcMain.on('change-cur-folder', (_event, curFolderId) => {
     GlobalValueManager.curFolderId = curFolderId
@@ -139,7 +142,7 @@ app.whenReady().then(() => {
   ipcMain.handle('get-public-files', async () => {
     return await getAllPublicFilesProcess()
   })
-  ipcMain.on('register', (_event, registerInfo) => register(registerInfo))
+  ipcMain.on('register', (_event, registerInfo) => loginManager.register(registerInfo))
   ipcMain.on('update-user-config', (_event, config) => {
     GlobalValueManager.updateUser(config)
   })
