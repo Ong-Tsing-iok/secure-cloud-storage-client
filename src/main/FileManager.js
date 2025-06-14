@@ -5,21 +5,25 @@ import { createReadStream, mkdirSync, createWriteStream, unlink, statSync } from
 import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
 import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
-import { encrypt, decrypt } from './AESModule'
 import { basename, join } from 'node:path'
 import { createPipeProgress } from './util/PipeProgress'
 import cq from 'concurrent-queue'
 import GlobalValueManager from './GlobalValueManager'
+import AESModule from './AESModule'
 import BlockchainManager from './BlockchainManager'
 
 class FileManager {
+  aesModule
+  blockchainManager
   uploadQueue
   /**
-   *
+   * @param {AESModule} aesModule
    * @param {BlockchainManager} blockchainManager
    * @param {number} queueConcurrency
    */
-  constructor(blockchainManager, queueConcurrency = 1) {
+  constructor(aesModule, blockchainManager, queueConcurrency = 1) {
+    this.aesModule = aesModule
+    this.blockchainManager = blockchainManager
     this.uploadQueue = cq().limit({ concurrency: queueConcurrency }).process(this.#uploadProcess)
 
     socket.on('upload-file-res', (error) => {
@@ -45,7 +49,7 @@ class FileManager {
     try {
       fileStream = createReadStream(filePath)
       logger.info('Encrypting file...')
-      ;({ cipher, spk, encryptedStream } = await encrypt(fileStream))
+      ;({ cipher, spk, encryptedStream } = await this.aesModule.encrypt(fileStream))
     } catch (error) {
       logger.error(`Failed to create stream or encrypt file: ${error}. Upload aborted.`)
       return
@@ -177,7 +181,7 @@ class FileManager {
           'success'
         )
       })
-      const decipher = await decrypt(cipher, spk, proxied)
+      const decipher = await this.aesModule.decrypt(cipher, spk, proxied)
       logger.info(
         `Downloading file ${uuid} with protocol ${GlobalValueManager.serverConfig.protocol}...`
       )

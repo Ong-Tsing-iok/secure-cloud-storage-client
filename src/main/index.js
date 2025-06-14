@@ -16,14 +16,16 @@ import {
   respondRequestProcess
 } from './RequestManager'
 import GlobalValueManager from './GlobalValueManager'
+import AESModule from './AESModule'
 import BlockchainManager from './BlockchainManager'
 import keyManager from './KeyManager'
 
 // Initilize class instances
 // const keymanager = new KeyManager()
 keyManager.initKeys()
+const aesModule = new AESModule(keyManager)
 const blockchainManager = new BlockchainManager()
-const fileManager = new FileManager(blockchainManager)
+const fileManager = new FileManager(aesModule, blockchainManager)
 const loginManager = new LoginManager(blockchainManager, fileManager, keyManager)
 
 function createWindow() {
