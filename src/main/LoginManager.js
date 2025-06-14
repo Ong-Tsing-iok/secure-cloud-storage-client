@@ -1,5 +1,5 @@
 import { logger } from './Logger'
-import { initKeys, decrypt, getPublicKeyString } from './KeyManager'
+import KeyManager from './KeyManager'
 import GlobalValueManager from './GlobalValueManager'
 import { getRequestedListProcess, getRequestListProcess } from './RequestManager'
 import { socket } from './MessageManager'
@@ -9,20 +9,23 @@ import BlockchainManager from './BlockchainManager'
 class LoginManager {
   blockchainManager
   fileManager
+  keyManager
   /**
    * @param {BlockchainManager} blockchainManager
    * @param {FileManager} fileManager
+   * @param {KeyManager} keyManager
    */
-  constructor(blockchainManager, fileManager) {
+  constructor(blockchainManager, fileManager, keyManager) {
     this.blockchainManager = blockchainManager
     this.fileManager = fileManager
+    this.keyManager = keyManager
   }
 
   async respondToAuth(cipher, spk) {
     logger.info('Getting login response from server. Decrypting auth key...')
     // console.log(cipher)
     try {
-      const decryptedValue = await decrypt(cipher, spk)
+      const decryptedValue = await this.keyManager.decrypt(cipher, spk)
       logger.debug(`decryptedValue: ${decryptedValue}`)
       logger.info('Finish decrypting. Sending response back to server')
       socket.emit('auth-res', decryptedValue, (error, userInfo) => {
@@ -54,8 +57,8 @@ class LoginManager {
   async login() {
     // only login after window is ready to show
     try {
-      await initKeys()
-      const publicKey = getPublicKeyString()
+      // await initKeys()
+      const publicKey = this.keyManager.getPublicKeyString()
       logger.info('Asking to login...')
       socket.emit('login', publicKey, (error, cipher, spk) => {
         if (error) {
@@ -73,8 +76,8 @@ class LoginManager {
   async register({ name, email }) {
     // only register after window is ready to show
     try {
-      await initKeys()
-      const publicKey = getPublicKeyString()
+      // await initKeys()
+      const publicKey = this.keyManager.getPublicKeyString()
       logger.info('Asking to register...')
       socket.emit(
         'register',

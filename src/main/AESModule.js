@@ -1,9 +1,9 @@
 import crypto from 'crypto'
 import { Readable } from 'stream'
-import * as KeyManager from './KeyManager'
+import keyManager from './KeyManager'
 
 const encrypt = async (readstream) => {
-  const { messageArray, cipher, spk } = await KeyManager.randCipher()
+  const { messageArray, cipher, spk } = await keyManager.randCipher()
   const key = messageArray.buffer.slice(0, 32)
   const iv = messageArray.buffer.slice(32, 48)
   const streamCipher = crypto.createCipheriv('aes-256-cbc', key, iv)
@@ -24,7 +24,7 @@ const encrypt = async (readstream) => {
  * @returns crypto.Decipher
  */
 const decrypt = async (cipher, spk, proxied = false) => {
-  const message = await KeyManager.decrypt(cipher, spk, proxied, true)
+  const message = await keyManager.decrypt(cipher, spk, proxied, true)
   // decode key and iv
   const streamDecipher = crypto.createDecipheriv(
     'aes-256-cbc',
