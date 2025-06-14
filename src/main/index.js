@@ -30,7 +30,8 @@ import GlobalValueManager from './GlobalValueManager'
 import BlockchainManager from './BlockchainManager'
 
 // Initilize class instances
-const loginManager = new LoginManager()
+const blockchainManager = new BlockchainManager()
+const loginManager = new LoginManager(blockchainManager)
 
 function createWindow() {
   // Create the browser window.
@@ -59,7 +60,6 @@ function createWindow() {
       whiteList: GlobalValueManager.userListConfig.whiteList,
       blackList: GlobalValueManager.userListConfig.blackList
     })
-    const blockchainManager = new BlockchainManager()
     blockchainManager.printContractOwner().catch((error) => logger.error(error))
   })
 
