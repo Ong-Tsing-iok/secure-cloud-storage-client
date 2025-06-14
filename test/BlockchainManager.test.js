@@ -73,9 +73,10 @@ describe('BlockchainManager', () => {
         mockWallet
       )
     })
-    test('should set the contract property', () => {
+    test('should set the contract and wallet property', () => {
       expect(blockchainManager.contract).toBeDefined()
       expect(blockchainManager.contract).toBe(mockContractInstance)
+      expect(blockchainManager.wallet).toBeDefined()
     })
     test('should log error if JsonRpcProvider fails to connect', () => {
       JsonRpcProvider.mockImplementationOnce(() => {
