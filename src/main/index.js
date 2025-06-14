@@ -6,15 +6,7 @@ import { sendMessage } from './MessageManager'
 import LoginManager from './LoginManager'
 import { logger } from './Logger'
 import FileManager from './FileManager'
-import {
-  agreeRequestProcess,
-  deleteRequestProcess,
-  getRequestListProcess,
-  getRequestedListProcess,
-  rejectRequestProcess,
-  requestFileProcess,
-  respondRequestProcess
-} from './RequestManager'
+import RequestManager from './RequestManager'
 import GlobalValueManager from './GlobalValueManager'
 import AESModule from './AESModule'
 import BlockchainManager from './BlockchainManager'
@@ -23,10 +15,11 @@ import keyManager from './KeyManager'
 // Initilize class instances
 // const keymanager = new KeyManager()
 keyManager.initKeys()
+const requestManager = new RequestManager(keyManager)
 const aesModule = new AESModule(keyManager)
 const blockchainManager = new BlockchainManager()
 const fileManager = new FileManager(aesModule, blockchainManager)
-const loginManager = new LoginManager(blockchainManager, fileManager, keyManager)
+const loginManager = new LoginManager(blockchainManager, fileManager, keyManager, requestManager)
 
 function createWindow() {
   // Create the browser window.
@@ -115,22 +108,22 @@ app.whenReady().then(() => {
     }
     logger.info(`File protocol changed to ${process.env.FILE_PROTOCOL}`)
   })
-  ipcMain.on('get-request-list', () => getRequestListProcess())
-  ipcMain.on('get-requested-list', () => getRequestedListProcess())
+  ipcMain.on('get-request-list', () => requestManager.getRequestListProcess())
+  ipcMain.on('get-requested-list', () => requestManager.getRequestedListProcess())
   ipcMain.on('delete-request', (_event, uuid) => {
-    deleteRequestProcess(uuid)
+    requestManager.deleteRequestProcess(uuid)
   })
   ipcMain.on('request-file', (_event, requestInfo) => {
-    requestFileProcess(requestInfo)
+    requestManager.requestFileProcess(requestInfo)
   })
   ipcMain.on('request-agree', (_event, uuid) => {
-    agreeRequestProcess(uuid)
+    requestManager.agreeRequestProcess(uuid)
   })
   ipcMain.on('request-reject', (_event, uuid) => {
-    rejectRequestProcess(uuid)
+    requestManager.rejectRequestProcess(uuid)
   })
   ipcMain.on('respond-request', (_event, responseInfo) => {
-    respondRequestProcess(responseInfo)
+    requestManager.respondRequestProcess(responseInfo)
   })
   ipcMain.handle('get-folders', async () => {
     return await fileManager.getAllFoldersProcess()
@@ -150,7 +143,7 @@ app.whenReady().then(() => {
   })
   ipcMain.on('update-user-list', (_event, users) => {
     GlobalValueManager.updateUserList(users)
-    getRequestedListProcess()
+    requestManager.getRequestedListProcess()
   })
   ipcMain.on('update-file-desc-perm', (_event, fileId, desc, perm) => {
     fileManager.updateFileDescPermProcess(fileId, desc, perm)
