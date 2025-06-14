@@ -31,7 +31,6 @@ const uploadFileProcessFtps = async (fileStream, filePath, uploadId) => {
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
     GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
-    FileManager.getFileListProcess(GlobalValueManager.curFolderId)
   } catch (error) {
     logger.error(`upload with ftps failed: ${error}`)
     GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')

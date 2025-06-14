@@ -3,50 +3,67 @@ import { statSync } from 'node:fs'
 import { logger } from './Logger'
 import { net } from 'electron'
 import FormData from 'form-data'
-import { basename } from 'node:path'
+import { basename, resolve } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
 import { createPipeProgress } from './util/PipeProgress'
 import FileManager from './FileManager'
 
-const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
-  const form = new FormData()
-  // form.append('socketId', socket.id)
-  form.append('file', fileStream, basename(filePath))
-  const request = net.request({
-    method: 'POST',
-    url: `${GlobalValueManager.httpsUrl}/upload`,
-    headers: { ...form.getHeaders(), socketid: socket.id, uploadid: uploadId } // TODO: maybe change to other one-time token (remember is case insensitive)
-  })
-  request.chunkedEncoding = true
+const uploadFileProcessHttps = async (fileStream, filePath, uploadId) => {
+  return new Promise((resolve, reject) => {
+    const form = new FormData()
+    // form.append('socketId', socket.id)
+    form.append('file', fileStream, basename(filePath))
+    const request = net.request({
+      method: 'POST',
+      url: `${GlobalValueManager.httpsUrl}/upload`,
+      headers: { ...form.getHeaders(), socketid: socket.id, uploadid: uploadId } // TODO: maybe change to other one-time token (remember is case insensitive)
+    })
+    request.chunkedEncoding = true
 
-  // const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
-  // form.pipe(PipeProgress)
-  // PipeProgress.pipe(request)
+    // const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
+    // form.pipe(PipeProgress)
+    // PipeProgress.pipe(request)
 
-  form.pipe(request)
+    form.pipe(request)
 
-  request.on('response', (response) => {
-    logger.info(`STATUS: ${response.statusCode}`)
-    // logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
-    // console.log(`upload end: ${Date.now()}`)
-    response.on('data', (chunk) => {
-      logger.info(`BODY: ${chunk}`)
+    request.on('response', (response) => {
+      logger.info(`STATUS: ${response.statusCode}`)
+      // logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
+      // console.log(`upload end: ${Date.now()}`)
+      response.on('data', (chunk) => {
+        logger.info(`BODY: ${chunk}`)
+      })
+
+      response.on('end', () => {
+        // logger.info('No more data in response.')
+        if (response.statusCode === 200) {
+          GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
+          resolve()
+        } else {
+          GlobalValueManager.mainWindow?.webContents.send(
+            'notice',
+            'Failed to upload file',
+            'error'
+          )
+          reject()
+        }
+      })
     })
 
-    response.on('end', () => {
-      // logger.info('No more data in response.')
-      if (response.statusCode === 200) {
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
-        FileManager.getFileListProcess(GlobalValueManager.curFolderId)
-      } else {
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
-      }
+    request.on('error', (error) => {
+      logger.error(`ERROR: ${error.message}`)
+      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
+      reject()
     })
-  })
-
-  request.on('error', (error) => {
-    logger.error(`ERROR: ${error.message}`)
-    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
+    form.on('error', (error) => {
+      logger.error(`FORM ERROR: ${error.message}`)
+      GlobalValueManager.mainWindow?.webContents.send(
+        'notice',
+        'Failed to prepare upload data',
+        'error'
+      )
+      reject()
+    })
   })
 }
 
