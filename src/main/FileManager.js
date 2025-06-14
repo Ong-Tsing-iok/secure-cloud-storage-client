@@ -10,10 +10,16 @@ import { basename, join } from 'node:path'
 import { createPipeProgress } from './util/PipeProgress'
 import cq from 'concurrent-queue'
 import GlobalValueManager from './GlobalValueManager'
+import BlockchainManager from './BlockchainManager'
 
 class FileManager {
   uploadQueue
-  constructor(queueConcurrency = 1) {
+  /**
+   *
+   * @param {BlockchainManager} blockchainManager
+   * @param {number} queueConcurrency
+   */
+  constructor(blockchainManager, queueConcurrency = 1) {
     this.uploadQueue = cq().limit({ concurrency: queueConcurrency }).process(this.#uploadProcess)
 
     socket.on('upload-file-res', (error) => {

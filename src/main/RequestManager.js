@@ -1,6 +1,6 @@
 import { socket } from './MessageManager'
 import { logger } from './Logger'
-import { rekeyGen } from './KeyManager'
+import keyManager from './KeyManager'
 import GlobalValueManager from './GlobalValueManager'
 
 const requestFileProcess = (requestInfo) => {
@@ -112,7 +112,7 @@ const agreeRequestProcess = (uuid) => {
 }
 
 socket.on('rekey-ask', async (pk, cb) => {
-  const rekey = await rekeyGen(pk)
+  const rekey = await keyManager.rekeyGen(pk)
   cb(rekey)
 })
 
@@ -126,7 +126,7 @@ const respondRequestProcess = async (responseInfo, refresh = true) => {
   let rekey = null
   if (responseInfo.agreed) {
     try {
-      rekey = await rekeyGen(responseInfo.pk, responseInfo.spk)
+      rekey = await keyManager.rekeyGen(responseInfo.pk, responseInfo.spk)
     } catch (error) {
       logger.error(`Failed to generate rekey: ${error}`)
       GlobalValueManager.mainWindow?.webContents.send(

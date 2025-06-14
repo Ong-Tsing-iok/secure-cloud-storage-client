@@ -17,11 +17,14 @@ import {
 } from './RequestManager'
 import GlobalValueManager from './GlobalValueManager'
 import BlockchainManager from './BlockchainManager'
+import keyManager from './KeyManager'
 
 // Initilize class instances
+// const keymanager = new KeyManager()
+keyManager.initKeys()
 const blockchainManager = new BlockchainManager()
-const fileManager = new FileManager()
-const loginManager = new LoginManager(blockchainManager, fileManager)
+const fileManager = new FileManager(blockchainManager)
+const loginManager = new LoginManager(blockchainManager, fileManager, keyManager)
 
 function createWindow() {
   // Create the browser window.
