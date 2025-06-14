@@ -1,7 +1,7 @@
 import { logger } from './Logger'
 import { initKeys, decrypt, getPublicKeyString } from './KeyManager'
 import GlobalValueManager from './GlobalValueManager'
-import { getFileListProcess } from './FileManager'
+import FileManager from './FileManager'
 import { getRequestedListProcess, getRequestListProcess } from './RequestManager'
 import { socket } from './MessageManager'
 import BlockchainManager from './BlockchainManager'
@@ -36,7 +36,7 @@ class LoginManager {
           logger.info('Login succeeded')
           GlobalValueManager.userInfo = userInfo
           GlobalValueManager.loggedIn = true
-          getFileListProcess(null)
+          FileManager.getFileListProcess(null)
           getRequestListProcess()
           getRequestedListProcess()
           // send userId and other stored name, email to renderer
