@@ -4,8 +4,13 @@ import GlobalValueManager from './GlobalValueManager'
 import { getFileListProcess } from './FileManager'
 import { getRequestedListProcess, getRequestListProcess } from './RequestManager'
 import { socket } from './MessageManager'
+import BlockchainManager from './BlockchainManager'
 
 class LoginManager {
+  blockchainManager
+  /**
+   * @param {BlockchainManager} blockchainManager
+   */
   constructor(blockchainManager) {
     this.blockchainManager = blockchainManager
   }
