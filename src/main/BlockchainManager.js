@@ -7,6 +7,8 @@ import GlobalValueManager from './GlobalValueManager'
  * Manages smart contract communication
  */
 class BlockchainManager {
+  wallet
+  contract
   /**
    * Connect to blockchain and smart contract
    */
