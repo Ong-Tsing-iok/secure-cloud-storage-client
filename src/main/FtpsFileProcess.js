@@ -3,7 +3,6 @@ import { logger } from './Logger'
 import { Client } from 'basic-ftp'
 import { basename } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
-import FileManager from './FileManager'
 
 /**
  * Uploads a file to an FTPS server.

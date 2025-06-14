@@ -6,7 +6,6 @@ import FormData from 'form-data'
 import { basename, resolve } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
 import { createPipeProgress } from './util/PipeProgress'
-import FileManager from './FileManager'
 
 const uploadFileProcessHttps = async (fileStream, filePath, uploadId) => {
   return new Promise((resolve, reject) => {

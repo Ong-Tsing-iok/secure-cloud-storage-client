@@ -1,18 +1,21 @@
 import { logger } from './Logger'
 import { initKeys, decrypt, getPublicKeyString } from './KeyManager'
 import GlobalValueManager from './GlobalValueManager'
-import FileManager from './FileManager'
 import { getRequestedListProcess, getRequestListProcess } from './RequestManager'
 import { socket } from './MessageManager'
+import FileManager from './FileManager'
 import BlockchainManager from './BlockchainManager'
 
 class LoginManager {
   blockchainManager
+  fileManager
   /**
    * @param {BlockchainManager} blockchainManager
+   * @param {FileManager} fileManager
    */
-  constructor(blockchainManager) {
+  constructor(blockchainManager, fileManager) {
     this.blockchainManager = blockchainManager
+    this.fileManager = fileManager
   }
 
   async respondToAuth(cipher, spk) {
@@ -36,7 +39,7 @@ class LoginManager {
           logger.info('Login succeeded')
           GlobalValueManager.userInfo = userInfo
           GlobalValueManager.loggedIn = true
-          FileManager.getFileListProcess(null)
+          this.fileManager.getFileListProcess(null)
           getRequestListProcess()
           getRequestedListProcess()
           // send userId and other stored name, email to renderer

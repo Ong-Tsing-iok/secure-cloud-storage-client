@@ -325,4 +325,4 @@ class FileManager {
   }
 }
 
-export default new FileManager()
+export default FileManager
