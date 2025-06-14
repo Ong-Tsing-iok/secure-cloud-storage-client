@@ -6,7 +6,7 @@ import FormData from 'form-data'
 import { basename } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
 import { createPipeProgress } from './util/PipeProgress'
-import { getFileListProcess } from './FileManager'
+import FileManager from './FileManager'
 
 const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
   const form = new FormData()
@@ -37,7 +37,7 @@ const uploadFileProcessHttps = (fileStream, filePath, uploadId) => {
       // logger.info('No more data in response.')
       if (response.statusCode === 200) {
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
-        getFileListProcess(GlobalValueManager.curFolderId)
+        FileManager.getFileListProcess(GlobalValueManager.curFolderId)
       } else {
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
       }

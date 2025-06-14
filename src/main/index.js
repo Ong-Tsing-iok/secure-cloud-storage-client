@@ -5,18 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import { sendMessage } from './MessageManager'
 import LoginManager from './LoginManager'
 import { logger } from './Logger'
-import {
-  uploadFileProcess,
-  getFileListProcess,
-  downloadFileProcess,
-  deleteFileProcess,
-  addFolderProcess,
-  deleteFolderProcess,
-  getAllFoldersProcess,
-  moveFileProcess,
-  getAllPublicFilesProcess,
-  updateFileDescPermProcess
-} from './FileManager'
+import fileManager from './FileManager'
 import {
   agreeRequestProcess,
   deleteRequestProcess,
@@ -101,15 +90,17 @@ app.whenReady().then(() => {
   //   })
   // )
   ipcMain.on('login', () => loginManager.login())
-  ipcMain.on('upload', (_event, parentFolderId) => uploadFileProcess(parentFolderId))
+  ipcMain.on('upload', (_event, parentFolderId) => fileManager.uploadFileProcess(parentFolderId))
   ipcMain.on('change-cur-folder', (_event, curFolderId) => {
     GlobalValueManager.curFolderId = curFolderId
-    if (GlobalValueManager.loggedIn) getFileListProcess(curFolderId)
+    if (GlobalValueManager.loggedIn) fileManager.getFileListProcess(curFolderId)
   })
-  ipcMain.on('download', (_event, uuid) => downloadFileProcess(uuid))
-  ipcMain.on('delete', (_event, uuid) => deleteFileProcess(uuid))
-  ipcMain.on('add-folder', (_event, curPath, folderName) => addFolderProcess(curPath, folderName))
-  ipcMain.on('delete-folder', (_event, folderId) => deleteFolderProcess(folderId))
+  ipcMain.on('download', (_event, uuid) => fileManager.downloadFileProcess(uuid))
+  ipcMain.on('delete', (_event, uuid) => fileManager.deleteFileProcess(uuid))
+  ipcMain.on('add-folder', (_event, curPath, folderName) =>
+    fileManager.addFolderProcess(curPath, folderName)
+  )
+  ipcMain.on('delete-folder', (_event, folderId) => fileManager.deleteFolderProcess(folderId))
   ipcMain.on('change-protocol', () => {
     if (process.env.FILE_PROTOCOL === 'https') {
       process.env.FILE_PROTOCOL = 'ftps'
@@ -136,11 +127,13 @@ app.whenReady().then(() => {
     respondRequestProcess(responseInfo)
   })
   ipcMain.handle('get-folders', async () => {
-    return await getAllFoldersProcess()
+    return await fileManager.getAllFoldersProcess()
   })
-  ipcMain.on('move-file', (_event, uuid, targetFolderId) => moveFileProcess(uuid, targetFolderId))
+  ipcMain.on('move-file', (_event, uuid, targetFolderId) =>
+    fileManager.moveFileProcess(uuid, targetFolderId)
+  )
   ipcMain.handle('get-public-files', async () => {
-    return await getAllPublicFilesProcess()
+    return await fileManager.getAllPublicFilesProcess()
   })
   ipcMain.on('register', (_event, registerInfo) => loginManager.register(registerInfo))
   ipcMain.on('update-user-config', (_event, config) => {
@@ -154,7 +147,7 @@ app.whenReady().then(() => {
     getRequestedListProcess()
   })
   ipcMain.on('update-file-desc-perm', (_event, fileId, desc, perm) => {
-    updateFileDescPermProcess(fileId, desc, perm)
+    fileManager.updateFileDescPermProcess(fileId, desc, perm)
   })
   createWindow()
   // login()

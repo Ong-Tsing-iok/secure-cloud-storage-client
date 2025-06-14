@@ -3,7 +3,7 @@ import { logger } from './Logger'
 import { Client } from 'basic-ftp'
 import { basename } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
-import { getFileListProcess } from './FileManager'
+import FileManager from './FileManager'
 
 /**
  * Uploads a file to an FTPS server.
@@ -31,7 +31,7 @@ const uploadFileProcessFtps = async (fileStream, filePath, uploadId) => {
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
     GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
-    getFileListProcess(GlobalValueManager.curFolderId)
+    FileManager.getFileListProcess(GlobalValueManager.curFolderId)
   } catch (error) {
     logger.error(`upload with ftps failed: ${error}`)
     GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
