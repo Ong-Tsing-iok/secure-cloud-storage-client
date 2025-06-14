@@ -6,7 +6,9 @@ import { getRequestedListProcess, getRequestListProcess } from './RequestManager
 import { socket } from './MessageManager'
 
 class LoginManager {
-  constructor() {}
+  constructor(blockchainManager) {
+    this.blockchainManager = blockchainManager
+  }
 
   async respondToAuth(cipher, spk) {
     logger.info('Getting login response from server. Decrypting auth key...')
@@ -66,14 +68,21 @@ class LoginManager {
       await initKeys()
       const publicKey = getPublicKeyString()
       logger.info('Asking to register...')
-      socket.emit('register', publicKey, name, email, (error, cipher, spk) => {
-        if (error) {
-          logger.error(`register failed because of following error: ${error}`)
-          GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to register', 'error')
-          return
+      socket.emit(
+        'register',
+        publicKey,
+        this.blockchainManager.wallet.address,
+        name,
+        email,
+        (error, cipher, spk) => {
+          if (error) {
+            logger.error(`register failed because of following error: ${error}`)
+            GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to register', 'error')
+            return
+          }
+          this.respondToAuth(cipher, spk)
         }
-        this.respondToAuth(cipher, spk)
-      })
+      )
     } catch (error) {
       logger.error(`register failed because of following error: ${error}`)
     }

@@ -21,6 +21,7 @@ class BlockchainManager {
     } catch (error) {
       logger.error(error)
     }
+    logger.info('blockchain manager initialized')
   }
 
   /**
@@ -36,6 +37,7 @@ class BlockchainManager {
       return new Wallet(key, provider)
     } catch (error) {
       if (error.code == 'ENOENT') {
+        logger.info('wallet key file not found. creating wallet key file.')
         const wallet = Wallet.createRandom(provider)
         writeFileSync(filepath, wallet.privateKey)
         return wallet
