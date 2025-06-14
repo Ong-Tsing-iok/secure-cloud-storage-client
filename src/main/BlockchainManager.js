@@ -1,4 +1,4 @@
-import { JsonRpcProvider, Contract, Wallet, ethers } from 'ethers'
+import { JsonRpcProvider, Contract, Wallet } from 'ethers'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { logger } from './Logger'
 import GlobalValueManager from './GlobalValueManager'
@@ -16,8 +16,8 @@ class BlockchainManager {
       const abi = GlobalValueManager.blockchain.abi
       const contractAddr = GlobalValueManager.blockchain.contractAddr
       const provider = new JsonRpcProvider(url)
-      const wallet = this.readOrCreateWallet(GlobalValueManager.blockchain.walletKeyPath, provider)
-      this.contract = new Contract(contractAddr, abi, wallet)
+      this.wallet = this.readOrCreateWallet(GlobalValueManager.blockchain.walletKeyPath, provider)
+      this.contract = new Contract(contractAddr, abi, this.wallet)
     } catch (error) {
       logger.error(error)
     }
