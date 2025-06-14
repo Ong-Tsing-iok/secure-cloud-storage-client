@@ -10,10 +10,10 @@ import RequestManager from './RequestManager'
 import GlobalValueManager from './GlobalValueManager'
 import AESModule from './AESModule'
 import BlockchainManager from './BlockchainManager'
-import keyManager from './KeyManager'
+import KeyManager from './KeyManager'
 
 // Initilize class instances
-// const keymanager = new KeyManager()
+const keyManager = new KeyManager()
 keyManager.initKeys()
 const requestManager = new RequestManager(keyManager)
 const aesModule = new AESModule(keyManager)
