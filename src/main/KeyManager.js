@@ -164,4 +164,4 @@ class KeyManager {
   }
 }
 
-export default new KeyManager()
+export default KeyManager

@@ -1,11 +1,11 @@
 import { socket } from './MessageManager'
-import { statSync } from 'node:fs'
+// import { statSync } from 'node:fs'
 import { logger } from './Logger'
 import { net } from 'electron'
 import FormData from 'form-data'
-import { basename, resolve } from 'node:path'
+import { basename } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
-import { createPipeProgress } from './util/PipeProgress'
+// import { createPipeProgress } from './util/PipeProgress'
 
 const uploadFileProcessHttps = async (fileStream, filePath, uploadId) => {
   return new Promise((resolve, reject) => {
