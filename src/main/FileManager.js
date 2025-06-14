@@ -1,4 +1,5 @@
 import { dialog } from 'electron'
+import crypto from 'crypto'
 import { socket } from './MessageManager'
 import { createReadStream, mkdirSync, createWriteStream, unlink, statSync } from 'node:fs'
 import { logger } from './Logger'
@@ -44,7 +45,7 @@ class FileManager {
       return
     }
     logger.info('Sending key and iv to server...')
-    socket.emit('upload-file-pre', cipher, spk, parentFolderId, (error, uploadId) => {
+    socket.emit('upload-file-pre', cipher, spk, parentFolderId, async (error, uploadId) => {
       if (error) {
         logger.error(`Failed to upload file: ${error}. Upload aborted.`)
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
@@ -54,18 +55,31 @@ class FileManager {
         `Uploading file ${basename(filePath)} with protocol ${GlobalValueManager.serverConfig.protocol}`
       )
       try {
+        this.makeHash(encryptedStream)
         if (GlobalValueManager.serverConfig.protocol === 'https') {
           const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
           encryptedStream.pipe(PipeProgress)
-          uploadFileProcessHttps(PipeProgress, filePath, uploadId)
+          await uploadFileProcessHttps(PipeProgress, filePath, uploadId)
         } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
-          uploadFileProcessFtps(encryptedStream, filePath, uploadId)
+          await uploadFileProcessFtps(encryptedStream, filePath, uploadId)
         } else {
           logger.error('Invalid file protocol')
+          return
         }
+        this.getFileListProcess(GlobalValueManager.curFolderId)
       } catch (error) {
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
       }
+    })
+  }
+
+  makeHash(encryptedStream) {
+    const hash = crypto.hash('sha256')
+    encryptedStream.pipe(hash)
+
+    hash.on('finish', () => {
+      const digest = hash.digest()
+      // Call blockchain
     })
   }
 
