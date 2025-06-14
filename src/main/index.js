@@ -5,7 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import { sendMessage } from './MessageManager'
 import LoginManager from './LoginManager'
 import { logger } from './Logger'
-import fileManager from './FileManager'
+import FileManager from './FileManager'
 import {
   agreeRequestProcess,
   deleteRequestProcess,
@@ -20,7 +20,8 @@ import BlockchainManager from './BlockchainManager'
 
 // Initilize class instances
 const blockchainManager = new BlockchainManager()
-const loginManager = new LoginManager(blockchainManager)
+const fileManager = new FileManager()
+const loginManager = new LoginManager(blockchainManager, fileManager)
 
 function createWindow() {
   // Create the browser window.
