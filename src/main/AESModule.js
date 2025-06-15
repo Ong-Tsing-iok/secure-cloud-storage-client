@@ -1,6 +1,7 @@
 import crypto from 'crypto'
 import Stream, { Readable } from 'stream'
 import KeyManager from './KeyManager'
+import { logger } from './Logger'
 
 // TODO: change the name
 class AESModule {
@@ -48,14 +49,18 @@ class AESModule {
   /**
    *
    * @param {Stream} cipherStream the stream to hash
-   * @param {(digest:string)=>void} callback the callback to call with digest
+   * @param {(digest:string)=>void | Promise<void>} callback the callback to call with digest
    */
   makeHash(cipherStream, callback) {
     const hash = crypto.hash('sha256')
     cipherStream.pipe(hash)
 
-    hash.on('finish', () => {
-      callback(hash.digest('hex'))
+    hash.on('finish', async () => {
+      try {
+        await callback(hash.digest('hex'))
+      } catch (error) {
+        logger.error(error)
+      }
     })
   }
 }

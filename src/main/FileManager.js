@@ -11,6 +11,7 @@ import cq from 'concurrent-queue'
 import GlobalValueManager from './GlobalValueManager'
 import AESModule from './AESModule'
 import BlockchainManager from './BlockchainManager'
+import FileUploadCoordinator from './FileUploadCoordinator'
 
 class FileManager {
   aesModule
@@ -64,23 +65,33 @@ class FileManager {
       logger.info(
         `Uploading file ${basename(filePath)} with protocol ${GlobalValueManager.serverConfig.protocol}`
       )
+
       try {
-        this.aesModule.makeHash(encryptedStream, (digest) => {
-          this.blockchainManager.uploadFileInfo(uploadId.replaceAll('-', ''), digest, '')
+        const fileUploadCoordinator = new FileUploadCoordinator(
+          this.blockchainManager,
+          uploadId,
+          ''
+        )
+        this.aesModule.makeHash(encryptedStream, async (digest) => {
+          fileUploadCoordinator.finishHash(digest)
         })
 
         if (GlobalValueManager.serverConfig.protocol === 'https') {
           const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
           encryptedStream.pipe(PipeProgress)
-          await uploadFileProcessHttps(PipeProgress, filePath, uploadId)
+          await uploadFileProcessHttps(PipeProgress, filePath, uploadId, fileUploadCoordinator)
         } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
-          await uploadFileProcessFtps(encryptedStream, filePath, uploadId)
+          await uploadFileProcessFtps(encryptedStream, filePath, uploadId, fileUploadCoordinator)
         } else {
           logger.error('Invalid file protocol')
           return
         }
-        this.getFileListProcess(GlobalValueManager.curFolderId)
+        await fileUploadCoordinator.uploadToBlockchainWhenReady()
+        GlobalValueManager.sendNotice('File and info uploaded to server and blockchain.', 'normal')
+
+        // this.getFileListProcess(GlobalValueManager.curFolderId)
       } catch (error) {
+        logger.error()
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
       }
     })

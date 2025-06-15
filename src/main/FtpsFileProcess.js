@@ -3,15 +3,16 @@ import { logger } from './Logger'
 import { Client } from 'basic-ftp'
 import { basename } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
+import FileUploadCoordinator from './FileUploadCoordinator'
 
 /**
  * Uploads a file to an FTPS server.
- *
  * @param {ReadableStream} fileStream - The stream of the file to be uploaded.
  * @param {string} filePath - The path of the file to be uploaded (related to fileStream).
- * @return {Promise<void>} A promise that resolves when the upload is complete.
+ * @param {string} uploadId
+ * @param {FileUploadCoordinator} fileUploadCoordinator
  */
-const uploadFileProcessFtps = async (fileStream, filePath, uploadId) => {
+const uploadFileProcessFtps = async (fileStream, filePath, uploadId, fileUploadCoordinator) => {
   const client = new Client()
   try {
     let response = await client.access({
@@ -29,7 +30,8 @@ const uploadFileProcessFtps = async (fileStream, filePath, uploadId) => {
     // console.log(`upload end: ${Date.now()}`)
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
-    GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
+    fileUploadCoordinator.finishUpload()
+    // GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
   } catch (error) {
     logger.error(`upload with ftps failed: ${error}`)
     GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')

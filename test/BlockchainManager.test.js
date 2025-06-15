@@ -55,6 +55,7 @@ describe('BlockchainManager', () => {
 
     // Get the mock contract instance that was created by the BlockchainManager constructor
     mockContractInstance = Contract.mock.results[0].value
+    logger.info.mockClear()
   })
 
   describe('constructor', () => {
