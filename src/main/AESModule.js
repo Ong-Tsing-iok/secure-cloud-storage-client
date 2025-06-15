@@ -57,7 +57,8 @@ class AESModule {
 
     hash.on('finish', async () => {
       try {
-        await callback(hash.digest('hex'))
+        const digest = '0x' + hash.digest('hex') // Append 0x for it to be able to convert to BigInt
+        await callback(digest)
       } catch (error) {
         logger.error(error)
       }
