@@ -5,9 +5,19 @@ import { net } from 'electron'
 import FormData from 'form-data'
 import { basename } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
+import { ReadStream } from 'node:fs'
+import FileUploadCoordinator from './FileUploadCoordinator'
 // import { createPipeProgress } from './util/PipeProgress'
 
-const uploadFileProcessHttps = async (fileStream, filePath, uploadId) => {
+/**
+ *
+ * @param {ReadStream} fileStream
+ * @param {string} filePath
+ * @param {string} uploadId
+ * @param {FileUploadCoordinator} fileUploadCoordinator
+ * @returns
+ */
+const uploadFileProcessHttps = async (fileStream, filePath, uploadId, fileUploadCoordinator) => {
   return new Promise((resolve, reject) => {
     const form = new FormData()
     // form.append('socketId', socket.id)
@@ -36,7 +46,8 @@ const uploadFileProcessHttps = async (fileStream, filePath, uploadId) => {
       response.on('end', () => {
         // logger.info('No more data in response.')
         if (response.statusCode === 200) {
-          GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
+          // GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
+          fileUploadCoordinator.finishUpload()
           resolve()
         } else {
           GlobalValueManager.mainWindow?.webContents.send(

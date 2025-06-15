@@ -122,6 +122,15 @@ class GlobalValueManager {
       // this.mainWindow?.webContents.send('notice', 'Failed to update request info', 'error')
     }
   }
+
+  /**
+   * Show a toast on user interface
+   * @param {string} message
+   * @param {'success'|'error'|'normal'} level
+   */
+  sendNotice(message, level) {
+    this.mainWindow?.webContents.send('notice', message, level)
+  }
 }
 
 export default new GlobalValueManager()
