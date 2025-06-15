@@ -65,7 +65,10 @@ class FileManager {
         `Uploading file ${basename(filePath)} with protocol ${GlobalValueManager.serverConfig.protocol}`
       )
       try {
-        this.makeHash(encryptedStream)
+        this.aesModule.makeHash(encryptedStream, (digest) => {
+          this.blockchainManager.uploadFileInfo(uploadId.replaceAll('-', ''), digest, '')
+        })
+
         if (GlobalValueManager.serverConfig.protocol === 'https') {
           const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
           encryptedStream.pipe(PipeProgress)
@@ -80,16 +83,6 @@ class FileManager {
       } catch (error) {
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
       }
-    })
-  }
-
-  makeHash(encryptedStream) {
-    const hash = crypto.hash('sha256')
-    encryptedStream.pipe(hash)
-
-    hash.on('finish', () => {
-      const digest = hash.digest()
-      // Call blockchain
     })
   }
 
