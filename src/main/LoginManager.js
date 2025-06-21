@@ -84,21 +84,18 @@ class LoginManager {
       logger.info('Asking to register...')
       socket.emit(
         'register',
-        publicKey,
-        this.blockchainManager.wallet.address,
-        name,
-        email,
-        (error, cipher, spk) => {
-          if (error) {
-            logger.error(`register failed because of following error: ${error}`)
-            GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to register', 'error')
+        { publicKey, blockchainAddress: this.blockchainManager.wallet.address, name, email },
+        (response) => {
+          if (response.errorMsg) {
+            logger.error(`Register failed because of following error: ${response.errorMsg}`)
+            GlobalValueManager.sendNotice('Failed to register', 'error')
             return
           }
-          this.respondToAuth(cipher, spk)
+          this.respondToAuth(response.cipher, response.spk)
         }
       )
     } catch (error) {
-      logger.error(`register failed because of following error: ${error}`)
+      logger.error(`Register failed because of following error: ${error}`)
     }
   }
 }
