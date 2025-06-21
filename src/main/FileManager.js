@@ -27,16 +27,14 @@ class FileManager {
     this.blockchainManager = blockchainManager
     this.uploadQueue = cq().limit({ concurrency: queueConcurrency }).process(this.#uploadProcess)
 
-    socket.on('upload-file-res', (error) => {
-      if (error) {
-        logger.error(`Failed to upload file: ${error}. Upload aborted.`)
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
-      } else {
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Success to upload file',
-          'success'
+    socket.on('upload-file-res', (response) => {
+      if (response.errorMsg) {
+        logger.error(
+          `Failed to upload file ${response.fileId}: ${response.errorMsg}. Upload aborted.`
         )
+        GlobalValueManager.sendNotice(`Failed to upload file ${response.fileId}`, 'error')
+      } else {
+        GlobalValueManager.sendNotice(`Success to upload file ${response.fileId}`, 'success')
       }
     })
   }
