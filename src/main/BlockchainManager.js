@@ -130,14 +130,14 @@ class BlockchainManager {
   /**
    * Get hash and metadata of a file.
    * @param {string} fileId UUID of the file.
-   * @param {string | BigInt | undefined} fileOwnerAddr Blockchain address of the file owner. Leave blank to use this client's address.
+   * @param {string | undefined} fileOwnerAddr Blockchain address of the file owner. Leave blank to use this client's address.
    * @returns Latest event arguments or null if not found.
    * @throws Any error occurred.
    */
   async getFileInfo(fileId, fileOwnerAddr) {
     if (!fileOwnerAddr) fileOwnerAddr = this.wallet.address
     const events = await this.contract.queryFilter(
-      this.contract.filters.FileUploaded(uuidToBigInt(fileId), BigInt(fileOwnerAddr))
+      this.contract.filters.FileUploaded(uuidToBigInt(fileId), fileOwnerAddr)
     )
     logger.info(`retrived fileInfo for fileId ${fileId}`)
     if (events.length == 0) {
@@ -154,45 +154,45 @@ class BlockchainManager {
     }
   }
 
-  /**
-   * Get file hash and metadata of a reencrypted file.
-   * @param {string} fileId UUID of the file.
-   * @param {string | BigInt | undefined} fileOwnerAddr Blockchain address of the reencrypted file owner. Leave blank to use this client's address.
-   * @returns Latest event arguments or null if not found.
-   * @throws Any error occurred.
-   */
-  async getReencryptFileInfo(fileId, fileOwnerAddr) {
-    if (!fileOwnerAddr) fileOwnerAddr = this.wallet.address
-    const events = await this.contract.queryFilter(
-      this.contract.filters.ReencryptFileUploaded(uuidToBigInt(fileId), BigInt(fileOwnerAddr))
-    )
-    logger.info(`retrived reencrypt fileInfo for fileId ${fileId}`)
-    if (events.length == 0) {
-      return null
-    } else {
-      const eventArgs = events[events.length - 1].args
-      return {
-        fileId: bigIntToUuid(eventArgs.fileId),
-        fileHash: BigInt(eventArgs.fileHash),
-        metadata: String(eventArgs.metadata),
-        uploaderAddr: String(eventArgs.uploader),
-        fileOwnerAddr: String(eventArgs.fileOwner),
-        timestamp: BigInt(eventArgs.timestamp)
-      }
-    }
-  }
+  // /**
+  //  * Get file hash and metadata of a reencrypted file.
+  //  * @param {string} fileId UUID of the file.
+  //  * @param {string | undefined} fileOwnerAddr Blockchain address of the reencrypted file owner. Leave blank to use this client's address.
+  //  * @returns Latest event arguments or null if not found.
+  //  * @throws Any error occurred.
+  //  */
+  // async getReencryptFileInfo(fileId, fileOwnerAddr) {
+  //   if (!fileOwnerAddr) fileOwnerAddr = this.wallet.address
+  //   const events = await this.contract.queryFilter(
+  //     this.contract.filters.ReencryptFileUploaded(uuidToBigInt(fileId), fileOwnerAddr)
+  //   )
+  //   logger.info(`retrived reencrypt fileInfo for fileId ${fileId}`)
+  //   if (events.length == 0) {
+  //     return null
+  //   } else {
+  //     const eventArgs = events[events.length - 1].args
+  //     return {
+  //       fileId: bigIntToUuid(eventArgs.fileId),
+  //       fileHash: BigInt(eventArgs.fileHash),
+  //       metadata: String(eventArgs.metadata),
+  //       uploaderAddr: String(eventArgs.uploader),
+  //       fileOwnerAddr: String(eventArgs.fileOwner),
+  //       timestamp: BigInt(eventArgs.timestamp)
+  //     }
+  //   }
+  // }
 
   /**
    * Get verification information of a file.
    * @param {string} fileId UUID of the file.
-   * @param {string | Bigint | undefined} fileOwnerAddr blockchain address of the file owner. Leave blank to use this client's address.
+   * @param {string  | undefined} fileOwnerAddr blockchain address of the file owner. Leave blank to use this client's address.
    * @returns Latest event arguments or null if not found.
    * @throws Any error occurred.
    */
   async getFileVerification(fileId, fileOwnerAddr) {
     if (!fileOwnerAddr) fileOwnerAddr = this.wallet.address
     const events = await this.contract.queryFilter(
-      this.contract.filters.FileVerified(uuidToBigInt(fileId), BigInt(fileOwnerAddr))
+      this.contract.filters.FileVerified(uuidToBigInt(fileId), fileOwnerAddr)
     )
     logger.info(`retrieved file verification info for fileId ${fileId}`)
     if (events.length == 0) {
@@ -211,14 +211,14 @@ class BlockchainManager {
   /**
    * Get authentication records of a file.
    * @param {string} fileId UUID of the file.
-   * @param {string | Bigint | undefined} requestorAddr Blockchain address of the requestor. Leave blank to use this client's address
+   * @param {string | undefined} requestorAddr Blockchain address of the requestor. Leave blank to use this client's address
    * @returns Latest event arguments or null if not found.
    * @throws Any error occurred.
    */
   async getFileAuthRecord(fileId, requestorAddr) {
     if (!requestorAddr) requestorAddr = this.wallet.address
     const events = await this.contract.queryFilter(
-      this.contract.filters.FileAuthorizationAdded(uuidToBigInt(fileId), BigInt(requestorAddr))
+      this.contract.filters.FileAuthorizationAdded(uuidToBigInt(fileId), requestorAddr)
     )
     logger.info(`retrieved file auth record for fileId ${fileId}`)
     if (events.length == 0) {
