@@ -68,7 +68,7 @@ class FileManager {
         const fileUploadCoordinator = new FileUploadCoordinator(
           this.blockchainManager,
           uploadId,
-          ''
+          JSON.stringify({ filename: basename(filePath) })
         )
         this.aesModule.makeHash(encryptedStream, async (digest) => {
           fileUploadCoordinator.finishHash(digest)
