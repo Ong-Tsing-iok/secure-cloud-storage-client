@@ -5,7 +5,7 @@ import { createReadStream, createWriteStream, unlink, statSync } from 'node:fs'
 import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
 import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
-import { basename } from 'node:path'
+import { basename, resolve } from 'node:path'
 import { createPipeProgress } from './util/PipeProgress'
 import cq from 'concurrent-queue'
 import GlobalValueManager from './GlobalValueManager'
@@ -125,30 +125,51 @@ class FileManager {
 
   downloadFileProcess(uuid) {
     logger.info(`Asking for file ${uuid}...`)
-    socket.emit('download-file-pre', uuid, (error, fileInfo) => {
-      if (error) {
-        logger.error(`Failed to download file: ${error}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          `Failed to download file`,
-          'error'
-        )
-        return
+    socket.emit('download-file-pre', { uuid }, async (response) => {
+      try {
+        if (response.errorMsg) {
+          logger.error(`Failed to download file: ${response.errorMsg}`)
+          GlobalValueManager.sendNotice(response.errorMsg, 'error')
+          return
+        }
+        if (!response.fileInfo) {
+          //! This should not happen
+          logger.error(`File ${uuid} not found`)
+          GlobalValueManager.sendNotice('File not found', 'error')
+          return
+        }
+        // console.log(fileInfo)
+        const blockchainVerification = await this.blockchainManager.getFileVerification(uuid)
+        if (!blockchainVerification || blockchainVerification.verificationInfo != 'verified') {
+          logger.error(`File ${uuid} not verified.`)
+          GlobalValueManager.sendNotice(`File not verified by server. Download abort.`, 'error')
+          return
+        }
+
+        const proxied = response.fileInfo.ownerId !== response.fileInfo.originOwnerId
+        // Get blockchain verification and file information
+        let blockchainFileInfo
+        if (proxied) {
+          blockchainFileInfo = this.blockchainManager.getReencryptFileInfo(uuid)
+        } else {
+          blockchainFileInfo = this.blockchainManager.getFileInfo(uuid)
+        }
+        if (!blockchainFileInfo) {
+          logger.error(`File ${uuid} info not on blockchain.`)
+          GlobalValueManager.sendNotice(`File info not on blockchain. Download abort.`, 'error')
+          return
+        }
+
+        const { id, name, cipher, spk, size } = response.fileInfo
+        this.downloadFileProcess2(id, name, cipher, spk, size, proxied, blockchainFileInfo)
+      } catch (error) {
+        logger.error(error)
+        GlobalValueManager.sendNotice(`Failed to download file.`, 'error')
       }
-      if (!fileInfo) {
-        //! This should not happen
-        logger.error(`File ${uuid} not found`)
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'File not found', 'error')
-        return
-      }
-      console.log(fileInfo)
-      const { id, name, cipher, spk, size } = fileInfo
-      const proxied = fileInfo.ownerId !== fileInfo.originOwnerId
-      this.downloadFileProcess2(id, name, cipher, spk, size, proxied)
     })
   }
 
-  async downloadFileProcess2(uuid, filename, cipher, spk, size, proxied) {
+  async downloadFileProcess2(uuid, filename, cipher, spk, size, proxied, blockchainFileInfo) {
     try {
       const { filePath, canceled } = await dialog.showSaveDialog({
         defaultPath: filename,
@@ -156,45 +177,69 @@ class FileManager {
       })
       if (canceled) {
         logger.info('Download canceled.')
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Download canceled', 'error')
+        GlobalValueManager.sendNotice('Download canceled.', 'error')
         return
       }
+
       const writeStream = createWriteStream(filePath)
+      let writeCompleteResolve, writeCompleteReject
+      const writeCompletePromise = new Promise((resolve, reject) => {
+        writeCompleteResolve = resolve
+        writeCompleteReject = reject
+      })
       writeStream.on('error', (err) => {
         logger.error(`Failed to write file ${filename}: ${err}. Download aborted.`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Failed to download file',
-          'error'
-        )
+        GlobalValueManager.sendNotice('Failed to download file', 'error')
         try {
           unlink(filePath)
         } catch (error) {
           if (error.code !== 'ENOENT') {
-            throw error
+            logger.error(error)
           }
+        } finally {
+          writeCompleteReject()
         }
       })
       writeStream.on('finish', () => {
         logger.info(`Downloaded file ${filename} to ${filePath}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Success to download file',
-          'success'
-        )
+        // GlobalValueManager.sendNotice('Success to download file', 'success')
+        writeCompleteResolve()
       })
       const decipher = await this.aesModule.decrypt(cipher, spk, proxied)
       logger.info(
         `Downloading file ${uuid} with protocol ${GlobalValueManager.serverConfig.protocol}...`
       )
       // download progress
-      const PipeProgress = createPipeProgress({ total: size }, logger)
-      PipeProgress.pipe(decipher)
+      const pipeProgress = createPipeProgress({ total: size }, logger)
+
+      this.aesModule.makeHash(pipeProgress, async (digest) => {
+        try {
+          await writeCompletePromise
+        } catch (error) {
+          // Write failed. Do nothing.
+          return
+        }
+        if (BigInt(digest) != blockchainFileInfo.fileHash) {
+          GlobalValueManager.sendNotice('Failed to download file', 'error')
+          try {
+            unlink(filePath)
+          } catch (error) {
+            if (error.code !== 'ENOENT') {
+              logger.error(error)
+            }
+          }
+          return
+        }
+        logger.info(`File hash verified for file ${uuid}.`)
+        GlobalValueManager.sendNotice('Success to download file', 'success')
+      })
+
+      pipeProgress.pipe(decipher)
       decipher.pipe(writeStream)
       if (GlobalValueManager.serverConfig.protocol === 'https') {
-        downloadFileProcessHttps(uuid, PipeProgress, filePath)
+        downloadFileProcessHttps(uuid, pipeProgress, filePath)
       } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
-        downloadFileProcessFtps(uuid, PipeProgress, filePath)
+        downloadFileProcessFtps(uuid, pipeProgress, filePath)
       } else {
         throw new Error('Invalid file protocol')
       }
