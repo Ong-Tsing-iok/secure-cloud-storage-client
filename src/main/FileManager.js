@@ -148,12 +148,13 @@ class FileManager {
 
         const proxied = response.fileInfo.ownerId !== response.fileInfo.originOwnerId
         // Get blockchain verification and file information
-        let blockchainFileInfo
-        if (proxied) {
-          blockchainFileInfo = this.blockchainManager.getReencryptFileInfo(uuid)
-        } else {
-          blockchainFileInfo = this.blockchainManager.getFileInfo(uuid)
-        }
+        // let blockchainFileInfo
+        // if (proxied) {
+        //   blockchainFileInfo = this.blockchainManager.getReencryptFileInfo(uuid)
+        // } else {
+        //   blockchainFileInfo = this.blockchainManager.getFileInfo(uuid)
+        // }
+        const blockchainFileInfo = this.blockchainManager.getReencryptFileInfo(uuid)
         if (!blockchainFileInfo) {
           logger.error(`File ${uuid} info not on blockchain.`)
           GlobalValueManager.sendNotice(`File info not on blockchain. Download abort.`, 'error')
