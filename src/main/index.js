@@ -48,7 +48,7 @@ function createWindow() {
       whiteList: GlobalValueManager.userListConfig.whiteList,
       blackList: GlobalValueManager.userListConfig.blackList
     })
-    blockchainManager.printContractOwner().catch((error) => logger.error(error))
+    // blockchainManager.printContractOwner().catch((error) => logger.error(error))
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
