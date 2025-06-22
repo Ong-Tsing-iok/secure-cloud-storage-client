@@ -77,7 +77,7 @@ class BlockchainManager {
     } catch (error) {
       logger.error(error)
     }
-    logger.info('blockchain manager initialized')
+    logger.info(`Blockchain Manager initialized with wallet address: ${this.wallet.address}.`)
   }
 
   /**
@@ -103,9 +103,9 @@ class BlockchainManager {
     }
   }
 
-  async printContractOwner() {
-    logger.info(`The owner of contract is ${await this.contract.owner()}`)
-  }
+  // async printContractOwner() {
+  //   logger.info(`The owner of contract is ${await this.contract.owner()}`)
+  // }
 
   // Error should be handled by the layer above
   /**
@@ -201,6 +201,7 @@ class BlockchainManager {
       const eventArgs = events[events.length - 1].args
       return {
         fileId: bigIntToUuid(eventArgs.fileId),
+        fileOwnerAddr: String(eventArgs.fileOwner),
         verificationInfo: String(eventArgs.verificationInfo),
         verifierAddr: String(eventArgs.verifier),
         timestamp: BigInt(eventArgs.timestamp)

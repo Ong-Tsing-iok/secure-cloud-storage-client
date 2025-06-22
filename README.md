@@ -19,6 +19,7 @@ $ npm install
 ```bash
 $ npm run dev
 ```
+In order to test with multiple instances, set `NODE_APP_INSTANCE=N`, and configure `local-n.json` in the config folder.
 
 ### Build
 
