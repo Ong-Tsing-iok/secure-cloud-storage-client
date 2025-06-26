@@ -8,6 +8,7 @@ import { mkdirSync } from 'node:fs'
 logger.debug(`app path: ${app.getAppPath()}`)
 logger.debug(`exe path: ${app.getPath('exe')}`)
 logger.debug(`userData path: ${app.getPath('userData')}`)
+logger.debug(`temp path: ${app.getPath('temp')}`)
 logger.debug(`execute path: ${process.execPath}`)
 logger.debug(`resource path: ${process.resourcesPath}`)
 logger.debug(`cwd path: ${process.cwd()}`)
@@ -25,6 +26,9 @@ class GlobalValueManager {
       this.userConfig = config.get('user')
       this.requestConfig = config.request
       this.userListConfig = config.userList
+      this.tempPath = app.getPath('temp')
+
+      this.keyPath = resolve(app.getPath('userData'), config.get('keys.path'))
 
       // Blockchain
       this.blockchain = new Object()
@@ -35,6 +39,7 @@ class GlobalValueManager {
         app.getPath('userData'),
         config.get('blockchain.walletKeyFilename')
       )
+      this.blockchain.blockRangeLimit = config.get('blockchain.blockRangeLimit')
     } catch (error) {
       logger.error(`Failed to load config: ${error}`)
     }
@@ -58,9 +63,9 @@ class GlobalValueManager {
     return null
   }
 
-  get keyPath() {
-    return resolve(app.getPath('userData'), 'user.keys')
-  }
+  // get keyPath() {
+  //   return resolve(app.getPath('userData'), 'user.keys')
+  // }
 
   updateConfigFile(field, value) {
     try {

@@ -10,7 +10,10 @@ const createPipeProgress = (options, logger) => {
   const progress = new PassThrough(options)
   progress.on('data', (chunk) => {
     current += chunk.length
-    // logger.info(`Progress: ${current}/${total}`)
+    logger.info(`Progress: ${current}/${options.total}`)
+  })
+  progress.on('end', () => {
+    logger.info(`Pipe progress ended.`)
   })
 
   return progress

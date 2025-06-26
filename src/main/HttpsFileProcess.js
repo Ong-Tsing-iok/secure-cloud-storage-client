@@ -5,7 +5,7 @@ import { net } from 'electron'
 import FormData from 'form-data'
 import { basename } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
-import { ReadStream } from 'node:fs'
+import { createReadStream, ReadStream } from 'node:fs'
 import FileUploadCoordinator from './FileUploadCoordinator'
 // import { createPipeProgress } from './util/PipeProgress'
 
@@ -17,11 +17,19 @@ import FileUploadCoordinator from './FileUploadCoordinator'
  * @param {FileUploadCoordinator} fileUploadCoordinator
  * @returns
  */
-const uploadFileProcessHttps = async (fileStream, filePath, uploadId, fileUploadCoordinator) => {
+const uploadFileProcessHttps = async (
+  tempEncryptedFilePath,
+  originalFileName,
+  uploadId,
+  fileUploadCoordinator
+) => {
   return new Promise((resolve, reject) => {
+    const readStream = createReadStream(tempEncryptedFilePath)
+    // const PipeProgress = createPipeProgress({ total: statSync(tempEncryptedFilePath).size }, logger)
+    // readStream.pipe(PipeProgress)
     const form = new FormData()
     // form.append('socketId', socket.id)
-    form.append('file', fileStream, basename(filePath))
+    form.append('file', readStream, basename(originalFileName))
     const request = net.request({
       method: 'POST',
       url: `${GlobalValueManager.httpsUrl}/upload`,
@@ -47,7 +55,7 @@ const uploadFileProcessHttps = async (fileStream, filePath, uploadId, fileUpload
         // logger.info('No more data in response.')
         if (response.statusCode === 200) {
           // GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
-          fileUploadCoordinator.finishUpload()
+          fileUploadCoordinator.finishUpload(uploadId, tempEncryptedFilePath)
           resolve()
         } else {
           GlobalValueManager.mainWindow?.webContents.send(

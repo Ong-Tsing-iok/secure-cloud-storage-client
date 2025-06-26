@@ -1,6 +1,7 @@
 import { logger } from './Logger'
 import BlockchainManager from './BlockchainManager'
 import GlobalValueManager from './GlobalValueManager'
+import { unlinkSync } from 'fs'
 
 // Maybe choose a better name...
 export default class FileUploadCoordinator {
@@ -8,16 +9,14 @@ export default class FileUploadCoordinator {
   /**
    *
    * @param {BlockchainManager} blockchainManager
-   * @param {string} fileId
    * @param {string} metadata
    */
-  constructor(blockchainManager, fileId, metadata) {
+  constructor(blockchainManager, metadata) {
     this.blockchainManager = blockchainManager
     this.uploadFinished = false
     this.hashFinished = false
     this.uploadInstantiated = false
 
-    this.fileId = fileId.replaceAll('-', '')
     this.metadata = metadata
 
     this.readyPromise = new Promise((resolve) => {
@@ -25,8 +24,14 @@ export default class FileUploadCoordinator {
     })
   }
 
-  finishUpload() {
+  finishUpload(fileId, tempEncryptedFilePath) {
     this.uploadFinished = true
+    this.fileId = fileId
+    try {
+      unlinkSync(tempEncryptedFilePath)
+    } catch (error) {
+      logger.error(error)
+    }
     this.#checkReady()
   }
 
