@@ -3,6 +3,8 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import { logger } from './Logger'
 import GlobalValueManager from './GlobalValueManager'
 
+const BLOCK_RANGE_LIMIT = GlobalValueManager.blockchain.blockRangeLimit
+
 /**
  * Converts a UUID string to a BigInt for use in smart contracts.
  * The UUID string should be in the standard format (e.g., "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx").
@@ -62,6 +64,7 @@ function bigIntToUuid(uuidBigInt) {
  */
 class BlockchainManager {
   wallet
+  provider
   contract
   /**
    * Connect to blockchain and smart contract.
@@ -71,8 +74,11 @@ class BlockchainManager {
       const url = GlobalValueManager.blockchain.jsonRpcUrl
       const abi = GlobalValueManager.blockchain.abi
       const contractAddr = GlobalValueManager.blockchain.contractAddr
-      const provider = new JsonRpcProvider(url)
-      this.wallet = this.readOrCreateWallet(GlobalValueManager.blockchain.walletKeyPath, provider)
+      this.provider = new JsonRpcProvider(url)
+      this.wallet = this.readOrCreateWallet(
+        GlobalValueManager.blockchain.walletKeyPath,
+        this.provider
+      )
       this.contract = new Contract(contractAddr, abi, this.wallet)
     } catch (error) {
       logger.error(error)
@@ -116,7 +122,7 @@ class BlockchainManager {
    * @throws Any error occurred.
    */
   async uploadFileInfo(fileId, fileHash, metadata) {
-    const bFileId = BigInt(fileId)
+    const bFileId = uuidToBigInt(fileId)
     const bFileHash = BigInt(fileHash)
     // Do upload
     const tx = await this.contract.uploadFile(bFileId, bFileHash, metadata)
@@ -136,22 +142,32 @@ class BlockchainManager {
    */
   async getFileInfo(fileId, fileOwnerAddr) {
     if (!fileOwnerAddr) fileOwnerAddr = this.wallet.address
-    const events = await this.contract.queryFilter(
-      this.contract.filters.FileUploaded(uuidToBigInt(fileId), fileOwnerAddr)
-    )
-    logger.info(`retrived fileInfo for fileId ${fileId}`)
-    if (events.length == 0) {
-      return null
-    } else {
-      const eventArgs = events[events.length - 1].args
-      return {
-        fileId: bigIntToUuid(eventArgs.fileId),
-        fileHash: BigInt(eventArgs.fileHash),
-        metadata: String(eventArgs.metadata),
-        fileOwnerAddr: String(eventArgs.fileOwner),
-        timestamp: BigInt(eventArgs.timestamp)
+    const latestBlock = await this.provider.getBlockNumber()
+    let toBlock = latestBlock
+    while (toBlock > 0) {
+      const fromBlock = Math.max(0, toBlock - BLOCK_RANGE_LIMIT)
+      const events = await this.contract.queryFilter(
+        this.contract.filters.FileUploaded(uuidToBigInt(fileId), fileOwnerAddr),
+        fromBlock,
+        toBlock
+      )
+      logger.debug(`Retriving fileInfo from block ${fromBlock} to block ${toBlock}.`)
+      if (events.length > 0) {
+        logger.info(`Retrived fileInfo for fileId ${fileId}.`)
+        const eventArgs = events[events.length - 1].args
+        return {
+          fileId: bigIntToUuid(eventArgs.fileId),
+          fileHash: BigInt(eventArgs.fileHash),
+          metadata: String(eventArgs.metadata),
+          fileOwnerAddr: String(eventArgs.fileOwner),
+          timestamp: BigInt(eventArgs.timestamp)
+        }
       }
+      toBlock = fromBlock - 1
     }
+
+    logger.info(`FileInfo not found for fileId ${fileId}.`)
+    return null
   }
 
   // /**
@@ -191,22 +207,31 @@ class BlockchainManager {
    */
   async getFileVerification(fileId, fileOwnerAddr) {
     if (!fileOwnerAddr) fileOwnerAddr = this.wallet.address
-    const events = await this.contract.queryFilter(
-      this.contract.filters.FileVerified(uuidToBigInt(fileId), fileOwnerAddr)
-    )
-    logger.info(`retrieved file verification info for fileId ${fileId}`)
-    if (events.length == 0) {
-      return null
-    } else {
-      const eventArgs = events[events.length - 1].args
-      return {
-        fileId: bigIntToUuid(eventArgs.fileId),
-        fileOwnerAddr: String(eventArgs.fileOwner),
-        verificationInfo: String(eventArgs.verificationInfo),
-        verifierAddr: String(eventArgs.verifier),
-        timestamp: BigInt(eventArgs.timestamp)
+    const latestBlock = await this.provider.getBlockNumber()
+    let toBlock = latestBlock
+    while (toBlock > 0) {
+      const fromBlock = Math.max(0, toBlock - BLOCK_RANGE_LIMIT)
+      const events = await this.contract.queryFilter(
+        this.contract.filters.FileVerified(uuidToBigInt(fileId), fileOwnerAddr),
+        fromBlock,
+        toBlock
+      )
+      logger.debug(`Retriving file verification info from block ${fromBlock} to block ${toBlock}.`)
+      if (events.length > 0) {
+        logger.info(`Retrieved file verification info for fileId ${fileId}.`)
+        const eventArgs = events[events.length - 1].args
+        return {
+          fileId: bigIntToUuid(eventArgs.fileId),
+          fileOwnerAddr: String(eventArgs.fileOwner),
+          verificationInfo: String(eventArgs.verificationInfo),
+          verifierAddr: String(eventArgs.verifier),
+          timestamp: BigInt(eventArgs.timestamp)
+        }
       }
+      toBlock = fromBlock - 1
     }
+    logger.info(`File verification info not found for fileId ${fileId}.`)
+    return null
   }
 
   /**
@@ -218,23 +243,32 @@ class BlockchainManager {
    */
   async getFileAuthRecord(fileId, requestorAddr) {
     if (!requestorAddr) requestorAddr = this.wallet.address
-    const events = await this.contract.queryFilter(
-      this.contract.filters.FileAuthorizationAdded(uuidToBigInt(fileId), requestorAddr)
-    )
-    logger.info(`retrieved file auth record for fileId ${fileId}`)
-    if (events.length == 0) {
-      return null
-    } else {
-      const eventArgs = events[events.length - 1].args
-      return {
-        fileId: bigIntToUuid(eventArgs.fileId),
-        requestorAddr: String(eventArgs.requestor),
-        authorizerAddr: String(eventArgs.authorizer),
-        authorizationInfo: String(eventArgs.authorizationInfo),
-        verifierAddr: String(eventArgs.verifier),
-        timestamp: BigInt(eventArgs.timestamp)
+    const latestBlock = await this.provider.getBlockNumber()
+    let toBlock = latestBlock
+    while (toBlock > 0) {
+      const fromBlock = Math.max(0, toBlock - BLOCK_RANGE_LIMIT)
+      const events = await this.contract.queryFilter(
+        this.contract.filters.FileAuthorizationAdded(uuidToBigInt(fileId), requestorAddr),
+        fromBlock,
+        toBlock
+      )
+      logger.debug(`Retriving file auth record from block ${fromBlock} to block ${toBlock}.`)
+      if (events.length > 0) {
+        logger.info(`Retrieved file auth record for fileId ${fileId}.`)
+        const eventArgs = events[events.length - 1].args
+        return {
+          fileId: bigIntToUuid(eventArgs.fileId),
+          requestorAddr: String(eventArgs.requestor),
+          authorizerAddr: String(eventArgs.authorizer),
+          authorizationInfo: String(eventArgs.authorizationInfo),
+          verifierAddr: String(eventArgs.verifier),
+          timestamp: BigInt(eventArgs.timestamp)
+        }
       }
+      toBlock = fromBlock - 1
     }
+    logger.info(`File auth record not found for fileId ${fileId}`)
+    return null
   }
 }
 

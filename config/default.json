@@ -23,6 +23,7 @@
     "jsonRpcUrl" : "",
     "abi": [],
     "contractAddr" : "",
-    "walletKeyFilename": "wallet.key"
+    "walletKeyFilename": "wallet.key",
+    "blockRangeLimit": 5000
   }
 }
