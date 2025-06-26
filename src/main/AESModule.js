@@ -20,6 +20,10 @@ class AESModule {
     const iv = messageArray.buffer.slice(32, 48)
     const streamCipher = crypto.createCipheriv('aes-256-cbc', key, iv)
     const encryptedStream = Readable.from(readstream.pipe(streamCipher))
+
+    encryptedStream.on('error', (err) => {
+      logger.error(err)
+    })
     // encode key and iv
     return {
       cipher,
@@ -43,6 +47,10 @@ class AESModule {
       message.buffer.slice(0, 32),
       message.buffer.slice(32, 48)
     )
+
+    streamDecipher.on('error', (err) => {
+      logger.error(err)
+    })
     return streamDecipher
   }
 
@@ -52,10 +60,11 @@ class AESModule {
    * @param {(digest:string)=>void | Promise<void>} callback the callback to call with digest
    */
   makeHash(cipherStream, callback) {
-    const hash = crypto.hash('sha256')
+    const hash = crypto.createHash('sha256')
     cipherStream.pipe(hash)
 
     hash.on('finish', async () => {
+      logger.info(`Finish hash calculation.`)
       try {
         const digest = '0x' + hash.digest('hex') // Append 0x for it to be able to convert to BigInt
         await callback(digest)

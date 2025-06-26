@@ -1,7 +1,8 @@
 import { dialog } from 'electron'
 import crypto from 'crypto'
 import { socket } from './MessageManager'
-import { createReadStream, createWriteStream, unlink, statSync } from 'node:fs'
+import { createReadStream, createWriteStream, statSync } from 'node:fs'
+import { unlink } from 'node:fs/promises'
 import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
 import { uploadFileProcessFtps, downloadFileProcessFtps } from './FtpsFileProcess'
@@ -25,7 +26,9 @@ class FileManager {
   constructor(aesModule, blockchainManager, queueConcurrency = 1) {
     this.aesModule = aesModule
     this.blockchainManager = blockchainManager
-    this.uploadQueue = cq().limit({ concurrency: queueConcurrency }).process(this.#uploadProcess)
+    this.uploadQueue = cq()
+      .limit({ concurrency: queueConcurrency })
+      .process(this.#uploadProcess.bind(this))
 
     socket.on('upload-file-res', (response) => {
       if (response.errorMsg) {
@@ -35,6 +38,7 @@ class FileManager {
         GlobalValueManager.sendNotice(`Failed to upload file ${response.fileId}`, 'error')
       } else {
         GlobalValueManager.sendNotice(`Success to upload file ${response.fileId}`, 'success')
+        this.getFileListProcess(GlobalValueManager.curFolderId)
       }
     })
   }
@@ -45,6 +49,7 @@ class FileManager {
     let spk = null
     let encryptedStream = null
     let fileStream = null
+    const originalFileName = basename(filePath)
     try {
       fileStream = createReadStream(filePath)
       logger.info('Encrypting file...')
@@ -60,38 +65,58 @@ class FileManager {
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
         return
       }
-      logger.info(
-        `Uploading file ${basename(filePath)} with protocol ${GlobalValueManager.serverConfig.protocol}`
+
+      const tempEncryptedFilePath = resolve(GlobalValueManager.tempPath, uploadId)
+      const writeStream = createWriteStream(tempEncryptedFilePath)
+      const fileUploadCoordinator = new FileUploadCoordinator(
+        this.blockchainManager,
+        JSON.stringify({ filename: originalFileName })
       )
+      this.aesModule.makeHash(encryptedStream, async (digest) => {
+        fileUploadCoordinator.finishHash(digest)
+      })
+      encryptedStream.pipe(writeStream)
+      writeStream.on('close', async () => {
+        logger.info(`Encrypted file finished writing.`, { tempEncryptedFilePath })
 
-      try {
-        const fileUploadCoordinator = new FileUploadCoordinator(
-          this.blockchainManager,
-          uploadId,
-          JSON.stringify({ filename: basename(filePath) })
+        logger.info(
+          `Uploading file ${basename(filePath)} with protocol ${GlobalValueManager.serverConfig.protocol}`
         )
-        this.aesModule.makeHash(encryptedStream, async (digest) => {
-          fileUploadCoordinator.finishHash(digest)
-        })
+        try {
+          if (GlobalValueManager.serverConfig.protocol === 'https') {
+            await uploadFileProcessHttps(
+              tempEncryptedFilePath,
+              originalFileName,
+              uploadId,
+              fileUploadCoordinator
+            )
+          } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
+            await uploadFileProcessFtps(
+              tempEncryptedFilePath,
+              originalFileName,
+              uploadId,
+              fileUploadCoordinator
+            )
+          } else {
+            logger.error('Invalid file protocol')
+            return
+          }
+          await fileUploadCoordinator.uploadToBlockchainWhenReady()
+          GlobalValueManager.sendNotice(
+            'File and info uploaded to server and blockchain.',
+            'normal'
+          )
 
-        if (GlobalValueManager.serverConfig.protocol === 'https') {
-          const PipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
-          encryptedStream.pipe(PipeProgress)
-          await uploadFileProcessHttps(PipeProgress, filePath, uploadId, fileUploadCoordinator)
-        } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
-          await uploadFileProcessFtps(encryptedStream, filePath, uploadId, fileUploadCoordinator)
-        } else {
-          logger.error('Invalid file protocol')
-          return
+          // this.getFileListProcess(GlobalValueManager.curFolderId)
+        } catch (error) {
+          logger.error(error)
+          GlobalValueManager.mainWindow?.webContents.send(
+            'notice',
+            'Failed to upload file',
+            'error'
+          )
         }
-        await fileUploadCoordinator.uploadToBlockchainWhenReady()
-        GlobalValueManager.sendNotice('File and info uploaded to server and blockchain.', 'normal')
-
-        // this.getFileListProcess(GlobalValueManager.curFolderId)
-      } catch (error) {
-        logger.error()
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
-      }
+      })
     })
   }
 
@@ -140,11 +165,12 @@ class FileManager {
         }
         // console.log(fileInfo)
         const blockchainVerification = await this.blockchainManager.getFileVerification(uuid)
-        if (!blockchainVerification || blockchainVerification.verificationInfo != 'verified') {
+        if (!blockchainVerification || blockchainVerification.verificationInfo != 'success') {
           logger.error(`File ${uuid} not verified.`)
           GlobalValueManager.sendNotice(`File not verified by server. Download abort.`, 'error')
           return
         }
+        logger.info(`File ${uuid} is verified.`)
 
         const proxied = response.fileInfo.ownerId !== response.fileInfo.originOwnerId
         // Get blockchain verification and file information
@@ -154,7 +180,8 @@ class FileManager {
         // } else {
         //   blockchainFileInfo = this.blockchainManager.getFileInfo(uuid)
         // }
-        const blockchainFileInfo = this.blockchainManager.getReencryptFileInfo(uuid)
+        const blockchainFileInfo = await this.blockchainManager.getFileInfo(uuid)
+        logger.debug(blockchainFileInfo)
         if (!blockchainFileInfo) {
           logger.error(`File ${uuid} info not on blockchain.`)
           GlobalValueManager.sendNotice(`File info not on blockchain. Download abort.`, 'error')
@@ -220,10 +247,20 @@ class FileManager {
           // Write failed. Do nothing.
           return
         }
-        if (BigInt(digest) != blockchainFileInfo.fileHash) {
+        if (BigInt(digest) != BigInt(blockchainFileInfo.fileHash)) {
+          logger.debug({
+            fileHash: BigInt(digest),
+            blockchainHash: BigInt(blockchainFileInfo.fileHash)
+          })
+          logger.error(`File hash did not meet for file ${uuid}`)
           GlobalValueManager.sendNotice('Failed to download file', 'error')
+          socket.emit('download-file-hash-error', {
+            fileId: uuid,
+            fileHash: BigInt(digest),
+            blockchainHash: BigInt(blockchainFileInfo.fileHash)
+          })
           try {
-            unlink(filePath)
+            await unlink(filePath)
           } catch (error) {
             if (error.code !== 'ENOENT') {
               logger.error(error)

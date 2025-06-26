@@ -4,16 +4,24 @@ import { Client } from 'basic-ftp'
 import { basename } from 'node:path'
 import GlobalValueManager from './GlobalValueManager'
 import FileUploadCoordinator from './FileUploadCoordinator'
+import { createPipeProgress } from './util/PipeProgress'
+import { statSync } from 'node:fs'
 
 /**
  * Uploads a file to an FTPS server.
- * @param {ReadableStream} fileStream - The stream of the file to be uploaded.
- * @param {string} filePath - The path of the file to be uploaded (related to fileStream).
+ * @param {string} tempEncryptedFilePath - The stream of the file to be uploaded.
+ * @param {string} originalFileName - The path of the file to be uploaded (related to fileStream).
  * @param {string} uploadId
  * @param {FileUploadCoordinator} fileUploadCoordinator
  */
-const uploadFileProcessFtps = async (fileStream, filePath, uploadId, fileUploadCoordinator) => {
+const uploadFileProcessFtps = async (
+  tempEncryptedFilePath,
+  originalFileName,
+  uploadId,
+  fileUploadCoordinator
+) => {
   const client = new Client()
+  client.ftp.verbose = true
   try {
     let response = await client.access({
       host: GlobalValueManager.serverConfig.host,
@@ -26,11 +34,13 @@ const uploadFileProcessFtps = async (fileStream, filePath, uploadId, fileUploadC
       secureOptions: { rejectUnauthorized: false }
     })
     logger.info(`ftp upload access response: ${response.message}`)
-    response = await client.uploadFrom(fileStream, basename(filePath))
+    // const pipeProgress = createPipeProgress({ total: statSync(filePath).size }, logger)
+
+    response = await client.uploadFrom(tempEncryptedFilePath, originalFileName)
     // console.log(`upload end: ${Date.now()}`)
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
-    fileUploadCoordinator.finishUpload()
+    fileUploadCoordinator.finishUpload(uploadId, tempEncryptedFilePath)
     // GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
   } catch (error) {
     logger.error(`upload with ftps failed: ${error}`)
