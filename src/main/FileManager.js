@@ -59,14 +59,15 @@ class FileManager {
       return
     }
     logger.info('Sending key and iv to server...')
-    socket.emit('upload-file-pre', cipher, spk, parentFolderId, async (error, uploadId) => {
-      if (error) {
-        logger.error(`Failed to upload file: ${error}. Upload aborted.`)
+    socket.emit('upload-file-pre', { cipher, spk, parentFolderId }, async (response) => {
+      const { errorMsg, fileId } = response
+      if (errorMsg) {
+        logger.error(`Failed to upload file: ${errorMsg}. Upload aborted.`)
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
         return
       }
 
-      const tempEncryptedFilePath = resolve(GlobalValueManager.tempPath, uploadId)
+      const tempEncryptedFilePath = resolve(GlobalValueManager.tempPath, fileId)
       const writeStream = createWriteStream(tempEncryptedFilePath)
       const fileUploadCoordinator = new FileUploadCoordinator(
         this.blockchainManager,
@@ -87,14 +88,14 @@ class FileManager {
             await uploadFileProcessHttps(
               tempEncryptedFilePath,
               originalFileName,
-              uploadId,
+              fileId,
               fileUploadCoordinator
             )
           } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
             await uploadFileProcessFtps(
               tempEncryptedFilePath,
               originalFileName,
-              uploadId,
+              fileId,
               fileUploadCoordinator
             )
           } else {
@@ -136,9 +137,10 @@ class FileManager {
 
   getFileListProcess(parentFolderId) {
     logger.info(`Getting file list for ${parentFolderId || 'home'}...`)
-    socket.emit('get-file-list', parentFolderId, (fileList, error) => {
-      if (error) {
-        logger.error(`Failed to get file list: ${error}`)
+    socket.emit('get-file-list', { parentFolderId }, (response) => {
+      const { fileList, errorMsg } = response
+      if (errorMsg) {
+        logger.error(`Failed to get file list: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send(
           'notice',
           'Failed to get file list',
@@ -291,9 +293,10 @@ class FileManager {
 
   deleteFileProcess(uuid) {
     logger.info(`Asking to delete file ${uuid}...`)
-    socket.emit('delete-file', uuid, (error) => {
-      if (error) {
-        logger.error(`Failed to delete file ${uuid}: ${error}`)
+    socket.emit('delete-file', { uuid }, (response) => {
+      const { errorMsg } = response
+      if (errorMsg) {
+        logger.error(`Failed to delete file ${uuid}: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to delete file', 'error')
       } else {
         logger.info(`Success to delete file ${uuid}`)
@@ -309,9 +312,10 @@ class FileManager {
 
   addFolderProcess(parentFolderId, folderName) {
     logger.info(`Asking to add folder ${folderName}...`)
-    socket.emit('add-folder', parentFolderId, folderName, (error) => {
-      if (error) {
-        logger.error(`Failed to add folder ${folderName}: ${error}`)
+    socket.emit('add-folder', { parentFolderId, folderName }, (response) => {
+      const { errorMsg } = response
+      if (errorMsg) {
+        logger.error(`Failed to add folder ${folderName}: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to add folder', 'error')
       } else {
         logger.info(`Success to add folder ${folderName}`)
@@ -327,9 +331,10 @@ class FileManager {
 
   deleteFolderProcess(folderId) {
     logger.info(`Asking to delete folder ${folderId}...`)
-    socket.emit('delete-folder', folderId, (error) => {
-      if (error) {
-        logger.error(`Failed to delete folder: ${error}`)
+    socket.emit('delete-folder', { folderId }, (response) => {
+      const { errorMsg } = response
+      if (errorMsg) {
+        logger.error(`Failed to delete folder: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send(
           'notice',
           'Failed to delete folder',
@@ -350,9 +355,10 @@ class FileManager {
   getAllFoldersProcess() {
     logger.info('Asking for all folders...')
     return new Promise((resolve) => {
-      socket.emit('get-all-folders', (folders, error) => {
-        if (error) {
-          logger.error(`Failed to get all folders: ${error}`)
+      socket.emit('get-all-folders', (response) => {
+        const { folders, errorMsg } = response
+        if (errorMsg) {
+          logger.error(`Failed to get all folders: ${errorMsg}`)
           GlobalValueManager.mainWindow?.webContents.send(
             'notice',
             'Failed to get all folders',
@@ -368,9 +374,10 @@ class FileManager {
 
   moveFileProcess(uuid, targetFolderId) {
     logger.info(`Asking to move file ${uuid} to ${targetFolderId}...`)
-    socket.emit('move-file', uuid, targetFolderId, (error) => {
-      if (error) {
-        logger.error(`Failed to move file ${uuid} to ${targetFolderId}: ${error}`)
+    socket.emit('move-file', { fileId: uuid, targetFolderId }, (response) => {
+      const { errorMsg } = response
+      if (errorMsg) {
+        logger.error(`Failed to move file ${uuid} to ${targetFolderId}: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to move file', 'error')
       } else {
         logger.info(`Moved file ${uuid} to ${targetFolderId}`)
@@ -383,9 +390,10 @@ class FileManager {
   getAllPublicFilesProcess() {
     logger.info('Asking for all public files...')
     return new Promise((resolve) => {
-      socket.emit('get-public-files', (error, files) => {
-        if (error) {
-          logger.error(`Failed to get all public files: ${error}`)
+      socket.emit('get-public-files', (response) => {
+        const { files, errorMsg } = response
+        if (errorMsg) {
+          logger.error(`Failed to get all public files: ${errorMsg}`)
           GlobalValueManager.mainWindow?.webContents.send(
             'notice',
             'Failed to get all public files',
@@ -401,24 +409,29 @@ class FileManager {
 
   updateFileDescPermProcess(uuid, desc, perm) {
     logger.info(`Asking to update file ${uuid} description and permission...`)
-    socket.emit('update-file-desc-perm', uuid, desc, perm, (error) => {
-      if (error) {
-        logger.error(`Failed to update file ${uuid} description and permission: ${error}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Failed to update file description and permission',
-          'error'
-        )
-      } else {
-        logger.info(`Success to update file ${uuid} description and permission`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Success to update file description and permission',
-          'success'
-        )
-        this.getFileListProcess(GlobalValueManager.curFolderId)
+    socket.emit(
+      'update-file-desc-perm',
+      { fileId: uuid, description: desc, permission: perm },
+      (response) => {
+        const { errorMsg } = response
+        if (errorMsg) {
+          logger.error(`Failed to update file ${uuid} description and permission: ${errorMsg}`)
+          GlobalValueManager.mainWindow?.webContents.send(
+            'notice',
+            'Failed to update file description and permission',
+            'error'
+          )
+        } else {
+          logger.info(`Success to update file ${uuid} description and permission`)
+          GlobalValueManager.mainWindow?.webContents.send(
+            'notice',
+            'Success to update file description and permission',
+            'success'
+          )
+          this.getFileListProcess(GlobalValueManager.curFolderId)
+        }
       }
-    })
+    )
   }
 }
 
