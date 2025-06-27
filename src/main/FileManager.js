@@ -129,6 +129,8 @@ class FileManager {
       for (const filePath of filePaths) {
         this.uploadQueue({ filePath, parentFolderId })
       }
+    } else {
+      GlobalValueManager.sendNotice('File upload canceled.', 'error')
     }
   }
 
