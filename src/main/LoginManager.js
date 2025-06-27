@@ -31,9 +31,9 @@ class LoginManager {
       const decryptedValue = await this.keyManager.decrypt(cipher, spk)
       logger.debug(`decryptedValue: ${decryptedValue}`)
       logger.info('Finish decrypting. Sending response back to server')
-      socket.emit('auth-res', decryptedValue, (error, userInfo) => {
-        if (error) {
-          logger.error(`Authentication response failed because of following error: ${error}`)
+      socket.emit('auth-res', { decryptedValue }, ({ errorMsg, userInfo }) => {
+        if (errorMsg) {
+          logger.error(`Authentication response failed because of following error: ${errorMsg}`)
           GlobalValueManager.mainWindow?.webContents.send(
             'notice',
             'Failed to authenticate',
@@ -63,9 +63,9 @@ class LoginManager {
       // await initKeys()
       const publicKey = this.keyManager.getPublicKeyString()
       logger.info('Asking to login...')
-      socket.emit('login', publicKey, (error, cipher, spk) => {
-        if (error) {
-          logger.error(`login failed because of following error: ${error}`)
+      socket.emit('login', { publicKey }, ({ errorMsg, cipher, spk }) => {
+        if (errorMsg) {
+          logger.error(`login failed because of following error: ${errorMsg}`)
           GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to login', 'error')
           return
         }
