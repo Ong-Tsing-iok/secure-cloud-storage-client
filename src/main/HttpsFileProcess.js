@@ -13,14 +13,14 @@ import FileUploadCoordinator from './FileUploadCoordinator'
  *
  * @param {ReadStream} fileStream
  * @param {string} filePath
- * @param {string} uploadId
+ * @param {string} fileId
  * @param {FileUploadCoordinator} fileUploadCoordinator
  * @returns
  */
 const uploadFileProcessHttps = async (
   tempEncryptedFilePath,
   originalFileName,
-  uploadId,
+  fileId,
   fileUploadCoordinator
 ) => {
   return new Promise((resolve, reject) => {
@@ -33,7 +33,7 @@ const uploadFileProcessHttps = async (
     const request = net.request({
       method: 'POST',
       url: `${GlobalValueManager.httpsUrl}/upload`,
-      headers: { ...form.getHeaders(), socketid: socket.id, uploadid: uploadId } // TODO: maybe change to other one-time token (remember is case insensitive)
+      headers: { ...form.getHeaders(), socketid: socket.id, fileid: fileId } // TODO: maybe change to other one-time token (remember is case insensitive)
     })
     request.chunkedEncoding = true
 
@@ -55,7 +55,7 @@ const uploadFileProcessHttps = async (
         // logger.info('No more data in response.')
         if (response.statusCode === 200) {
           // GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
-          fileUploadCoordinator.finishUpload(uploadId, tempEncryptedFilePath)
+          fileUploadCoordinator.finishUpload(fileId, tempEncryptedFilePath)
           resolve()
         } else {
           GlobalValueManager.mainWindow?.webContents.send(
@@ -69,27 +69,31 @@ const uploadFileProcessHttps = async (
     })
 
     request.on('error', (error) => {
-      logger.error(`ERROR: ${error.message}`)
-      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
-      reject()
+      if (error) {
+        logger.error(`ERROR: ${error.message}`)
+        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
+        reject()
+      }
     })
     form.on('error', (error) => {
-      logger.error(`FORM ERROR: ${error.message}`)
-      GlobalValueManager.mainWindow?.webContents.send(
-        'notice',
-        'Failed to prepare upload data',
-        'error'
-      )
-      reject()
+      if (error) {
+        logger.error(`FORM ERROR: ${error.message}`)
+        GlobalValueManager.mainWindow?.webContents.send(
+          'notice',
+          'Failed to prepare upload data',
+          'error'
+        )
+        reject()
+      }
     })
   })
 }
 
-const downloadFileProcessHttps = (uuid, writeStream, filePath) => {
+const downloadFileProcessHttps = (fileId, writeStream, filePath) => {
   const request = net.request({
     method: 'GET',
     url: `${GlobalValueManager.httpsUrl}/download`,
-    headers: { socketid: socket.id, uuid: uuid } // TODO: maybe change to other one-time token (remember is case insensitive)
+    headers: { socketid: socket.id, fileid: fileId } // TODO: maybe change to other one-time token (remember is case insensitive)
   })
   request.end()
 

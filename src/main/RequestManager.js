@@ -28,9 +28,10 @@ class RequestManager {
 
   requestFileProcess(requestInfo) {
     logger.info(`Asking to request file ${requestInfo.fileId}...`)
-    socket.emit('request-file', requestInfo, (error) => {
-      if (error) {
-        logger.error(`Failed to request file ${requestInfo.fileId}: ${error}`)
+    socket.emit('request-file', requestInfo, (response) => {
+      const { errorMsg } = response
+      if (errorMsg) {
+        logger.error(`Failed to request file ${requestInfo.fileId}: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to request file', 'error')
       } else {
         logger.info(`Success to request file ${requestInfo.fileId}`)
@@ -46,9 +47,10 @@ class RequestManager {
 
   getRequestListProcess() {
     logger.info('Getting request list...')
-    socket.emit('get-request-list', (result, error) => {
-      if (error) {
-        logger.error(`Failed to get request list: ${error}`)
+    socket.emit('get-request-list', (response) => {
+      const { requests, errorMsg } = response
+      if (errorMsg) {
+        logger.error(`Failed to get request list: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send(
           'notice',
           'Failed to get request list',
@@ -56,16 +58,17 @@ class RequestManager {
         )
       } else {
         logger.info(`Success to get request list`)
-        GlobalValueManager.mainWindow?.webContents.send('request-list-res', result)
+        GlobalValueManager.mainWindow?.webContents.send('request-list-res', requests)
       }
     })
   }
 
   getRequestedListProcess() {
-    socket.emit('get-requested-list', (result, error) => {
+    socket.emit('get-requested-list', (response) => {
+      const { requests, errorMsg } = response
       logger.info('Getting requested list...')
-      if (error) {
-        logger.error(`Failed to get requested list: ${error}`)
+      if (errorMsg) {
+        logger.error(`Failed to get requested list: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send(
           'notice',
           'Failed to get requested list',
@@ -73,8 +76,8 @@ class RequestManager {
         )
       } else {
         logger.info(`Success to get requested list`)
-        this.autoReplyProcess(result)
-        GlobalValueManager.mainWindow?.webContents.send('requested-list-res', result)
+        this.autoReplyProcess(requests)
+        GlobalValueManager.mainWindow?.webContents.send('requested-list-res', requests)
       }
     })
   }
@@ -125,9 +128,10 @@ class RequestManager {
 
   deleteRequestProcess(requestId) {
     logger.info(`Deleting request for ${requestId}...`)
-    socket.emit('delete-request', requestId, (error) => {
-      if (error) {
-        logger.error(`Failed to delete request for ${requestId}: ${error}`)
+    socket.emit('delete-request', { requestId }, (response) => {
+      const { errorMsg } = response
+      if (errorMsg) {
+        logger.error(`Failed to delete request for ${requestId}: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send(
           'notice',
           'Failed to delete request',
@@ -143,16 +147,6 @@ class RequestManager {
         )
       }
     })
-  }
-
-  agreeRequestProcess(uuid) {
-    socket.emit('request-agree', uuid)
-    logger.info(`Agree request for ${uuid}...`)
-  }
-
-  rejectRequestProcess(uuid) {
-    socket.emit('request-reject', uuid)
-    logger.info(`Reject request for ${uuid}...`)
   }
 
   async respondRequestProcess(responseInfo, refresh = true) {
@@ -174,9 +168,10 @@ class RequestManager {
     delete responseInfo.pk
     delete responseInfo.spk
     return new Promise((resolve, reject) => {
-      socket.emit('respond-request', { ...responseInfo, rekey }, (error) => {
-        if (error) {
-          logger.error(`Failed to respond request for ${responseInfo.requestId}: ${error}`)
+      socket.emit('respond-request', { ...responseInfo, rekey }, (response) => {
+        const { errorMsg } = response
+        if (errorMsg) {
+          logger.error(`Failed to respond request for ${responseInfo.requestId}: ${errorMsg}`)
           GlobalValueManager.mainWindow?.webContents.send(
             'notice',
             'Failed to respond request',

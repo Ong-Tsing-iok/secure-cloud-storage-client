@@ -152,9 +152,9 @@ class FileManager {
     })
   }
 
-  downloadFileProcess(uuid) {
-    logger.info(`Asking for file ${uuid}...`)
-    socket.emit('download-file-pre', { uuid }, async (response) => {
+  downloadFileProcess(fileId) {
+    logger.info(`Asking for file ${fileId}...`)
+    socket.emit('download-file-pre', { fileId }, async (response) => {
       try {
         if (response.errorMsg) {
           logger.error(`Failed to download file: ${response.errorMsg}`)
@@ -163,31 +163,26 @@ class FileManager {
         }
         if (!response.fileInfo) {
           //! This should not happen
-          logger.error(`File ${uuid} not found`)
+          logger.error(`File ${fileId} not found`)
           GlobalValueManager.sendNotice('File not found', 'error')
           return
         }
         // console.log(fileInfo)
-        const blockchainVerification = await this.blockchainManager.getFileVerification(uuid)
+        const blockchainVerification = await this.blockchainManager.getFileVerification(fileId)
         if (!blockchainVerification || blockchainVerification.verificationInfo != 'success') {
-          logger.error(`File ${uuid} not verified.`)
+          logger.error(`File ${fileId} not verified.`)
           GlobalValueManager.sendNotice(`File not verified by server. Download abort.`, 'error')
           return
         }
-        logger.info(`File ${uuid} is verified.`)
+        logger.info(`File ${fileId} is verified.`)
 
         const proxied = response.fileInfo.ownerId !== response.fileInfo.originOwnerId
+
         // Get blockchain verification and file information
-        // let blockchainFileInfo
-        // if (proxied) {
-        //   blockchainFileInfo = this.blockchainManager.getReencryptFileInfo(uuid)
-        // } else {
-        //   blockchainFileInfo = this.blockchainManager.getFileInfo(uuid)
-        // }
-        const blockchainFileInfo = await this.blockchainManager.getFileInfo(uuid)
+        const blockchainFileInfo = await this.blockchainManager.getFileInfo(fileId)
         logger.debug(blockchainFileInfo)
         if (!blockchainFileInfo) {
-          logger.error(`File ${uuid} info not on blockchain.`)
+          logger.error(`File ${fileId} info not on blockchain.`)
           GlobalValueManager.sendNotice(`File info not on blockchain. Download abort.`, 'error')
           return
         }
@@ -201,7 +196,7 @@ class FileManager {
     })
   }
 
-  async downloadFileProcess2(uuid, filename, cipher, spk, size, proxied, blockchainFileInfo) {
+  async downloadFileProcess2(fileId, filename, cipher, spk, size, proxied, blockchainFileInfo) {
     try {
       const { filePath, canceled } = await dialog.showSaveDialog({
         defaultPath: filename,
@@ -239,7 +234,7 @@ class FileManager {
       })
       const decipher = await this.aesModule.decrypt(cipher, spk, proxied)
       logger.info(
-        `Downloading file ${uuid} with protocol ${GlobalValueManager.serverConfig.protocol}...`
+        `Downloading file ${fileId} with protocol ${GlobalValueManager.serverConfig.protocol}...`
       )
       // download progress
       const pipeProgress = createPipeProgress({ total: size }, logger)
@@ -256,10 +251,10 @@ class FileManager {
             fileHash: BigInt(digest),
             blockchainHash: BigInt(blockchainFileInfo.fileHash)
           })
-          logger.error(`File hash did not meet for file ${uuid}`)
+          logger.error(`File hash did not meet for file ${fileId}`)
           GlobalValueManager.sendNotice('Failed to download file', 'error')
           socket.emit('download-file-hash-error', {
-            fileId: uuid,
+            fileId,
             fileHash: BigInt(digest),
             blockchainHash: BigInt(blockchainFileInfo.fileHash)
           })
@@ -272,16 +267,16 @@ class FileManager {
           }
           return
         }
-        logger.info(`File hash verified for file ${uuid}.`)
+        logger.info(`File hash verified for file ${fileId}.`)
         GlobalValueManager.sendNotice('Success to download file', 'success')
       })
 
       pipeProgress.pipe(decipher)
       decipher.pipe(writeStream)
       if (GlobalValueManager.serverConfig.protocol === 'https') {
-        downloadFileProcessHttps(uuid, pipeProgress, filePath)
+        downloadFileProcessHttps(fileId, pipeProgress, filePath)
       } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
-        downloadFileProcessFtps(uuid, pipeProgress, filePath)
+        downloadFileProcessFtps(fileId, pipeProgress, filePath)
       } else {
         throw new Error('Invalid file protocol')
       }
@@ -291,15 +286,15 @@ class FileManager {
     }
   }
 
-  deleteFileProcess(uuid) {
-    logger.info(`Asking to delete file ${uuid}...`)
-    socket.emit('delete-file', { uuid }, (response) => {
+  deleteFileProcess(fileId) {
+    logger.info(`Asking to delete file ${fileId}...`)
+    socket.emit('delete-file', { fileId }, (response) => {
       const { errorMsg } = response
       if (errorMsg) {
-        logger.error(`Failed to delete file ${uuid}: ${errorMsg}`)
+        logger.error(`Failed to delete file ${fileId}: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to delete file', 'error')
       } else {
-        logger.info(`Success to delete file ${uuid}`)
+        logger.info(`Success to delete file ${fileId}`)
         GlobalValueManager.mainWindow?.webContents.send(
           'notice',
           'Success to delete file',
@@ -372,15 +367,15 @@ class FileManager {
     })
   }
 
-  moveFileProcess(uuid, targetFolderId) {
-    logger.info(`Asking to move file ${uuid} to ${targetFolderId}...`)
-    socket.emit('move-file', { fileId: uuid, targetFolderId }, (response) => {
+  moveFileProcess(fileId, targetFolderId) {
+    logger.info(`Asking to move file ${fileId} to ${targetFolderId}...`)
+    socket.emit('move-file', { fileId, targetFolderId }, (response) => {
       const { errorMsg } = response
       if (errorMsg) {
-        logger.error(`Failed to move file ${uuid} to ${targetFolderId}: ${errorMsg}`)
+        logger.error(`Failed to move file ${fileId} to ${targetFolderId}: ${errorMsg}`)
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to move file', 'error')
       } else {
-        logger.info(`Moved file ${uuid} to ${targetFolderId}`)
+        logger.info(`Moved file ${fileId} to ${targetFolderId}`)
         GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to move file', 'success')
         this.getFileListProcess(GlobalValueManager.curFolderId)
       }
@@ -407,31 +402,27 @@ class FileManager {
     })
   }
 
-  updateFileDescPermProcess(uuid, desc, perm) {
-    logger.info(`Asking to update file ${uuid} description and permission...`)
-    socket.emit(
-      'update-file-desc-perm',
-      { fileId: uuid, description: desc, permission: perm },
-      (response) => {
-        const { errorMsg } = response
-        if (errorMsg) {
-          logger.error(`Failed to update file ${uuid} description and permission: ${errorMsg}`)
-          GlobalValueManager.mainWindow?.webContents.send(
-            'notice',
-            'Failed to update file description and permission',
-            'error'
-          )
-        } else {
-          logger.info(`Success to update file ${uuid} description and permission`)
-          GlobalValueManager.mainWindow?.webContents.send(
-            'notice',
-            'Success to update file description and permission',
-            'success'
-          )
-          this.getFileListProcess(GlobalValueManager.curFolderId)
-        }
+  updateFileDescPermProcess(fileId, description, permission) {
+    logger.info(`Asking to update file ${fileId} description and permission...`)
+    socket.emit('update-file-desc-perm', { fileId, description, permission }, (response) => {
+      const { errorMsg } = response
+      if (errorMsg) {
+        logger.error(`Failed to update file ${fileId} description and permission: ${errorMsg}`)
+        GlobalValueManager.mainWindow?.webContents.send(
+          'notice',
+          'Failed to update file description and permission',
+          'error'
+        )
+      } else {
+        logger.info(`Success to update file ${fileId} description and permission`)
+        GlobalValueManager.mainWindow?.webContents.send(
+          'notice',
+          'Success to update file description and permission',
+          'success'
+        )
+        this.getFileListProcess(GlobalValueManager.curFolderId)
       }
-    )
+    })
   }
 }
 
