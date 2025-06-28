@@ -94,8 +94,8 @@ app.whenReady().then(() => {
     GlobalValueManager.curFolderId = curFolderId
     if (GlobalValueManager.loggedIn) fileManager.getFileListProcess(curFolderId)
   })
-  ipcMain.on('download', (_event, uuid) => fileManager.downloadFileProcess(uuid))
-  ipcMain.on('delete', (_event, uuid) => fileManager.deleteFileProcess(uuid))
+  ipcMain.on('download', (_event, fileId) => fileManager.downloadFileProcess(fileId))
+  ipcMain.on('delete', (_event, fileId) => fileManager.deleteFileProcess(fileId))
   ipcMain.on('add-folder', (_event, curPath, folderName) =>
     fileManager.addFolderProcess(curPath, folderName)
   )
@@ -115,12 +115,6 @@ app.whenReady().then(() => {
   })
   ipcMain.on('request-file', (_event, requestInfo) => {
     requestManager.requestFileProcess(requestInfo)
-  })
-  ipcMain.on('request-agree', (_event, uuid) => {
-    requestManager.agreeRequestProcess(uuid)
-  })
-  ipcMain.on('request-reject', (_event, uuid) => {
-    requestManager.rejectRequestProcess(uuid)
   })
   ipcMain.on('respond-request', (_event, responseInfo) => {
     requestManager.respondRequestProcess(responseInfo)
