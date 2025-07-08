@@ -1,7 +1,6 @@
 import { dialog } from 'electron'
-import crypto from 'crypto'
 import { socket } from './MessageManager'
-import { createReadStream, createWriteStream, statSync } from 'node:fs'
+import { createReadStream, createWriteStream } from 'node:fs'
 import { unlink } from 'node:fs/promises'
 import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
@@ -63,7 +62,7 @@ class FileManager {
       const { errorMsg, fileId } = response
       if (errorMsg) {
         logger.error(`Failed to upload file: ${errorMsg}. Upload aborted.`)
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
+        GlobalValueManager.sendNotice('Failed to upload file', 'error')
         return
       }
 
@@ -111,11 +110,7 @@ class FileManager {
           // this.getFileListProcess(GlobalValueManager.curFolderId)
         } catch (error) {
           logger.error(error)
-          GlobalValueManager.mainWindow?.webContents.send(
-            'notice',
-            'Failed to upload file',
-            'error'
-          )
+          GlobalValueManager.sendNotice('Failed to upload file', 'error')
         }
       })
     })
@@ -141,11 +136,7 @@ class FileManager {
       const { fileList, errorMsg } = response
       if (errorMsg) {
         logger.error(`Failed to get file list: ${errorMsg}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Failed to get file list',
-          'error'
-        )
+        GlobalValueManager.sendNotice('Failed to get file list', 'error')
       } else {
         GlobalValueManager.mainWindow?.webContents.send('file-list-res', fileList)
       }
@@ -282,7 +273,7 @@ class FileManager {
       }
     } catch (error) {
       logger.error(`Failed to download file: ${error}. Download aborted.`)
-      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
+      GlobalValueManager.sendNotice('Failed to download file', 'error')
     }
   }
 
@@ -292,14 +283,10 @@ class FileManager {
       const { errorMsg } = response
       if (errorMsg) {
         logger.error(`Failed to delete file ${fileId}: ${errorMsg}`)
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to delete file', 'error')
+        GlobalValueManager.sendNotice('Failed to delete file', 'error')
       } else {
         logger.info(`Success to delete file ${fileId}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Success to delete file',
-          'success'
-        )
+        GlobalValueManager.sendNotice('Success to delete file', 'success')
         this.getFileListProcess(GlobalValueManager.curFolderId)
       }
     })
@@ -311,14 +298,10 @@ class FileManager {
       const { errorMsg } = response
       if (errorMsg) {
         logger.error(`Failed to add folder ${folderName}: ${errorMsg}`)
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to add folder', 'error')
+        GlobalValueManager.sendNotice('Failed to add folder', 'error')
       } else {
         logger.info(`Success to add folder ${folderName}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Success to add folder',
-          'success'
-        )
+        GlobalValueManager.sendNotice('Success to add folder', 'success')
         this.getFileListProcess(GlobalValueManager.curFolderId)
       }
     })
@@ -330,18 +313,10 @@ class FileManager {
       const { errorMsg } = response
       if (errorMsg) {
         logger.error(`Failed to delete folder: ${errorMsg}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Failed to delete folder',
-          'error'
-        )
+        GlobalValueManager.sendNotice('Failed to delete folder', 'error')
       } else {
         logger.info(`Success to delete folder ${folderId}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Success to delete folder',
-          'success'
-        )
+        GlobalValueManager.sendNotice('Success to delete folder', 'success')
         this.getFileListProcess(GlobalValueManager.curFolderId)
       }
     })
@@ -354,11 +329,7 @@ class FileManager {
         const { folders, errorMsg } = response
         if (errorMsg) {
           logger.error(`Failed to get all folders: ${errorMsg}`)
-          GlobalValueManager.mainWindow?.webContents.send(
-            'notice',
-            'Failed to get all folders',
-            'error'
-          )
+          GlobalValueManager.sendNotice('Failed to get all folders', 'error')
           resolve(null)
         } else {
           resolve(folders)
@@ -373,10 +344,10 @@ class FileManager {
       const { errorMsg } = response
       if (errorMsg) {
         logger.error(`Failed to move file ${fileId} to ${targetFolderId}: ${errorMsg}`)
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to move file', 'error')
+        GlobalValueManager.sendNotice('Failed to move file', 'error')
       } else {
         logger.info(`Moved file ${fileId} to ${targetFolderId}`)
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Success to move file', 'success')
+        GlobalValueManager.sendNotice('Success to move file', 'success')
         this.getFileListProcess(GlobalValueManager.curFolderId)
       }
     })
@@ -389,11 +360,7 @@ class FileManager {
         const { files, errorMsg } = response
         if (errorMsg) {
           logger.error(`Failed to get all public files: ${errorMsg}`)
-          GlobalValueManager.mainWindow?.webContents.send(
-            'notice',
-            'Failed to get all public files',
-            'error'
-          )
+          GlobalValueManager.sendNotice('Failed to get all public files', 'error')
           resolve(null)
         } else {
           resolve(files)
@@ -408,15 +375,10 @@ class FileManager {
       const { errorMsg } = response
       if (errorMsg) {
         logger.error(`Failed to update file ${fileId} description and permission: ${errorMsg}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Failed to update file description and permission',
-          'error'
-        )
+        GlobalValueManager.sendNotice('Failed to update file description and permission', 'error')
       } else {
         logger.info(`Success to update file ${fileId} description and permission`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
+        GlobalValueManager.sendNotice(
           'Success to update file description and permission',
           'success'
         )

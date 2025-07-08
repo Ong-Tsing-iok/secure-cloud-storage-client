@@ -135,7 +135,14 @@ class KeyManager {
    */
   async randCipher() {
     this.checkInit()
-    const messageArray = await pre_schema1_MessageGen()
+    // Test fixing random cipher
+    const messageArray = new Uint8Array(
+      Buffer.from(
+        'VXh/2QRN306gbqEwMp3v4qjHxMLXfNvAayBtPEMIRWUs3Wcgv9ZWxi8XCiZXEwkY/AXiuMZmkJTbcUCqx8P09PaZk66n9ooXAq2meyIvvrL3K87CxZAdnEni97359TkBKNagpjhf0Z37WJYVGNGxSba1xoVaMIs4FjuOcUl4jPksP06sH2aqo3YtBMNeW7UNF4WaKiypJgoC7yjoDmQSzvwsOHodoU0x/GHXucUGtLrQ323UcAJhX7ia+Ol0+3cELG8maBjsZU+SxNHLT7MpEBenAy/cLia54eT4VE5sn/iOeinFLh3puTnXQxIrp/wEQ3rq/uOXLzBQX8K09jUqeoF+iJcGQBNGLu0dowQQPaaCYRqK7e5pqr7U8Z3akx4APQADPuVJqFI9SLApYLpBCXAsyKC/Q7zGfV6YNTEv2Tnxt/qmZ8yHUPWsV/w1JXILRN6DfrEH5T3WgHwuTh64sgXm9NV1X01iOOPGZ51brL+rlpZX0+PfmDtWACQPASQYnLJPCrWvDrLwBMO5WGdUG896fgvw+uRoYjYMvMrkKg4nqTTkx3RVdlP8whYm0eQFKfKJ3/WawSNYLfh7EBaQI19fI+jrnAeqJw9DzemzHouNZqYuAlMzYXuDF+FdVwQCY1Lf4xUfRrmPuCfxOtJBabSfvoZ0IlYyYLocNM2CwvikxGVY+U9eqyBJwDcAiUsYvUesjbJhD4DyA0DRgC2bhh/VpiaKeZRmbCPEpC3NnENm96r4Hhrdn8vgaoKvQpkE',
+        'base64'
+      )
+    )
+    // const messageArray = await pre_schema1_MessageGen()
     const cipher = await pre_schema1_Encrypt(messageArray, this.keys.pk, this.signingKeys)
     if (cipher === null) throw new Error('Failed to encrypt message')
     return {

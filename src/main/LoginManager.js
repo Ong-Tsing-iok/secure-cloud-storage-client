@@ -34,11 +34,7 @@ class LoginManager {
       socket.emit('auth-res', { decryptedValue }, ({ errorMsg, userInfo }) => {
         if (errorMsg) {
           logger.error(`Authentication response failed because of following error: ${errorMsg}`)
-          GlobalValueManager.mainWindow?.webContents.send(
-            'notice',
-            'Failed to authenticate',
-            'error'
-          )
+          GlobalValueManager.sendNotice('Failed to authenticate', 'error')
           return
         }
         if (userInfo) {
@@ -54,7 +50,7 @@ class LoginManager {
       })
     } catch (error) {
       logger.error(`Authentication response failed because of following error: ${error}`)
-      GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to authenticate', 'error')
+      GlobalValueManager.sendNotice('Failed to authenticate', 'error')
     }
   }
   async login() {
@@ -66,7 +62,7 @@ class LoginManager {
       socket.emit('login', { publicKey }, ({ errorMsg, cipher, spk }) => {
         if (errorMsg) {
           logger.error(`login failed because of following error: ${errorMsg}`)
-          GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to login', 'error')
+          GlobalValueManager.sendNotice('Failed to login', 'error')
           return
         }
         this.respondToAuth(cipher, spk)
