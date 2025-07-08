@@ -32,15 +32,11 @@ class RequestManager {
       const { errorMsg } = response
       if (errorMsg) {
         logger.error(`Failed to request file ${requestInfo.fileId}: ${errorMsg}`)
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to request file', 'error')
+        GlobalValueManager.sendNotice('Failed to request file', 'error')
       } else {
         logger.info(`Success to request file ${requestInfo.fileId}`)
         this.getRequestListProcess()
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Success to request file',
-          'success'
-        )
+        GlobalValueManager.sendNotice('Success to request file', 'success')
       }
     })
   }
@@ -51,11 +47,7 @@ class RequestManager {
       const { requests, errorMsg } = response
       if (errorMsg) {
         logger.error(`Failed to get request list: ${errorMsg}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Failed to get request list',
-          'error'
-        )
+        GlobalValueManager.sendNotice('Failed to get request list', 'error')
       } else {
         logger.info(`Success to get request list`)
         GlobalValueManager.mainWindow?.webContents.send('request-list-res', requests)
@@ -69,11 +61,7 @@ class RequestManager {
       logger.info('Getting requested list...')
       if (errorMsg) {
         logger.error(`Failed to get requested list: ${errorMsg}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Failed to get requested list',
-          'error'
-        )
+        GlobalValueManager.sendNotice('Failed to get requested list', 'error')
       } else {
         logger.info(`Success to get requested list`)
         this.autoReplyProcess(requests)
@@ -132,19 +120,11 @@ class RequestManager {
       const { errorMsg } = response
       if (errorMsg) {
         logger.error(`Failed to delete request for ${requestId}: ${errorMsg}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Failed to delete request',
-          'error'
-        )
+        GlobalValueManager.sendNotice('Failed to delete request', 'error')
       } else {
         logger.info(`Success to delete request for ${requestId}`)
         this.getRequestListProcess()
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Success to delete request',
-          'success'
-        )
+        GlobalValueManager.sendNotice('Success to delete request', 'success')
       }
     })
   }
@@ -157,11 +137,7 @@ class RequestManager {
         rekey = await this.keyManager.rekeyGen(responseInfo.pk, responseInfo.spk)
       } catch (error) {
         logger.error(`Failed to generate rekey: ${error}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Failed to respond request',
-          'error'
-        )
+        GlobalValueManager.sendNotice('Failed to respond request', 'error')
         return
       }
     }
@@ -172,22 +148,14 @@ class RequestManager {
         const { errorMsg } = response
         if (errorMsg) {
           logger.error(`Failed to respond request for ${responseInfo.requestId}: ${errorMsg}`)
-          GlobalValueManager.mainWindow?.webContents.send(
-            'notice',
-            'Failed to respond request',
-            'error'
-          )
+          GlobalValueManager.sendNotice('Failed to respond request', 'error')
           resolve()
         } else {
           logger.info(`Success to respond request for ${responseInfo.requestId}`)
           if (refresh) {
             this.getRequestedListProcess()
           }
-          GlobalValueManager.mainWindow?.webContents.send(
-            'notice',
-            'Success to respond request',
-            'success'
-          )
+          GlobalValueManager.sendNotice('Success to respond request', 'success')
           resolve()
         }
       })

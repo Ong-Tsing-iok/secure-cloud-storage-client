@@ -41,10 +41,9 @@ const uploadFileProcessFtps = async (
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
     fileUploadCoordinator.finishUpload(uploadId, tempEncryptedFilePath)
-    // GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
   } catch (error) {
     logger.error(`upload with ftps failed: ${error}`)
-    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
+    GlobalValueManager.sendNotice('Failed to upload file', 'error')
   }
   client.close()
 }
@@ -75,7 +74,7 @@ const downloadFileProcessFtps = async (uuid, writeStream, filePath) => {
     logger.info(`download with ftps succeeded. File saved at ${filePath}`)
   } catch (error) {
     logger.error(`download with ftps failed: ${error}`)
-    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
+    GlobalValueManager.sendNotice('Failed to download file', 'error')
   }
   client.close()
 }

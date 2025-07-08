@@ -54,15 +54,10 @@ const uploadFileProcessHttps = async (
       response.on('end', () => {
         // logger.info('No more data in response.')
         if (response.statusCode === 200) {
-          // GlobalValueManager.mainWindow?.webContents.send('notice', 'Upload succeeded', 'success')
           fileUploadCoordinator.finishUpload(fileId, tempEncryptedFilePath)
           resolve()
         } else {
-          GlobalValueManager.mainWindow?.webContents.send(
-            'notice',
-            'Failed to upload file',
-            'error'
-          )
+          GlobalValueManager.sendNotice('Failed to upload file', 'error')
           reject()
         }
       })
@@ -71,18 +66,14 @@ const uploadFileProcessHttps = async (
     request.on('error', (error) => {
       if (error) {
         logger.error(`ERROR: ${error.message}`)
-        GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to upload file', 'error')
+        GlobalValueManager.sendNotice('Failed to upload file', 'error')
         reject()
       }
     })
     form.on('error', (error) => {
       if (error) {
         logger.error(`FORM ERROR: ${error.message}`)
-        GlobalValueManager.mainWindow?.webContents.send(
-          'notice',
-          'Failed to prepare upload data',
-          'error'
-        )
+        GlobalValueManager.sendNotice('Failed to prepare upload data', 'error')
         reject()
       }
     })
@@ -117,7 +108,7 @@ const downloadFileProcessHttps = (fileId, writeStream, filePath) => {
 
   request.on('error', (error) => {
     logger.error(`ERROR: ${error.message}`)
-    GlobalValueManager.mainWindow?.webContents.send('notice', 'Failed to download file', 'error')
+    GlobalValueManager.sendNotice('Failed to download file', 'error')
   })
 }
 
