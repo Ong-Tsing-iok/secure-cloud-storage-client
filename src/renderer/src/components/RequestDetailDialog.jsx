@@ -20,7 +20,7 @@ import {
 import FileDetailDialog from './FileDetailDialog'
 
 function RequestDetailDialog({ open, setOpen, requestData }) {
-  const [desc, setDesc] = useState(requestData.resDesc)
+  const [desc, setDesc] = useState('')
   const [detailOpen, setDetailOpen] = useState(false)
 
   const [pageType] = useContext(PageContext)
