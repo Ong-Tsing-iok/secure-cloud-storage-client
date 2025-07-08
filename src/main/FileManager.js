@@ -12,6 +12,7 @@ import GlobalValueManager from './GlobalValueManager'
 import AESModule from './AESModule'
 import BlockchainManager from './BlockchainManager'
 import FileUploadCoordinator from './FileUploadCoordinator'
+import { bigIntToHex } from './Utils'
 
 class FileManager {
   aesModule
@@ -237,23 +238,30 @@ class FileManager {
           // Write failed. Do nothing.
           return
         }
-        if (BigInt(digest) != BigInt(blockchainFileInfo.fileHash)) {
-          logger.debug({
-            fileHash: BigInt(digest),
-            blockchainHash: BigInt(blockchainFileInfo.fileHash)
-          })
-          logger.error(`File hash did not meet for file ${fileId}`)
-          GlobalValueManager.sendNotice('Failed to download file', 'error')
-          socket.emit('download-file-hash-error', {
-            fileId,
-            fileHash: BigInt(digest),
-            blockchainHash: BigInt(blockchainFileInfo.fileHash)
-          })
+        const fileHash = digest
+        const blockchainHash = bigIntToHex(blockchainFileInfo.fileHash)
+        if (fileHash !== blockchainHash) {
           try {
-            await unlink(filePath)
-          } catch (error) {
-            if (error.code !== 'ENOENT') {
-              logger.error(error)
+            logger.debug('File Hash different', {
+              fileHash,
+              blockchainHash
+            })
+            logger.error(`File hash did not meet for file ${fileId}`)
+            GlobalValueManager.sendNotice('Failed to download file', 'error')
+            socket.emit('download-file-hash-error', {
+              fileId,
+              fileHash,
+              blockchainHash
+            })
+          } catch (error1) {
+            logger.error(error1)
+          } finally {
+            try {
+              await unlink(filePath)
+            } catch (error2) {
+              if (error2.code !== 'ENOENT') {
+                logger.error(error2)
+              }
             }
           }
           return
