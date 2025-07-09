@@ -48,7 +48,7 @@ const uploadFileProcessHttps = async (
       // logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
       // console.log(`upload end: ${Date.now()}`)
       response.on('data', (chunk) => {
-        logger.info(`BODY: ${chunk}`)
+        logger.debug(`BODY: ${chunk}`)
       })
 
       response.on('end', () => {
@@ -57,25 +57,20 @@ const uploadFileProcessHttps = async (
           fileUploadCoordinator.finishUpload(fileId, tempEncryptedFilePath)
           resolve()
         } else {
-          GlobalValueManager.sendNotice('Failed to upload file', 'error')
-          reject()
+          reject(
+            new Error(
+              `Https received status code ${response.statusCode} and status message ${response.statusMessage}.`
+            )
+          )
         }
       })
     })
 
     request.on('error', (error) => {
-      if (error) {
-        logger.error(`ERROR: ${error.message}`)
-        GlobalValueManager.sendNotice('Failed to upload file', 'error')
-        reject()
-      }
+      reject(error)
     })
     form.on('error', (error) => {
-      if (error) {
-        logger.error(`FORM ERROR: ${error.message}`)
-        GlobalValueManager.sendNotice('Failed to prepare upload data', 'error')
-        reject()
-      }
+      reject(error)
     })
   })
 }

@@ -59,3 +59,6 @@ export function bigIntToUuid(uuidBigInt) {
 export function bigIntToHex(hashBigInt) {
   return '0x' + hashBigInt.toString(16)
 }
+
+export const TryAgainMsg = 'Please try again.'
+export const ContactManagerOrTryAgainMsg = 'Please contact the manager or try again.'

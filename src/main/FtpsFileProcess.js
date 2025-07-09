@@ -41,11 +41,10 @@ const uploadFileProcessFtps = async (
     logger.info(`ftp upload response: ${response.message}`)
     logger.info(`upload with ftps succeeded`)
     fileUploadCoordinator.finishUpload(uploadId, tempEncryptedFilePath)
-  } catch (error) {
-    logger.error(`upload with ftps failed: ${error}`)
-    GlobalValueManager.sendNotice('Failed to upload file', 'error')
+  } finally {
+    // Error will be caught by upper layer
+    client.close()
   }
-  client.close()
 }
 
 /**
