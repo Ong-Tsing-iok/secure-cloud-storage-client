@@ -1,4 +1,4 @@
-import { dialog } from 'electron'
+import { dialog, protocol } from 'electron'
 import { socket } from './MessageManager'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { unlink } from 'node:fs/promises'
@@ -12,7 +12,10 @@ import GlobalValueManager from './GlobalValueManager'
 import AESModule from './AESModule'
 import BlockchainManager from './BlockchainManager'
 import FileUploadCoordinator from './FileUploadCoordinator'
-import { bigIntToHex } from './Utils'
+import { bigIntToHex, ContactManagerOrTryAgainMsg, TryAgainMsg } from './Utils'
+
+const UploadFileErrorStr = 'Failed to upload file: '
+const DownloadFileErrorStr = 'Failed to download file: '
 
 class FileManager {
   aesModule
@@ -43,6 +46,16 @@ class FileManager {
     })
   }
 
+  /**
+   *
+   * @param {String} errorMsg
+   * @param {String} treatmentMsg
+   * @example this.#sendUploadErrorNotice('File encryption failed.', TryAgainMsg)
+   */
+  #sendUploadErrorNotice(errorMsg, treatmentMsg = TryAgainMsg) {
+    GlobalValueManager.sendNotice(`${UploadFileErrorStr}${errorMsg} ${treatmentMsg}`, 'error')
+  }
+
   // can return promise, but not needed
   async #uploadProcess({ filePath, parentFolderId }) {
     let cipher = null
@@ -54,8 +67,16 @@ class FileManager {
       fileStream = createReadStream(filePath)
       logger.info('Encrypting file...')
       ;({ cipher, spk, encryptedStream } = await this.aesModule.encrypt(fileStream))
+      encryptedStream.on('error', (err) => {
+        logger.error(err)
+        this.#sendUploadErrorNotice('File encryption failed.')
+      })
     } catch (error) {
       logger.error(`Failed to create stream or encrypt file: ${error}. Upload aborted.`)
+      this.#sendUploadErrorNotice(
+        'File stream creation failed.',
+        'Please check if file exists and try again.'
+      )
       return
     }
     logger.info('Sending key and iv to server...')
@@ -63,7 +84,7 @@ class FileManager {
       const { errorMsg, fileId } = response
       if (errorMsg) {
         logger.error(`Failed to upload file: ${errorMsg}. Upload aborted.`)
-        GlobalValueManager.sendNotice('Failed to upload file', 'error')
+        this.#sendUploadErrorNotice(errorMsg)
         return
       }
 
@@ -73,25 +94,30 @@ class FileManager {
         this.blockchainManager,
         JSON.stringify({ filename: originalFileName })
       )
-      this.aesModule.makeHash(encryptedStream, async (digest) => {
-        fileUploadCoordinator.finishHash(digest)
-      })
+      this.aesModule
+        .makeHashPromise(encryptedStream)
+        .then((digest) => {
+          fileUploadCoordinator.finishHash(digest)
+        })
+        .catch((error) => {
+          logger.error(error)
+          this.#sendUploadErrorNotice('File hash calculation failed.')
+        })
       encryptedStream.pipe(writeStream)
       writeStream.on('close', async () => {
         logger.info(`Encrypted file finished writing.`, { tempEncryptedFilePath })
 
-        logger.info(
-          `Uploading file ${basename(filePath)} with protocol ${GlobalValueManager.serverConfig.protocol}`
-        )
+        const protocol = GlobalValueManager.serverConfig.protocol
+        logger.info(`Uploading file ${basename(filePath)} with protocol ${protocol}`)
         try {
-          if (GlobalValueManager.serverConfig.protocol === 'https') {
+          if (protocol === 'https') {
             await uploadFileProcessHttps(
               tempEncryptedFilePath,
               originalFileName,
               fileId,
               fileUploadCoordinator
             )
-          } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
+          } else if (protocol === 'ftps') {
             await uploadFileProcessFtps(
               tempEncryptedFilePath,
               originalFileName,
@@ -100,19 +126,36 @@ class FileManager {
             )
           } else {
             logger.error('Invalid file protocol')
+            this.#sendUploadErrorNotice('Invalid file protocol.')
             return
           }
+        } catch (error) {
+          logger.error(error)
+          this.#sendUploadErrorNotice(
+            `Upload with ${protocol} failed.`,
+            'Please check log for details.'
+          )
+          return
+        }
+        try {
           await fileUploadCoordinator.uploadToBlockchainWhenReady()
           GlobalValueManager.sendNotice(
             'File and info uploaded to server and blockchain.',
             'normal'
           )
-
-          // this.getFileListProcess(GlobalValueManager.curFolderId)
         } catch (error) {
           logger.error(error)
-          GlobalValueManager.sendNotice('Failed to upload file', 'error')
+          this.#sendUploadErrorNotice('Blockchain upload failed.', ContactManagerOrTryAgainMsg)
         }
+
+        // this.getFileListProcess(GlobalValueManager.curFolderId)
+      })
+      writeStream.on('error', (error) => {
+        logger.error(error)
+        this.#sendUploadErrorNotice(
+          'Encrypted file failed to write.',
+          'Please check disk size or permission and try again.'
+        )
       })
     })
   }

@@ -21,9 +21,6 @@ class AESModule {
     const streamCipher = crypto.createCipheriv('aes-256-cbc', key, iv)
     const encryptedStream = Readable.from(readstream.pipe(streamCipher))
 
-    encryptedStream.on('error', (err) => {
-      logger.error(err)
-    })
     // encode key and iv
     return {
       cipher,
@@ -71,6 +68,22 @@ class AESModule {
       } catch (error) {
         logger.error(error)
       }
+    })
+  }
+
+  makeHashPromise(cipherStream) {
+    return new Promise((resolve, reject) => {
+      const hash = crypto.createHash('sha256')
+      cipherStream.pipe(hash)
+
+      hash.on('finish', () => {
+        logger.info(`Finish hash calculation.`)
+        const digest = '0x' + hash.digest('hex')
+        resolve(digest)
+      })
+      hash.on('error', (err) => {
+        reject(err)
+      })
     })
   }
 }

@@ -132,6 +132,7 @@ class GlobalValueManager {
    * Show a toast on user interface
    * @param {string} message
    * @param {'success'|'error'|'normal'} level
+   * @example GlobalValueManager.sendNotice(`Failed to upload file when requesting to upload: ${response.errorMsg}`, 'error')
    */
   sendNotice(message, level) {
     this.mainWindow?.webContents.send('notice', message, level)
