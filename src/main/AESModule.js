@@ -45,9 +45,6 @@ class AESModule {
       message.buffer.slice(32, 48)
     )
 
-    streamDecipher.on('error', (err) => {
-      logger.error(err)
-    })
     return streamDecipher
   }
 

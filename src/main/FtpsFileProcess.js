@@ -71,11 +71,10 @@ const downloadFileProcessFtps = async (uuid, writeStream, filePath) => {
     response = await client.downloadTo(writeStream, uuid) // TODO: make sure the directory is created
     logger.info(`ftp download response: ${response.message}`)
     logger.info(`download with ftps succeeded. File saved at ${filePath}`)
-  } catch (error) {
-    logger.error(`download with ftps failed: ${error}`)
-    GlobalValueManager.sendNotice('Failed to download file', 'error')
+  } finally {
+    // Error will be caught by upper layer
+    client.close()
   }
-  client.close()
 }
 
 export { uploadFileProcessFtps, downloadFileProcessFtps }

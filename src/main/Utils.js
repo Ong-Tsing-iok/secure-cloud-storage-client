@@ -62,3 +62,6 @@ export function bigIntToHex(hashBigInt) {
 
 export const TryAgainMsg = 'Please try again.'
 export const ContactManagerOrTryAgainMsg = 'Please contact the manager or try again.'
+export const CheckDiskSizePermissionTryAgainMsg =
+  'Please check disk size or permission and try again.'
+export const CheckLogForDetailMsg = 'Please check log for details.'
