@@ -76,34 +76,45 @@ const uploadFileProcessHttps = async (
 }
 
 const downloadFileProcessHttps = (fileId, writeStream, filePath) => {
-  const request = net.request({
-    method: 'GET',
-    url: `${GlobalValueManager.httpsUrl}/download`,
-    headers: { socketid: socket.id, fileid: fileId } // TODO: maybe change to other one-time token (remember is case insensitive)
-  })
-  request.end()
+  return new Promise((resolve, reject) => {
+    const request = net.request({
+      method: 'GET',
+      url: `${GlobalValueManager.httpsUrl}/download`,
+      headers: { socketid: socket.id, fileid: fileId } // TODO: maybe change to other one-time token (remember is case insensitive)
+    })
+    request.end()
 
-  request.on('response', (response) => {
-    logger.info(`STATUS: ${response.statusCode}`)
-    // logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
+    request.on('response', (response) => {
+      logger.info(`STATUS: ${response.statusCode}`)
+      // logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
 
-    response.on('data', (chunk) => {
-      if (response.statusCode === 200) {
-        writeStream.write(chunk)
-      } else {
-        logger.info(`BODY: ${chunk}`)
-      }
+      response.on('data', (chunk) => {
+        if (response.statusCode === 200) {
+          writeStream.write(chunk)
+        } else {
+          logger.info(`BODY: ${chunk}`)
+        }
+      })
+
+      response.on('end', () => {
+        logger.info('No more data in response.')
+        writeStream.end()
+        if (response.statusCode === 200) {
+          resolve()
+        } else {
+          reject(
+            new Error(
+              `Https received status code ${response.statusCode} and status message ${response.statusMessage}.`
+            )
+          )
+        }
+      })
     })
 
-    response.on('end', () => {
-      logger.info('No more data in response.')
-      writeStream.end()
+    request.on('error', (error) => {
+      logger.error(`ERROR: ${error.message}`)
+      reject(error)
     })
-  })
-
-  request.on('error', (error) => {
-    logger.error(`ERROR: ${error.message}`)
-    GlobalValueManager.sendNotice('Failed to download file', 'error')
   })
 }
 

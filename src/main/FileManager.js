@@ -12,10 +12,13 @@ import GlobalValueManager from './GlobalValueManager'
 import AESModule from './AESModule'
 import BlockchainManager from './BlockchainManager'
 import FileUploadCoordinator from './FileUploadCoordinator'
-import { bigIntToHex, ContactManagerOrTryAgainMsg, TryAgainMsg } from './Utils'
-
-const UploadFileErrorStr = 'Failed to upload file: '
-const DownloadFileErrorStr = 'Failed to download file: '
+import {
+  bigIntToHex,
+  CheckDiskSizePermissionTryAgainMsg,
+  CheckLogForDetailMsg,
+  ContactManagerOrTryAgainMsg,
+  TryAgainMsg
+} from './Utils'
 
 class FileManager {
   aesModule
@@ -38,7 +41,7 @@ class FileManager {
         logger.error(
           `Failed to upload file ${response.fileId}: ${response.errorMsg}. Upload aborted.`
         )
-        GlobalValueManager.sendNotice(`Failed to upload file ${response.fileId}`, 'error')
+        this.#sendUploadErrorNotice(response.errorMsg)
       } else {
         GlobalValueManager.sendNotice(`Success to upload file ${response.fileId}`, 'success')
         this.getFileListProcess(GlobalValueManager.curFolderId)
@@ -53,7 +56,11 @@ class FileManager {
    * @example this.#sendUploadErrorNotice('File encryption failed.', TryAgainMsg)
    */
   #sendUploadErrorNotice(errorMsg, treatmentMsg = TryAgainMsg) {
-    GlobalValueManager.sendNotice(`${UploadFileErrorStr}${errorMsg} ${treatmentMsg}`, 'error')
+    GlobalValueManager.sendNotice(`Failed to upload file: ${errorMsg} ${treatmentMsg}`, 'error')
+  }
+
+  #sendDownloadErrorNotice(errorMsg, treatmentMsg = TryAgainMsg) {
+    GlobalValueManager.sendNotice(`Failed to download file: ${errorMsg} ${treatmentMsg}`, 'error')
   }
 
   // can return promise, but not needed
@@ -131,10 +138,7 @@ class FileManager {
           }
         } catch (error) {
           logger.error(error)
-          this.#sendUploadErrorNotice(
-            `Upload with ${protocol} failed.`,
-            'Please check log for details.'
-          )
+          this.#sendUploadErrorNotice(`Upload with ${protocol} failed.`, CheckLogForDetailMsg)
           return
         }
         try {
@@ -154,7 +158,7 @@ class FileManager {
         logger.error(error)
         this.#sendUploadErrorNotice(
           'Encrypted file failed to write.',
-          'Please check disk size or permission and try again.'
+          CheckDiskSizePermissionTryAgainMsg
         )
       })
     })
@@ -193,20 +197,32 @@ class FileManager {
       try {
         if (response.errorMsg) {
           logger.error(`Failed to download file: ${response.errorMsg}`)
-          GlobalValueManager.sendNotice(response.errorMsg, 'error')
+          this.#sendDownloadErrorNotice(response.errorMsg, ContactManagerOrTryAgainMsg)
           return
         }
         if (!response.fileInfo) {
           //! This should not happen
           logger.error(`File ${fileId} not found`)
-          GlobalValueManager.sendNotice('File not found', 'error')
+          this.#sendDownloadErrorNotice('File not found', ContactManagerOrTryAgainMsg)
           return
         }
         // console.log(fileInfo)
-        const blockchainVerification = await this.blockchainManager.getFileVerification(fileId)
-        if (!blockchainVerification || blockchainVerification.verificationInfo != 'success') {
-          logger.error(`File ${fileId} not verified.`)
-          GlobalValueManager.sendNotice(`File not verified by server. Download abort.`, 'error')
+        try {
+          const blockchainVerification = await this.blockchainManager.getFileVerification(fileId)
+          if (!blockchainVerification || blockchainVerification.verificationInfo != 'success') {
+            logger.error(`File ${fileId} not verified.`)
+            this.#sendDownloadErrorNotice(
+              'File not verified on blockchain.',
+              ContactManagerOrTryAgainMsg
+            )
+            return
+          }
+        } catch (error) {
+          logger.error(error)
+          this.#sendDownloadErrorNotice(
+            'Failed to get file verification from blockchain.',
+            ContactManagerOrTryAgainMsg
+          )
           return
         }
         logger.info(`File ${fileId} is verified.`)
@@ -214,11 +230,24 @@ class FileManager {
         const proxied = response.fileInfo.ownerId !== response.fileInfo.originOwnerId
 
         // Get blockchain verification and file information
-        const blockchainFileInfo = await this.blockchainManager.getFileInfo(fileId)
-        logger.debug(blockchainFileInfo)
-        if (!blockchainFileInfo) {
-          logger.error(`File ${fileId} info not on blockchain.`)
-          GlobalValueManager.sendNotice(`File info not on blockchain. Download abort.`, 'error')
+        let blockchainFileInfo = null
+        try {
+          blockchainFileInfo = await this.blockchainManager.getFileInfo(fileId)
+          logger.debug(blockchainFileInfo)
+          if (!blockchainFileInfo) {
+            logger.error(`File ${fileId} info not on blockchain.`)
+            this.#sendDownloadErrorNotice(
+              'File info not on blockchain.',
+              ContactManagerOrTryAgainMsg
+            )
+            return
+          }
+        } catch (error) {
+          logger.error(error)
+          this.#sendDownloadErrorNotice(
+            'Failed to get file info from blockchain.',
+            ContactManagerOrTryAgainMsg
+          )
           return
         }
 
@@ -226,7 +255,7 @@ class FileManager {
         this.downloadFileProcess2(id, name, cipher, spk, size, proxied, blockchainFileInfo)
       } catch (error) {
         logger.error(error)
-        GlobalValueManager.sendNotice(`Failed to download file.`, 'error')
+        this.#sendDownloadErrorNotice('Unexpected error.', ContactManagerOrTryAgainMsg)
       }
     })
   }
@@ -243,7 +272,17 @@ class FileManager {
         return
       }
 
-      const writeStream = createWriteStream(filePath)
+      //-- Write file --//
+      let writeStream
+      try {
+        writeStream = createWriteStream(filePath)
+      } catch (error) {
+        logger.error(error)
+        this.#sendDownloadErrorNotice(
+          'Failed to create write stream.',
+          CheckDiskSizePermissionTryAgainMsg
+        )
+      }
       let writeCompleteResolve, writeCompleteReject
       const writeCompletePromise = new Promise((resolve, reject) => {
         writeCompleteResolve = resolve
@@ -251,7 +290,7 @@ class FileManager {
       })
       writeStream.on('error', (err) => {
         logger.error(`Failed to write file ${filename}: ${err}. Download aborted.`)
-        GlobalValueManager.sendNotice('Failed to download file', 'error')
+        this.#sendDownloadErrorNotice('Failed to write file.', CheckDiskSizePermissionTryAgainMsg)
         try {
           unlink(filePath)
         } catch (error) {
@@ -264,24 +303,50 @@ class FileManager {
       })
       writeStream.on('finish', () => {
         logger.info(`Downloaded file ${filename} to ${filePath}`)
-        // GlobalValueManager.sendNotice('Success to download file', 'success')
+        GlobalValueManager.sendNotice('File downloaded. Verifying hash...', 'normal')
         writeCompleteResolve()
       })
+
+      //-- Decrypt file --//
       const decipher = await this.aesModule.decrypt(cipher, spk, proxied)
+      decipher.on('error', (err) => {
+        logger.error(err)
+        this.#sendDownloadErrorNotice('Failed to decrypt file.', ContactManagerOrTryAgainMsg)
+      })
+
       logger.info(
         `Downloading file ${fileId} with protocol ${GlobalValueManager.serverConfig.protocol}...`
       )
       // download progress
       const pipeProgress = createPipeProgress({ total: size }, logger)
 
-      this.aesModule.makeHash(pipeProgress, async (digest) => {
-        try {
-          await writeCompletePromise
-        } catch (error) {
-          // Write failed. Do nothing.
-          return
+      //-- Caculate hash --//
+      const hashPromise = this.aesModule.makeHashPromise(pipeProgress)
+
+      pipeProgress.pipe(decipher)
+      decipher.pipe(writeStream)
+
+      //-- Download file with protocol --//
+      try {
+        const protocol = GlobalValueManager.serverConfig.protocol
+        if (protocol === 'https') {
+          await downloadFileProcessHttps(fileId, pipeProgress, filePath)
+        } else if (protocol === 'ftps') {
+          await downloadFileProcessFtps(fileId, pipeProgress, filePath)
+        } else {
+          logger.error('Invalid file protocol')
+          this.#sendDownloadErrorNotice('Invalid file protocol.')
         }
-        const fileHash = digest
+        await writeCompletePromise
+      } catch (error) {
+        logger.error(error)
+        this.#sendDownloadErrorNotice(`Download with ${protocol} failed.`, CheckLogForDetailMsg)
+        return
+      }
+
+      //-- Verify hash --//
+      try {
+        const fileHash = await hashPromise
         const blockchainHash = bigIntToHex(blockchainFileInfo.fileHash)
         if (fileHash !== blockchainHash) {
           try {
@@ -290,7 +355,7 @@ class FileManager {
               blockchainHash
             })
             logger.error(`File hash did not meet for file ${fileId}`)
-            GlobalValueManager.sendNotice('Failed to download file', 'error')
+            this.#sendDownloadErrorNotice('File hash did not meet.', ContactManagerOrTryAgainMsg)
             socket.emit('download-file-hash-error', {
               fileId,
               fileHash,
@@ -311,20 +376,13 @@ class FileManager {
         }
         logger.info(`File hash verified for file ${fileId}.`)
         GlobalValueManager.sendNotice('Success to download file', 'success')
-      })
-
-      pipeProgress.pipe(decipher)
-      decipher.pipe(writeStream)
-      if (GlobalValueManager.serverConfig.protocol === 'https') {
-        downloadFileProcessHttps(fileId, pipeProgress, filePath)
-      } else if (GlobalValueManager.serverConfig.protocol === 'ftps') {
-        downloadFileProcessFtps(fileId, pipeProgress, filePath)
-      } else {
-        throw new Error('Invalid file protocol')
+      } catch (error) {
+        logger.error(error)
+        this.#sendDownloadErrorNotice('File hash calculation failed.')
       }
     } catch (error) {
       logger.error(`Failed to download file: ${error}. Download aborted.`)
-      GlobalValueManager.sendNotice('Failed to download file', 'error')
+      this.#sendDownloadErrorNotice('Unexpected error.', ContactManagerOrTryAgainMsg)
     }
   }
 
