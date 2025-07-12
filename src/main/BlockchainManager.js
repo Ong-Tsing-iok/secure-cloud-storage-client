@@ -124,6 +124,10 @@ class BlockchainManager {
   async uploadFileInfo(fileId, fileHash, metadata) {
     const bFileId = uuidToBigInt(fileId)
     const bFileHash = BigInt(fileHash)
+
+    // Test upload error
+    // throw new Error('Test upload error.')
+
     // Do upload
     const tx = await this.contract.uploadFile(bFileId, bFileHash, metadata)
     await tx.wait()
