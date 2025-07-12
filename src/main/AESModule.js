@@ -21,6 +21,9 @@ class AESModule {
     const streamCipher = crypto.createCipheriv('aes-256-cbc', key, iv)
     const encryptedStream = Readable.from(readstream.pipe(streamCipher))
 
+    // Test for encryption error
+    // encryptedStream.emit('error', new Error('Test encryption error.'))
+
     // encode key and iv
     return {
       cipher,
@@ -81,6 +84,8 @@ class AESModule {
       hash.on('error', (err) => {
         reject(err)
       })
+      // Test hash error
+      // hash.emit('error', new Error('Test hash error.'))
     })
   }
 }

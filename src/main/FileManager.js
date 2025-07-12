@@ -1,4 +1,4 @@
-import { dialog, protocol } from 'electron'
+import { dialog } from 'electron'
 import { socket } from './MessageManager'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { unlink } from 'node:fs/promises'
@@ -72,6 +72,7 @@ class FileManager {
     const originalFileName = basename(filePath)
     try {
       fileStream = createReadStream(filePath)
+      // throw new Error('Test filestream creation error.') // Test for file stream creation error
       logger.info('Encrypting file...')
       ;({ cipher, spk, encryptedStream } = await this.aesModule.encrypt(fileStream))
       encryptedStream.on('error', (err) => {
@@ -110,10 +111,8 @@ class FileManager {
           logger.error(error)
           this.#sendUploadErrorNotice('File hash calculation failed.')
         })
-      encryptedStream.pipe(writeStream)
       writeStream.on('close', async () => {
         logger.info(`Encrypted file finished writing.`, { tempEncryptedFilePath })
-
         const protocol = GlobalValueManager.serverConfig.protocol
         logger.info(`Uploading file ${basename(filePath)} with protocol ${protocol}`)
         try {
@@ -161,6 +160,12 @@ class FileManager {
           CheckDiskSizePermissionTryAgainMsg
         )
       })
+
+      // Start write process
+      encryptedStream.pipe(writeStream)
+
+      // Test write encryption file error
+      // writeStream.emit('error')
     })
   }
 
@@ -306,6 +311,8 @@ class FileManager {
         GlobalValueManager.sendNotice('File downloaded. Verifying hash...', 'normal')
         writeCompleteResolve()
       })
+      // Test write error
+      // writeStream.emit('error')
 
       //-- Decrypt file --//
       const decipher = await this.aesModule.decrypt(cipher, spk, proxied)
@@ -313,6 +320,8 @@ class FileManager {
         logger.error(err)
         this.#sendDownloadErrorNotice('Failed to decrypt file.', ContactManagerOrTryAgainMsg)
       })
+      // Test decrypt error
+      // decipher.emit('error')
 
       logger.info(
         `Downloading file ${fileId} with protocol ${GlobalValueManager.serverConfig.protocol}...`
@@ -327,8 +336,9 @@ class FileManager {
       decipher.pipe(writeStream)
 
       //-- Download file with protocol --//
+      const protocol = GlobalValueManager.serverConfig.protocol
       try {
-        const protocol = GlobalValueManager.serverConfig.protocol
+        logger.info(`Downloading file ${fileId} with protocol ${protocol}`)
         if (protocol === 'https') {
           await downloadFileProcessHttps(fileId, pipeProgress, filePath)
         } else if (protocol === 'ftps') {
