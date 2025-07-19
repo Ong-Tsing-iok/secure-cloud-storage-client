@@ -1,6 +1,7 @@
 import io from 'socket.io-client'
 import { logger } from './Logger'
 import GlobalValueManager from './GlobalValueManager'
+logger.info(`Connecting to server...: ${GlobalValueManager.httpsUrl}`)
 const socket = io(GlobalValueManager.httpsUrl, {
   // reconnectionAttempts: 10,
   rejectUnauthorized: false
@@ -11,9 +12,14 @@ socket.on('message', (message) => {
   logger.log('info', `received message from server: ${message}`)
 })
 
+socket.on('connect', () => {
+  logger.info('connected to server')
+})
+
 socket.on('connect_error', (error) => {
   if (socket.active) {
     // temporary failure, the socket will automatically try to reconnect
+    logger.debug(error.message)
     logger.info("Can't connect to server. Trying to reconnect...")
   } else {
     // the connection was denied by the server
