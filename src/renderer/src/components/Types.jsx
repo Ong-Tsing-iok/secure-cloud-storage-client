@@ -53,7 +53,7 @@ export function parseFileList(fileList, json = true) {
     element.fileId = element.fileId || element.id
     element.owner = element.ownerId
     element.originOwner = element.originOwnerId
-    element.date = element.timestamp.split(' ')[0]
+    element.date = element.timestamp.split('T')[0]
     element.perm = element.permissions
     element.desc = element.description
     delete element.id
@@ -71,13 +71,15 @@ export function parseRequestList(requestList) {
   requestList.forEach((element) => {
     element.userId = element.requester
     delete element.requester
-    element.reqDate = element.requestTime?.split(' ')[0]
+    if (element.requestTime) element.reqDate = element.requestTime.split('T')[0]
+    else element.reqDate = null
     delete element.requestTime
-    element.resDate = element.responseTime?.split(' ')[0]
+    if (element.responseTime) element.resDate = element.responseTime.split('T')[0]
+    else element.resDate = null
     delete element.responseTime
-    if (element.agreed === 1) {
+    if (element.agreed === true) {
       element.status = ResponseType.A
-    } else if (element.agreed === 0) {
+    } else if (element.agreed === false) {
       element.status = ResponseType.R
     } else {
       element.status = ResponseType.N
