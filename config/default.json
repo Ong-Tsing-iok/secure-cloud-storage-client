@@ -5,7 +5,7 @@
   "server": {
     "protocol": "https",
     "host": "localhost",
-    "port": { "https": 3001, "ftps": 7002 }
+    "port": { "https": 3001, "ftps": 7002, "sftp": 7001 }
   },
   "user": {
     "name": "",

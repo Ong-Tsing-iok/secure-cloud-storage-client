@@ -70,7 +70,7 @@ const downloadFileProcessFtps = async (uuid, writeStream, filePath) => {
     logger.info(`ftp download access response: ${response.message}`)
     response = await client.downloadTo(writeStream, uuid) // TODO: make sure the directory is created
     logger.info(`ftp download response: ${response.message}`)
-    logger.info(`download with ftps succeeded. File saved at ${filePath}`)
+    logger.info(`download with ftps succeeded.`)
   } finally {
     // Error will be caught by upper layer
     client.close()

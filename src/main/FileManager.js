@@ -19,6 +19,7 @@ import {
   ContactManagerOrTryAgainMsg,
   TryAgainMsg
 } from './Utils'
+import { downloadFileProcessSftp, uploadFileProcessSftp } from './SftpFileProcess'
 
 class FileManager {
   aesModule
@@ -116,24 +117,35 @@ class FileManager {
         const protocol = GlobalValueManager.serverConfig.protocol
         logger.info(`Uploading file ${basename(filePath)} with protocol ${protocol}`)
         try {
-          if (protocol === 'https') {
-            await uploadFileProcessHttps(
-              tempEncryptedFilePath,
-              originalFileName,
-              fileId,
-              fileUploadCoordinator
-            )
-          } else if (protocol === 'ftps') {
-            await uploadFileProcessFtps(
-              tempEncryptedFilePath,
-              originalFileName,
-              fileId,
-              fileUploadCoordinator
-            )
-          } else {
-            logger.error('Invalid file protocol')
-            this.#sendUploadErrorNotice('Invalid file protocol.')
-            return
+          switch (protocol) {
+            case 'https':
+              await uploadFileProcessHttps(
+                tempEncryptedFilePath,
+                originalFileName,
+                fileId,
+                fileUploadCoordinator
+              )
+              break
+            case 'ftps':
+              await uploadFileProcessHttps(
+                tempEncryptedFilePath,
+                originalFileName,
+                fileId,
+                fileUploadCoordinator
+              )
+              break
+            case 'sftp':
+              await uploadFileProcessSftp(
+                tempEncryptedFilePath,
+                originalFileName,
+                fileId,
+                fileUploadCoordinator
+              )
+              break
+            default:
+              logger.error('Invalid file protocol')
+              this.#sendUploadErrorNotice('Invalid file protocol.')
+              return
           }
         } catch (error) {
           logger.error(error)
@@ -339,13 +351,20 @@ class FileManager {
       const protocol = GlobalValueManager.serverConfig.protocol
       try {
         logger.info(`Downloading file ${fileId} with protocol ${protocol}`)
-        if (protocol === 'https') {
-          await downloadFileProcessHttps(fileId, pipeProgress, filePath)
-        } else if (protocol === 'ftps') {
-          await downloadFileProcessFtps(fileId, pipeProgress, filePath)
-        } else {
-          logger.error('Invalid file protocol')
-          this.#sendDownloadErrorNotice('Invalid file protocol.')
+        switch (protocol) {
+          case 'https':
+            await downloadFileProcessHttps(fileId, pipeProgress, filePath)
+            break
+          case 'ftps':
+            await downloadFileProcessFtps(fileId, pipeProgress, filePath)
+            break
+          case 'sftp':
+            await downloadFileProcessSftp(fileId, pipeProgress, filePath)
+            break
+          default:
+            logger.error('Invalid file protocol')
+            this.#sendDownloadErrorNotice('Invalid file protocol.')
+            break
         }
         await writeCompletePromise
       } catch (error) {
@@ -357,7 +376,7 @@ class FileManager {
       //-- Verify hash --//
       try {
         const fileHash = await hashPromise
-        const blockchainHash = bigIntToHex(blockchainFileInfo.fileHash)
+        const blockchainHash = bigIntToHex(blockchainFileInfo.fileHash, 64) // sha256 have length 64
         if (fileHash !== blockchainHash) {
           try {
             logger.debug('File Hash different', {
