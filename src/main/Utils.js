@@ -55,9 +55,10 @@ export function bigIntToUuid(uuidBigInt) {
 /**
  *
  * @param {BigInt} hashBigInt
+ * @param {number} maxLength The length to pad to without '0x'
  */
-export function bigIntToHex(hashBigInt) {
-  return '0x' + hashBigInt.toString(16)
+export function bigIntToHex(hashBigInt, maxLength = 0) {
+  return '0x' + hashBigInt.toString(16).padStart(maxLength, '0')
 }
 
 export const TryAgainMsg = 'Please try again.'
