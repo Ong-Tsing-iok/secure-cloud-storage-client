@@ -7,21 +7,31 @@ import {
   Typography,
   Textarea,
   Select,
-  Option
+  Option,
+  Input
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
 import { PageContext, ProfileContext } from './Contexts'
 import { PageType, PermissionType, bytesToSize } from './Types'
+import ComboBox from './ComboBox'
 
 function FileDetailDialog({ open, setOpen, fileData }) {
   const [desc, setDesc] = useState(fileData.desc)
   const [pageType] = useContext(PageContext)
   const [permission, setPermission] = useState(fileData.perm)
+  const [selectedAttrs, setSelectedAttrs] = useState([])
+  const [tags, setTags] = useState('')
   const { userIdC: userId } = useContext(ProfileContext)
 
   function updateHandler() {
-    window.electronAPI.updateFileDescPerm(fileData.fileId, desc, parseInt(permission))
+    window.electronAPI.updateFileDescPerm(
+      fileData.fileId,
+      desc,
+      parseInt(permission),
+      selectedAttrs,
+      tags.split(' ').slice(0, 5)
+    )
     setOpen(!open)
   }
 
@@ -89,6 +99,26 @@ function FileDetailDialog({ open, setOpen, fileData }) {
         ) : (
           <Typography variant="small">{PermissionType[fileData.perm]}</Typography>
         )}
+
+        <Typography variant="h5" className="pt-4">
+          屬性
+        </Typography>
+        <ComboBox selectedAttrs={selectedAttrs} setSelectedAttrs={setSelectedAttrs}></ComboBox>
+
+        <Typography variant="h5" className="pt-4">
+          標籤
+        </Typography>
+        <Input
+          label="最多五個，以空格隔開"
+          labelProps={{ className: 'font-sans peer-focus:hidden' }}
+          value={tags}
+          onChange={(e) => {
+            if ((e.target.value.match(/ /g) || []).length < 5)
+              setTags(e.target.value.replace(/\s+/g, ' '))
+          }}
+          size="lg"
+          className="grow rounded-none focus:!border-t-gray-900"
+        ></Input>
 
         <Typography variant="h5" className="pt-4">
           檔案說明
