@@ -181,21 +181,85 @@ class ABSEManager {
       sum = mcl.add(sum, mcl.hashToFr(w))
     })
     const T0 = mcl.mul(SK.sk2, sum)
-    const TStar = mcl.add(mcl.mul(SK.sk1, dPrime), T0)
+    const TStar = mcl.add(mcl.mul(SK.sk1, dPrime), T0).serializeToHexStr()
     const T = new Array(y.length)
     const zero = new mcl.Fr()
     zero.setInt(0)
     for (let i = 0; i < y.length; i++) {
       if (y[i] == 1) {
-        T[i] = SK.sk3
+        T[i] = SK.sk3.serializeToHexStr()
       } else {
-        T[i] = mcl.mul(SK.sk3, zero)
+        T[i] = mcl.mul(SK.sk3, zero).serializeToHexStr()
       }
     }
-    const TK = { TStar, T, sky: SK.sky, dPrime: WPrime.length }
+    const TK = { TStar, T, sky: SK.sky.serializeToHexStr(), dPrime: WPrime.length }
     // console.log(TK)
     // console.log(T)
     return TK
+  }
+  parseTK(serializedTK) {
+    const TK = {
+      TStar: mcl.deserializeHexStrToG2(serializedTK.TStar),
+      T: new Array(serializedTK.T.length),
+      sky: mcl.deserializeHexStrToG2(serializedTK.sky),
+      dPrime: serializedTK.dPrime
+    }
+    for (let i = 0; i < serializedTK.T.length; i++) {
+      TK.T[i] = mcl.deserializeHexStrToG2(serializedTK.T[i])
+    }
+    return TK
+  }
+  async Search(serializedTK, files) {
+    // console.log(serializedTK)
+    try {
+      const TK = this.parseTK(serializedTK)
+      assert(TK.dPrime > 0)
+      const result = new Array()
+      const dPrimeFr = new mcl.Fr()
+      dPrimeFr.setInt(TK.dPrime)
+      logger.debug(`Total of ${files.length} files are indexed.`)
+      files.forEach(async (file) => {
+        const ctStar = mcl.deserializeHexStrToG1(file.ctStar)
+        const ctw = file.ctw.map((entry) => mcl.deserializeHexStrToGT(entry))
+        // console.log(ctw)
+        if (ctw.length < TK.dPrime) return // Keyword to match is larger than keyword set
+        const ct = file.ct.map((entry) => mcl.deserializeHexStrToG1(entry))
+        // console.log(ct)
+        const eCtStarSky = mcl.pairing(ctStar, TK.sky)
+        assert(ct.length == TK.T.length)
+        assert(ct.length >= 1)
+        let prod = mcl.pairing(ct[0], TK.T[0])
+        for (let i = 1; i < ct.length; i++) {
+          const paired = mcl.pairing(ct[i], TK.T[i])
+          prod = mcl.mul(prod, paired)
+        }
+        const B = mcl.mul(eCtStarSky, prod)
+        // console.log(B)
+        const D = mcl.div(mcl.pairing(ctStar, TK.TStar), mcl.pow(B, dPrimeFr))
+        const backtrack = (currentProd, startIndex, depth) => {
+          // Might need to refactor into iteration later
+          if (depth == TK.dPrime) {
+            // depth start from 0
+            // Check if D == D'
+            return D.isEqual(currentProd)
+          }
+          for (let i = startIndex; i < ctw.length - (TK.dPrime - depth) + 1; i++) {
+            let newProd
+            if (depth == 0) newProd = ctw[i]
+            else newProd = mcl.mul(currentProd, ctw[i])
+            // console.log(newProd)
+            if (backtrack(newProd, i + 1, depth + 1)) return true
+          }
+        }
+        if (backtrack(0, 0, 0)) {
+          result.push(file.fileid)
+        }
+      })
+      return result
+    } catch (error) {
+      logger.error(error)
+      return []
+    }
   }
 }
 
