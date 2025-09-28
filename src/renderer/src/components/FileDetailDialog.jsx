@@ -20,8 +20,8 @@ function FileDetailDialog({ open, setOpen, fileData }) {
   const [desc, setDesc] = useState(fileData.desc)
   const [pageType] = useContext(PageContext)
   const [permission, setPermission] = useState(fileData.perm)
-  const [selectedAttrs, setSelectedAttrs] = useState(fileData.attrs)
-  const [tags, setTags] = useState(fileData.tags.join(' '))
+  const [selectedAttrs, setSelectedAttrs] = useState(fileData.attrs || [])
+  const [tags, setTags] = useState(fileData.tags ? fileData.tags.join(' ') : '')
   const { userIdC: userId } = useContext(ProfileContext)
 
   function dialogHandler(update = false) {
@@ -36,8 +36,8 @@ function FileDetailDialog({ open, setOpen, fileData }) {
     } else {
       setDesc(fileData.desc)
       setPermission(fileData.perm)
-      setSelectedAttrs(fileData.attrs)
-      setTags(fileData.tags.join(' '))
+      setSelectedAttrs(fileData.attrs || [])
+      setTags(fileData.tags ? fileData.tags.join(' ') : '')
     }
     setOpen(!open)
   }

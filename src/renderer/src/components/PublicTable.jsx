@@ -24,16 +24,20 @@ function PublicTable() {
     //   setPublicFileList(fileList)
     // }
     async function searchFiles() {
-      const searchedFilesPromise = window.electronAPI.askSearchFiles({ tags: searchTerm })
+      const searchedFilesPromise = window.electronAPI.askSearchFiles({
+        tags: searchTerm.split(' ').slice(0, 5)
+      })
       toast.promise(searchedFilesPromise, {
         loading: '搜尋中',
         success: '搜尋成功',
         error: '搜尋失敗'
       })
-      const searchedFiles = await searchedFilesPromise
-      const fileList = parseFileList(searchedFiles)
-      // setPublicFileList(fileList)
-      setTableContent(fileList)
+      try {
+        const searchedFiles = await searchedFilesPromise
+        const fileList = parseFileList(searchedFiles)
+        // setPublicFileList(fileList)
+        setTableContent(fileList)
+      } catch (error) {}
     }
     if (pageType === PageType.public && searchTerm !== '') {
       searchFiles()

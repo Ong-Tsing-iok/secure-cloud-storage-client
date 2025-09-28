@@ -528,11 +528,33 @@ class FileManager {
     })
   }
 
-  searchFilesProcess({ tags }) {
+  async searchFilesProcess({ tags }) {
     logger.info(`Searching with tags ${tags}`)
-    return new Promise((resolve) => {
-      resolve(null)
-    })
+    try {
+      tags = tags.filter((tag) => tag != '').slice(0, 5)
+      // Calculate the trapdoor
+      let TK = this.TK
+      if (!TK) TK = await this.abseManager.Trapdoor(tags)
+      return new Promise((resolve, reject) => {
+        socket.emit('search-files', { TK, tags }, (response) => {
+          logger.debug(`Server respond search`, response)
+          const { errorMsg, files } = response
+          if (errorMsg) {
+            logger.error(`Failed to search files: ${errorMsg}`)
+            GlobalValueManager.sendNotice(`Failed to search file: ${errorMsg}`, 'error')
+            reject(errorMsg)
+          } else {
+            resolve(files)
+          }
+        })
+      })
+    } catch (error) {
+      logger.error(error)
+      GlobalValueManager.sendNotice(
+        'Failed to search file because of trapdoor calculation',
+        'error'
+      )
+    }
   }
 
   async updateFileDescPermProcess({ fileId, desc, perm, selectedAttrs, tags }) {
@@ -547,6 +569,12 @@ class FileManager {
       let CTw = null
       if (perm == 1 && tags.length > 0) {
         CTw = await this.abseManager.Enc(tags, selectedAttrs)
+        // Testing if can be searched correctly
+        // const TK = await this.abseManager.Trapdoor(tags)
+        // this.TK = TK
+        // const matchedFiles = await this.abseManager.Search(TK, [{ ...CTw, fileid: fileId }])
+        // logger.debug(`matched files when update index: ${matchedFiles}`)
+        logger.debug(`Selected tags: ${tags}, selected attrs: ${selectedAttrs}`)
       }
       logger.info(`Asking to ${actionStr}...`)
       socket.emit(
