@@ -25,13 +25,13 @@ function FileDetailDialog({ open, setOpen, fileData }) {
   const { userIdC: userId } = useContext(ProfileContext)
 
   function updateHandler() {
-    window.electronAPI.updateFileDescPerm(
-      fileData.fileId,
+    window.electronAPI.updateFileDescPerm({
+      fileId: fileData.fileId,
       desc,
-      parseInt(permission),
+      perm: parseInt(permission),
       selectedAttrs,
-      tags.split(' ').slice(0, 5)
-    )
+      tags: tags.split(' ').slice(0, 5)
+    })
     setOpen(!open)
   }
 

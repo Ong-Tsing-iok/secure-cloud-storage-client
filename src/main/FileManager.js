@@ -20,6 +20,7 @@ import {
   TryAgainMsg
 } from './Utils'
 import { downloadFileProcessSftp, uploadFileProcessSftp } from './SftpFileProcess'
+import ABSEManager from './ABSEManager'
 
 class FileManager {
   aesModule
@@ -28,11 +29,13 @@ class FileManager {
   /**
    * @param {AESModule} aesModule
    * @param {BlockchainManager} blockchainManager
+   * @param {ABSEManager} abseManager
    * @param {number} queueConcurrency
    */
-  constructor(aesModule, blockchainManager, queueConcurrency = 1) {
+  constructor(aesModule, blockchainManager, abseManager, queueConcurrency = 1) {
     this.aesModule = aesModule
     this.blockchainManager = blockchainManager
+    this.abseManager = abseManager
     this.uploadQueue = cq()
       .limit({ concurrency: queueConcurrency })
       .process(this.#uploadProcess.bind(this))
@@ -508,14 +511,25 @@ class FileManager {
     })
   }
 
-  updateFileDescPermProcess(fileId, description, permission) {
+  searchFilesProcess({ tags }) {
+    logger.info(`Searching with tags ${tags}`)
+    return new Promise((resolve) => {
+      resolve(null)
+    })
+  }
+
+  updateFileDescPermProcess({ fileId, desc, perm, selectedAttrs, tags }) {
+    // Filter tags to remove empty and keep first five
+    // Filter selectedAttrs to only keep those in pp.U
+    // Calculate TK if perm is public(1) and tags is not empty
     logger.info(`Asking to update file ${fileId} description and permission...`)
-    socket.emit('update-file-desc-perm', { fileId, description, permission }, (response) => {
+    socket.emit('update-file-desc-perm', { fileId, desc, perm }, (response) => {
       const { errorMsg } = response
       if (errorMsg) {
         logger.error(`Failed to update file ${fileId} description and permission: ${errorMsg}`)
         GlobalValueManager.sendNotice('Failed to update file description and permission', 'error')
       } else {
+        // Store tags and selected attrs id in local database
         logger.info(`Success to update file ${fileId} description and permission`)
         GlobalValueManager.sendNotice(
           'Success to update file description and permission',
