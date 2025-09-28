@@ -537,37 +537,42 @@ class FileManager {
 
   async updateFileDescPermProcess({ fileId, desc, perm, selectedAttrs, tags }) {
     const actionStr = `update file ${fileId} description, permission and index`
-    // Filter tags to remove empty and keep first five
-    tags = tags.filter((tag) => tag != '').slice(0, 5)
-    // Filter selectedAttrs to only keep those in pp.U
-    const globalAttrs = (await this.abseManager.getPP()).U
-    selectedAttrs = selectedAttrs.filter((attr) => globalAttrs.includes(attr))
-    // Calculate TK if perm is public(1) and tags is not empty
-    let CTw = null
-    if (perm == 1 && tags.length > 0) {
-      CTw = await this.abseManager.Enc(tags, selectedAttrs)
-    }
-    logger.info(`Asking to ${actionStr}...`)
-    socket.emit(
-      'update-file-desc-perm',
-      { fileId, description: desc, permission: perm, CTw },
-      (response) => {
-        const { errorMsg } = response
-        if (errorMsg) {
-          logger.error(`Failed to ${actionStr}: ${errorMsg}`)
-          GlobalValueManager.sendNotice(`Failed to ${actionStr}`, 'error')
-        } else {
-          // Store tags and selected attrs id in local database
-          // Turn attrs into IDs
-          const attrIds = selectedAttrs.map((attr) => globalAttrs.indexOf(attr))
-          logger.debug(`store attrids`, { attrIds })
-          storeTagAttr(fileId, tags, attrIds)
-          logger.info(`Success to ${actionStr}`)
-          GlobalValueManager.sendNotice(`Success to ${actionStr}`, 'success')
-          this.getFileListProcess(GlobalValueManager.curFolderId)
-        }
+    try {
+      // Filter tags to remove empty and keep first five
+      tags = tags.filter((tag) => tag != '').slice(0, 5)
+      // Filter selectedAttrs to only keep those in pp.U
+      const globalAttrs = (await this.abseManager.getPP()).U
+      selectedAttrs = selectedAttrs.filter((attr) => globalAttrs.includes(attr))
+      // Calculate TK if perm is public(1) and tags is not empty
+      let CTw = null
+      if (perm == 1 && tags.length > 0) {
+        CTw = await this.abseManager.Enc(tags, selectedAttrs)
       }
-    )
+      logger.info(`Asking to ${actionStr}...`)
+      socket.emit(
+        'update-file-desc-perm',
+        { fileId, description: desc, permission: perm, CTw },
+        (response) => {
+          const { errorMsg } = response
+          if (errorMsg) {
+            logger.error(`Failed to ${actionStr}: ${errorMsg}`)
+            GlobalValueManager.sendNotice(`Failed to ${actionStr}`, 'error')
+          } else {
+            // Store tags and selected attrs id in local database
+            // Turn attrs into IDs
+            const attrIds = selectedAttrs.map((attr) => globalAttrs.indexOf(attr))
+            logger.debug(`store attrids`, { attrIds })
+            storeTagAttr(fileId, tags, attrIds)
+            logger.info(`Success to ${actionStr}`)
+            GlobalValueManager.sendNotice(`Success to ${actionStr}`, 'success')
+            this.getFileListProcess(GlobalValueManager.curFolderId)
+          }
+        }
+      )
+    } catch (error) {
+      logger.error(error)
+      GlobalValueManager.sendNotice(`Failed to ${actionStr}`, 'error')
+    }
   }
 }
 
