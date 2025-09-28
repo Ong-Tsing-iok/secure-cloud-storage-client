@@ -36,6 +36,8 @@ if (process.contextIsolated) {
       onRequestValue: (callback) =>
         ipcRenderer.on('request-value', (_event, result) => callback(result)),
       onUserList: (callback) => ipcRenderer.on('user-list', (_event, result) => callback(result)),
+      onGlobalAttrs: (callback) =>
+        ipcRenderer.on('global-attrs', (_event, result) => callback(result)),
       updateUserConfig: (config) => ipcRenderer.send('update-user-config', config),
       updateRequestValue: (values) => ipcRenderer.send('update-request-value', values),
       updateUserList: (users) => ipcRenderer.send('update-user-list', users),
