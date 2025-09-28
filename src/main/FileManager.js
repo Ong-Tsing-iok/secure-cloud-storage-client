@@ -199,6 +199,7 @@ class FileManager {
     logger.info(`Getting file list for ${parentFolderId || 'home'}...`)
     socket.emit('get-file-list', { parentFolderId }, (response) => {
       const { fileList, errorMsg } = response
+      // TODO: get keyword and policy from local storage and add into fileList
       if (errorMsg) {
         logger.error(`Failed to get file list: ${errorMsg}`)
         GlobalValueManager.sendNotice('Failed to get file list', 'error')
