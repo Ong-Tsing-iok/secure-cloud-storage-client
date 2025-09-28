@@ -21,6 +21,7 @@ import {
 } from './Utils'
 import { downloadFileProcessSftp, uploadFileProcessSftp } from './SftpFileProcess'
 import ABSEManager from './ABSEManager'
+import { getAttrIds, getTags, storeTagAttr } from './Database'
 
 class FileManager {
   aesModule
@@ -200,14 +201,29 @@ class FileManager {
 
   getFileListProcess(parentFolderId) {
     logger.info(`Getting file list for ${parentFolderId || 'home'}...`)
-    socket.emit('get-file-list', { parentFolderId }, (response) => {
-      const { fileList, errorMsg } = response
-      // TODO: get keyword and policy from local storage and add into fileList
-      if (errorMsg) {
-        logger.error(`Failed to get file list: ${errorMsg}`)
+    socket.emit('get-file-list', { parentFolderId }, async (response) => {
+      try {
+        const { files, folders, errorMsg } = response
+        if (errorMsg) {
+          logger.error(`Failed to get file list: ${errorMsg}`)
+          GlobalValueManager.sendNotice('Failed to get file list', 'error')
+        } else {
+          logger.info('Sucess to get file list')
+          const globalAttrs = (await this.abseManager.getPP()).U
+          // Get tag and attribute from local storage and add into fileList
+          const filesObj = JSON.parse(files)
+          filesObj.forEach((file) => {
+            file.tags = getTags.all(file.id).map((row) => row.tag)
+            file.attrs = getAttrIds.all(file.id).map((row) => globalAttrs.at(row.attrIds))
+          })
+          GlobalValueManager.mainWindow?.webContents.send('file-list-res', {
+            files: filesObj,
+            folders
+          })
+        }
+      } catch (error) {
+        logger.error(`Failed to get file list.`)
         GlobalValueManager.sendNotice('Failed to get file list', 'error')
-      } else {
-        GlobalValueManager.mainWindow?.webContents.send('file-list-res', fileList)
       }
     })
   }
@@ -518,23 +534,31 @@ class FileManager {
     })
   }
 
-  updateFileDescPermProcess({ fileId, desc, perm, selectedAttrs, tags }) {
+  async updateFileDescPermProcess({ fileId, desc, perm, selectedAttrs, tags }) {
+    const actionStr = `update file ${fileId} description, permission and index`
     // Filter tags to remove empty and keep first five
+    tags = tags.filter((tag) => tag != '').slice(0, 5)
     // Filter selectedAttrs to only keep those in pp.U
+    const globalAttrs = (await this.abseManager.getPP()).U
+    selectedAttrs = selectedAttrs.filter((attr) => globalAttrs.includes(attr))
     // Calculate TK if perm is public(1) and tags is not empty
-    logger.info(`Asking to update file ${fileId} description and permission...`)
-    socket.emit('update-file-desc-perm', { fileId, desc, perm }, (response) => {
+    let CTw = null
+    if (perm == 1 && tags.length > 0) {
+      CTw = await this.abseManager.Enc(tags, selectedAttrs)
+    }
+    logger.info(`Asking to ${actionStr}...`)
+    socket.emit('update-file-desc-perm', { fileId, desc, perm, CTw }, (response) => {
       const { errorMsg } = response
       if (errorMsg) {
-        logger.error(`Failed to update file ${fileId} description and permission: ${errorMsg}`)
-        GlobalValueManager.sendNotice('Failed to update file description and permission', 'error')
+        logger.error(`Failed to ${actionStr}: ${errorMsg}`)
+        GlobalValueManager.sendNotice(`Failed to ${actionStr}`, 'error')
       } else {
         // Store tags and selected attrs id in local database
-        logger.info(`Success to update file ${fileId} description and permission`)
-        GlobalValueManager.sendNotice(
-          'Success to update file description and permission',
-          'success'
-        )
+        // Turn attrs into IDs
+        const attrIds = selectedAttrs.map((attr) => globalAttrs.indexOf(attr))
+        storeTagAttr(fileId, tags, attrIds)
+        logger.info(`Success to ${actionStr}`)
+        GlobalValueManager.sendNotice(`Success to ${actionStr}`, 'success')
         this.getFileListProcess(GlobalValueManager.curFolderId)
       }
     })

@@ -20,18 +20,25 @@ function FileDetailDialog({ open, setOpen, fileData }) {
   const [desc, setDesc] = useState(fileData.desc)
   const [pageType] = useContext(PageContext)
   const [permission, setPermission] = useState(fileData.perm)
-  const [selectedAttrs, setSelectedAttrs] = useState([])
-  const [tags, setTags] = useState('')
+  const [selectedAttrs, setSelectedAttrs] = useState(fileData.attrs)
+  const [tags, setTags] = useState(fileData.tags.join(' '))
   const { userIdC: userId } = useContext(ProfileContext)
 
-  function updateHandler() {
-    window.electronAPI.updateFileDescPerm({
-      fileId: fileData.fileId,
-      desc,
-      perm: parseInt(permission),
-      selectedAttrs,
-      tags: tags.split(' ').slice(0, 5)
-    })
+  function dialogHandler(update = false) {
+    if (update) {
+      window.electronAPI.updateFileDescPerm({
+        fileId: fileData.fileId,
+        desc,
+        perm: parseInt(permission),
+        selectedAttrs,
+        tags: tags.split(' ').slice(0, 5)
+      })
+    } else {
+      setDesc(fileData.desc)
+      setPermission(fileData.perm)
+      setSelectedAttrs(fileData.attrs)
+      setTags(fileData.tags.join(' '))
+    }
     setOpen(!open)
   }
 
@@ -44,7 +51,7 @@ function FileDetailDialog({ open, setOpen, fileData }) {
   return (
     <Dialog
       open={open}
-      handler={() => setOpen(!open)}
+      handler={() => dialogHandler(false)}
       className="flex flex-col max-h-screen overflow-auto"
     >
       <DialogHeader>檔案詳情</DialogHeader>
@@ -100,25 +107,33 @@ function FileDetailDialog({ open, setOpen, fileData }) {
           <Typography variant="small">{PermissionType[fileData.perm]}</Typography>
         )}
 
-        <Typography variant="h5" className="pt-4">
-          屬性
-        </Typography>
-        <ComboBox selectedAttrs={selectedAttrs} setSelectedAttrs={setSelectedAttrs}></ComboBox>
+        {pageType == PageType.file && (
+          <div>
+            <Typography variant="h5" className="pt-4">
+              屬性
+            </Typography>
+            <ComboBox selectedAttrs={selectedAttrs} setSelectedAttrs={setSelectedAttrs}></ComboBox>
+          </div>
+        )}
 
-        <Typography variant="h5" className="pt-4">
-          標籤
-        </Typography>
-        <Input
-          label="最多五個，以空格隔開"
-          labelProps={{ className: 'font-sans peer-focus:hidden' }}
-          value={tags}
-          onChange={(e) => {
-            if ((e.target.value.match(/ /g) || []).length < 5)
-              setTags(e.target.value.replace(/\s+/g, ' '))
-          }}
-          size="lg"
-          className="grow rounded-none focus:!border-t-gray-900"
-        ></Input>
+        {pageType == PageType.file && (
+          <div>
+            <Typography variant="h5" className="pt-4">
+              標籤
+            </Typography>
+            <Input
+              label="最多五個，以空格隔開"
+              labelProps={{ className: 'font-sans peer-focus:hidden' }}
+              value={tags}
+              onChange={(e) => {
+                if ((e.target.value.match(/ /g) || []).length < 5)
+                  setTags(e.target.value.replace(/\s+/g, ' '))
+              }}
+              size="lg"
+              className="grow rounded-none focus:!border-t-gray-900"
+            ></Input>
+          </div>
+        )}
 
         <Typography variant="h5" className="pt-4">
           檔案說明
@@ -137,13 +152,13 @@ function FileDetailDialog({ open, setOpen, fileData }) {
         )}
       </DialogBody>
       <DialogFooter>
-        <Button variant="text" color="red" onClick={() => setOpen(!open)}>
+        <Button variant="text" color="red" onClick={() => dialogHandler(false)}>
           取消
         </Button>
         <Button
           variant="gradient"
           color="black"
-          onClick={pageType === PageType.file ? () => updateHandler() : () => setOpen(!open)}
+          onClick={() => dialogHandler(pageType === PageType.file)}
         >
           {pageType === PageType.file ? '更新' : '確定'}
         </Button>
@@ -162,7 +177,7 @@ FileDetailDialog.propTypes = {
     size: PropTypes.number.isRequired,
     date: PropTypes.string.isRequired,
     originOwner: PropTypes.string.isRequired,
-    perm: PropTypes.string.isRequired,
+    perm: PropTypes.number.isRequired,
     desc: PropTypes.string.isRequired
   })
 }

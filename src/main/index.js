@@ -40,9 +40,10 @@ function createWindow() {
   GlobalValueManager.mainWindow = mainWindow
   mainWindow.setBackgroundColor('#fff')
 
-  mainWindow.on('ready-to-show', () => {
+  mainWindow.on('ready-to-show', async () => {
     mainWindow.show()
-    loginManager.login()
+    const pp = await abseManager.getPP()
+    await loginManager.login()
     GlobalValueManager.mainWindow?.webContents.send('request-value', {
       seenReplies: GlobalValueManager.requestConfig.seenReplies,
       seenRequests: GlobalValueManager.requestConfig.seenRequests
@@ -50,6 +51,9 @@ function createWindow() {
     GlobalValueManager.mainWindow?.webContents.send('user-list', {
       whiteList: GlobalValueManager.userListConfig.whiteList,
       blackList: GlobalValueManager.userListConfig.blackList
+    })
+    GlobalValueManager.mainWindow?.webContents.send('global-attrs', {
+      globalAttrs: pp.U.filter((attr) => attr != 'None')
     })
     // blockchainManager.printContractOwner().catch((error) => logger.error(error))
   })

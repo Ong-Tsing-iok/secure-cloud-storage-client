@@ -36,7 +36,7 @@ function MainView() {
   useEffect(() => {
     window.electronAPI.onFileListRes((result) => {
       const { files, folders } = result
-      const fileList = parseFileList(files)
+      const fileList = parseFileList(files, false)
 
       const folderList = JSON.parse(folders)
       folderList.forEach((element) => {
@@ -45,6 +45,7 @@ function MainView() {
       })
       setFileList(fileList)
       setFolderList(folderList)
+      console.log(fileList)
     })
     window.electronAPI.onRequestListRes((result) => {
       const requestList = parseRequestList(result)

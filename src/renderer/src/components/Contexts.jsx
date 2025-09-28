@@ -20,3 +20,6 @@ export const UserListContext = createContext({
   whiteListC: [[], null],
   blackListC: [[], null]
 })
+export const GlobalAttrsContext = createContext({
+  globalAttrs: []
+})

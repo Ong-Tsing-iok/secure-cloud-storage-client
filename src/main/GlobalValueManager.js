@@ -60,6 +60,10 @@ class GlobalValueManager {
     return `https://${this.serverConfig.host}:${this.serverConfig.port.https}`
   }
 
+  get userDataPath() {
+    return app.getPath('userData')
+  }
+
   get userId() {
     if (this.userInfo) {
       return this.userInfo.userId

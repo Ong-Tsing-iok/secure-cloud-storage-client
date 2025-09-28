@@ -7,7 +7,8 @@ import {
   ProfileContext,
   PageContext,
   SearchContext,
-  RequestContext
+  RequestContext,
+  GlobalAttrsContext
 } from './components/Contexts.jsx'
 import toast, { Toaster } from 'react-hot-toast'
 import { ResponseType, SearchType } from './components/Types.jsx'
@@ -24,6 +25,7 @@ function App() {
   const [requestedList, setRequestedList] = useState([])
   const [seenRequests, setSeenRequests] = useState(0)
   const [seenReplies, setSeenReplies] = useState(0)
+  const [globalAttrs, setGlobalAttrs] = useState([])
 
   const profileContextValue = useMemo(
     () => ({
@@ -48,6 +50,12 @@ function App() {
     }),
     [searchType, searchTerm, searchTimes]
   )
+  const globalAttrsContextValue = useMemo(
+    () => ({
+      globalAttrs: globalAttrs
+    }),
+    [globalAttrs]
+  )
   const pageContextValue = useMemo(() => [pageType, swapPageHandler], [pageType])
   useEffect(() => {
     window.electronAPI.onNotice((result, level) => {
@@ -68,6 +76,9 @@ function App() {
     window.electronAPI.onRequestValue(({ seenRequests, seenReplies }) => {
       setSeenRequests(seenRequests)
       setSeenReplies(seenReplies)
+    })
+    window.electronAPI.onGlobalAttrs(({ globalAttrs }) => {
+      setGlobalAttrs(globalAttrs)
     })
   }, [])
 
@@ -116,18 +127,20 @@ function App() {
         <PageContext.Provider value={pageContextValue}>
           <RequestContext.Provider value={requestContextValue}>
             <SearchContext.Provider value={searchContextValue}>
-              <div className="flex flex-row h-screen w-screen justify-center">
-                <NavBar
-                  pageType={pageType}
-                  setPageType={swapPageHandler}
-                  seenRequest={seenRequests}
-                  seenReply={seenReplies}
-                />
-                <div className="flex flex-col grow">
-                  <MainView />
-                  <Console />
+              <GlobalAttrsContext.Provider value={globalAttrsContextValue}>
+                <div className="flex flex-row h-screen w-screen justify-center">
+                  <NavBar
+                    pageType={pageType}
+                    setPageType={swapPageHandler}
+                    seenRequest={seenRequests}
+                    seenReply={seenReplies}
+                  />
+                  <div className="flex flex-col grow">
+                    <MainView />
+                    <Console />
+                  </div>
                 </div>
-              </div>
+              </GlobalAttrsContext.Provider>
             </SearchContext.Provider>
           </RequestContext.Provider>
         </PageContext.Provider>
