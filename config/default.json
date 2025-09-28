@@ -25,5 +25,8 @@
     "contractAddr" : "",
     "walletKeyFilename": "wallet.key",
     "blockRangeLimit": 5000
+  },
+  "trustedAuthority":{
+    "url": "localhost:2999"
   }
 }
