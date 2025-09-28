@@ -1,7 +1,7 @@
 import * as mcl from 'mcl-wasm'
 import { logger } from './Logger'
 import GlobalValueManager from './GlobalValueManager'
-import { assert } from 'assert'
+import assert from 'assert'
 import io from 'socket.io-client'
 import KeyManager from './KeyManager'
 
@@ -19,8 +19,13 @@ class ABSEManager {
     this.keyManager = keyManager
   }
   async init() {
-    await mcl.init(mcl.BLS12_381)
-    await this.getPP()
+    try {
+      await mcl.init(mcl.BLS12_381)
+      await this.getPP()
+      await this.getKey()
+    } catch (error) {
+      logger.error(error)
+    }
   }
   async getPP() {
     if (this.pp) return this.pp
@@ -45,18 +50,23 @@ class ABSEManager {
       for (let i = 0; i < pp.h_i.length; i++) {
         this.pp.h_i[i] = mcl.deserializeHexStrToG1(pp.h_i[i])
       }
-      this.pp = pp
-      return pp
+      return this.pp
     } catch (error) {
       logger.error(error)
       return null
     }
   }
   async getKey() {
+    const globalAttrs = (await this.getPP()).U
     return new Promise((resolve, reject) => {
       function getSearchKeyError(error) {
-        logger.error(`Get search key failed because of following error: ${error}`)
+        if (error.stack) {
+          logger.error(error)
+        } else {
+          logger.error(`Get search key failed because of following error: ${error}`)
+        }
         GlobalValueManager.sendNotice('Failed to get search key', 'error')
+        socket.close()
         reject('Cannot get search key.')
       }
       if (this.SK && this.y) {
@@ -78,11 +88,12 @@ class ABSEManager {
                 getSearchKeyError(errorMsg)
                 return
               }
-
+              logger.info(`Responding auth to trusted authority.`)
               // respond to auth and get key
               const decryptedValue = await this.keyManager.decrypt(cipher, spk)
-              socket.emit('auth-res', { decryptedValue }, ({ errorMsg, SK, y }) => {
+              socket.emit('auth-res', { decryptedValue, y: null }, ({ errorMsg, SK, y }) => {
                 try {
+                  // logger.debug(`trusted authority responded with`, { errorMsg, SK, y })
                   if (errorMsg) {
                     getSearchKeyError(errorMsg)
                     return
@@ -95,6 +106,14 @@ class ABSEManager {
                       sky: mcl.deserializeHexStrToG2(SK.sky)
                     }
                     this.y = y
+                    const attrsText = []
+                    for (let i = 0; i < y.length - 1; i++) {
+                      if (y[i] == 1) attrsText.push(globalAttrs[i])
+                    }
+                    logger.info(
+                      `Successfully get search key with attributes ${attrsText.join(' ')}.`
+                    )
+                    socket.close()
                     resolve({ SK: this.SK, y: this.y })
                     return
                   } else {
@@ -136,17 +155,17 @@ class ABSEManager {
     assert(sum.isZero())
     const t = new mcl.Fr()
     t.setByCSPRNG()
-    const ctStar = mcl.mul(pp.h, t)
+    const ctStar = mcl.mul(pp.h, t).serializeToHexStr()
     const eggat = mcl.pow(pp.eggalpha, t)
     const ctw = new Array(W.length)
     for (i = 0; i < W.length; i++) {
       const wHash = mcl.hashToFr(W[i])
       const P = mcl.pairing(mcl.mul(pp.g1, wHash), mcl.mul(pp.g2, t))
-      ctw[i] = mcl.mul(eggat, P)
+      ctw[i] = mcl.mul(eggat, P).serializeToHexStr()
     }
     const ct = new Array(pp.h_i.length)
     for (i = 0; i < pp.h_i.length; i++) {
-      ct[i] = mcl.add(mcl.mul(pp.h_i[i], t), mcl.mul(pp.g1, x[i]))
+      ct[i] = mcl.add(mcl.mul(pp.h_i[i], t), mcl.mul(pp.g1, x[i])).serializeToHexStr()
     }
     const CTw = { ctStar, ctw, ct }
     // console.log(CTm);
