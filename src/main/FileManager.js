@@ -214,7 +214,8 @@ class FileManager {
           const filesObj = JSON.parse(files)
           filesObj.forEach((file) => {
             file.tags = getTags.all(file.id).map((row) => row.tag)
-            file.attrs = getAttrIds.all(file.id).map((row) => globalAttrs.at(row.attrIds))
+            file.attrs = getAttrIds.all(file.id).map((row) => globalAttrs.at(row.attrid))
+            logger.debug(`attrs for file ${file.id}`, { attrs: file.attrs })
           })
           GlobalValueManager.mainWindow?.webContents.send('file-list-res', {
             files: filesObj,
@@ -547,21 +548,26 @@ class FileManager {
       CTw = await this.abseManager.Enc(tags, selectedAttrs)
     }
     logger.info(`Asking to ${actionStr}...`)
-    socket.emit('update-file-desc-perm', { fileId, desc, perm, CTw }, (response) => {
-      const { errorMsg } = response
-      if (errorMsg) {
-        logger.error(`Failed to ${actionStr}: ${errorMsg}`)
-        GlobalValueManager.sendNotice(`Failed to ${actionStr}`, 'error')
-      } else {
-        // Store tags and selected attrs id in local database
-        // Turn attrs into IDs
-        const attrIds = selectedAttrs.map((attr) => globalAttrs.indexOf(attr))
-        storeTagAttr(fileId, tags, attrIds)
-        logger.info(`Success to ${actionStr}`)
-        GlobalValueManager.sendNotice(`Success to ${actionStr}`, 'success')
-        this.getFileListProcess(GlobalValueManager.curFolderId)
+    socket.emit(
+      'update-file-desc-perm',
+      { fileId, description: desc, permission: perm, CTw },
+      (response) => {
+        const { errorMsg } = response
+        if (errorMsg) {
+          logger.error(`Failed to ${actionStr}: ${errorMsg}`)
+          GlobalValueManager.sendNotice(`Failed to ${actionStr}`, 'error')
+        } else {
+          // Store tags and selected attrs id in local database
+          // Turn attrs into IDs
+          const attrIds = selectedAttrs.map((attr) => globalAttrs.indexOf(attr))
+          logger.debug(`store attrids`, { attrIds })
+          storeTagAttr(fileId, tags, attrIds)
+          logger.info(`Success to ${actionStr}`)
+          GlobalValueManager.sendNotice(`Success to ${actionStr}`, 'success')
+          this.getFileListProcess(GlobalValueManager.curFolderId)
+        }
       }
-    })
+    )
   }
 }
 
