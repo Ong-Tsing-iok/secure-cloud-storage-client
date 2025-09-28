@@ -80,10 +80,10 @@ class BlockchainManager {
         this.provider
       )
       this.contract = new Contract(contractAddr, abi, this.wallet)
+      logger.info(`Blockchain Manager initialized with wallet address: ${this.wallet.address}.`)
     } catch (error) {
       logger.error(error)
     }
-    logger.info(`Blockchain Manager initialized with wallet address: ${this.wallet.address}.`)
   }
 
   /**

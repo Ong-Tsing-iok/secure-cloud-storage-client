@@ -40,6 +40,10 @@ class GlobalValueManager {
         config.get('blockchain.walletKeyFilename')
       )
       this.blockchain.blockRangeLimit = config.get('blockchain.blockRangeLimit')
+
+      // Trusted Authority
+      this.trustedAuthority = {}
+      this.trustedAuthority.url = `https://${config.get('trustedAuthority.url')}`
     } catch (error) {
       logger.error(`Failed to load config: ${error}`)
     }

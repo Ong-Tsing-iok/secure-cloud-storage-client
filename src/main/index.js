@@ -11,6 +11,7 @@ import GlobalValueManager from './GlobalValueManager'
 import AESModule from './AESModule'
 import BlockchainManager from './BlockchainManager'
 import KeyManager from './KeyManager'
+import ABSEManager from './ABSEManager'
 
 // Initilize class instances
 const keyManager = new KeyManager()
@@ -20,6 +21,8 @@ const aesModule = new AESModule(keyManager)
 const blockchainManager = new BlockchainManager()
 const fileManager = new FileManager(aesModule, blockchainManager)
 const loginManager = new LoginManager(blockchainManager, fileManager, keyManager, requestManager)
+const abseManager = new ABSEManager(keyManager)
+abseManager.init()
 
 function createWindow() {
   // Create the browser window.
