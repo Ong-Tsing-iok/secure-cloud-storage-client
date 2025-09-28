@@ -19,10 +19,10 @@ keyManager.initKeys()
 const requestManager = new RequestManager(keyManager)
 const aesModule = new AESModule(keyManager)
 const blockchainManager = new BlockchainManager()
-const fileManager = new FileManager(aesModule, blockchainManager)
-const loginManager = new LoginManager(blockchainManager, fileManager, keyManager, requestManager)
 const abseManager = new ABSEManager(keyManager)
 abseManager.init()
+const fileManager = new FileManager(aesModule, blockchainManager, abseManager)
+const loginManager = new LoginManager(blockchainManager, fileManager, keyManager, requestManager)
 
 function createWindow() {
   // Create the browser window.
@@ -131,6 +131,9 @@ app.whenReady().then(() => {
   ipcMain.handle('get-public-files', async () => {
     return await fileManager.getAllPublicFilesProcess()
   })
+  ipcMain.handle('search-files', async (_event, values) => {
+    return await fileManager.searchFilesProcess(values)
+  })
   ipcMain.on('register', (_event, registerInfo) => loginManager.register(registerInfo))
   ipcMain.on('update-user-config', (_event, config) => {
     GlobalValueManager.updateUser(config)
@@ -142,8 +145,8 @@ app.whenReady().then(() => {
     GlobalValueManager.updateUserList(users)
     requestManager.getRequestedListProcess()
   })
-  ipcMain.on('update-file-desc-perm', (_event, fileId, desc, perm) => {
-    fileManager.updateFileDescPermProcess(fileId, desc, perm)
+  ipcMain.on('update-file-desc-perm', (_event, values) => {
+    fileManager.updateFileDescPermProcess(values)
   })
   createWindow()
   // login()

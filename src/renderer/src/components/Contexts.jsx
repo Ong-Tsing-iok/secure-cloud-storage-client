@@ -8,7 +8,8 @@ export const ProfileContext = createContext({
 export const PageContext = createContext(['', null])
 export const SearchContext = createContext({
   searchTypeC: ['', null],
-  searchTermC: ['', null]
+  searchTermC: ['', null],
+  searchTimesC: [0, null]
 })
 export const CurPathContext = createContext([[], null])
 export const RequestContext = createContext({

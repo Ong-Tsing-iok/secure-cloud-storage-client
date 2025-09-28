@@ -19,6 +19,7 @@ function App() {
   const [userId, setUserId] = useState('')
   const [searchType, setSearchType] = useState(SearchType.name)
   const [searchTerm, setSearchTerm] = useState('')
+  const [searchTimes, setSearchTimes] = useState(0)
   const [requestList, setRequestList] = useState([])
   const [requestedList, setRequestedList] = useState([])
   const [seenRequests, setSeenRequests] = useState(0)
@@ -42,9 +43,10 @@ function App() {
   const searchContextValue = useMemo(
     () => ({
       searchTypeC: [searchType, setSearchType],
-      searchTermC: [searchTerm, setSearchTerm]
+      searchTermC: [searchTerm, setSearchTerm],
+      searchTimesC: [searchTimes, setSearchTimes]
     }),
-    [searchType, searchTerm]
+    [searchType, searchTerm, searchTimes]
   )
   const pageContextValue = useMemo(() => [pageType, swapPageHandler], [pageType])
   useEffect(() => {

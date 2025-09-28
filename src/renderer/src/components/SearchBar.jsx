@@ -1,14 +1,16 @@
 import { Button, Menu, MenuHandler, MenuList, MenuItem, Input } from '@material-tailwind/react'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useContext } from 'react'
-import { SearchContext } from './Contexts'
-import { SearchType } from './Types'
+import { PageContext, SearchContext } from './Contexts'
+import { PageType, SearchType } from './Types'
 
 function SearchBar() {
   const {
     searchTypeC: [type, setType],
-    searchTermC: [searchTerm, setSearchTerm]
+    searchTermC: [searchTerm, setSearchTerm],
+    searchTimesC: [searchTimes, setSearchTimes]
   } = useContext(SearchContext)
+  const [pageType] = useContext(PageContext)
 
   // TODO: remove some search (like public) incase to costly
   return (
@@ -20,19 +22,21 @@ function SearchBar() {
             variant="text"
             className="rounded-r-none h-full min-w-24 !px-0 justify-center border border-gray-400"
           >
-            {type}
+            {pageType === PageType.public ? 'Tag' : type}
           </Button>
         </MenuHandler>
-        <MenuList>
-          {Object.entries(SearchType).map(([key, value]) => (
-            <MenuItem key={key} onClick={() => setType(value)} className="bg-white items-center">
-              {value}
-            </MenuItem>
-          ))}
-        </MenuList>
+        {pageType !== PageType.public && (
+          <MenuList>
+            {Object.entries(SearchType).map(([key, value]) => (
+              <MenuItem key={key} onClick={() => setType(value)} className="bg-white items-center">
+                {value}
+              </MenuItem>
+            ))}
+          </MenuList>
+        )}
       </Menu>
       <Input
-        label="搜尋"
+        label={pageType === PageType.public ? '輸入標籤搜尋，以空格隔開' : '搜尋'}
         labelProps={{ className: 'font-sans peer-focus:hidden' }}
         value={searchTerm}
         onChange={(e) => {
@@ -45,6 +49,7 @@ function SearchBar() {
         className="h-full min-w-12 rounded-l-none justify-center"
         size="sm"
         variant="gradient"
+        onClick={() => setSearchTimes(searchTimes + 1)}
       >
         <MagnifyingGlassIcon className="size-4" />
       </Button>

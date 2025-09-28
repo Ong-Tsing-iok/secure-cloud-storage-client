@@ -30,6 +30,7 @@ if (process.contextIsolated) {
       askAllFolder: () => ipcRenderer.invoke('get-folders'),
       askMoveFile: (uuid, targetFolderId) => ipcRenderer.send('move-file', uuid, targetFolderId),
       askAllPublicFile: () => ipcRenderer.invoke('get-public-files'),
+      askSearchFiles: (values) => ipcRenderer.invoke('search-files', values),
       askRegister: (registerInfo) => ipcRenderer.send('register', registerInfo),
       onUserConfig: (callback) => ipcRenderer.on('user-info', (_event, result) => callback(result)),
       onRequestValue: (callback) =>
@@ -38,8 +39,7 @@ if (process.contextIsolated) {
       updateUserConfig: (config) => ipcRenderer.send('update-user-config', config),
       updateRequestValue: (values) => ipcRenderer.send('update-request-value', values),
       updateUserList: (users) => ipcRenderer.send('update-user-list', users),
-      updateFileDescPerm: (fileId, desc, perm) =>
-        ipcRenderer.send('update-file-desc-perm', fileId, desc, perm),
+      updateFileDescPerm: (values) => ipcRenderer.send('update-file-desc-perm', values),
       askRequestFile: (requestInfo) => ipcRenderer.send('request-file', requestInfo),
       askRequestList: () => ipcRenderer.send('get-request-list'),
       askRequestedList: () => ipcRenderer.send('get-requested-list'),
