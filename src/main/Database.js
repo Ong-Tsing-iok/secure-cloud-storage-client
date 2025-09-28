@@ -28,12 +28,12 @@ export const getAttrIds = db.prepare(`SELECT attrid FROM attr_table WHERE fileid
 export const deleteAttrId = db.prepare(`DELETE FROM attr_table WHERE fileid = ?;`)
 
 export function storeTagAttr(fileId, tags, attrIds) {
-  deleteTags(fileId)
-  deleteAttrId(fileId)
+  deleteTags.run(fileId)
+  deleteAttrId.run(fileId)
   tags.forEach((tag) => {
     insertTag.run(fileId, tag)
   })
   attrIds.forEach((attrId) => {
-    insertAttrId(fileId, attrId)
+    insertAttrId.run(fileId, attrId)
   })
 }
