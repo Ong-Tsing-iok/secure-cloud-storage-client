@@ -71,6 +71,7 @@ class BlockchainManager {
    */
   constructor() {
     try {
+      // if (!GlobalValueManager.blockchain.enabled) return
       const url = GlobalValueManager.blockchain.jsonRpcUrl
       const abi = GlobalValueManager.blockchain.abi
       const contractAddr = GlobalValueManager.blockchain.contractAddr
@@ -122,6 +123,7 @@ class BlockchainManager {
    * @throws Any error occurred.
    */
   async uploadFileInfo(fileId, fileHash, metadata) {
+    if (!GlobalValueManager.blockchain.enabled) return
     const bFileId = uuidToBigInt(fileId)
     const bFileHash = BigInt(fileHash)
 
@@ -145,6 +147,7 @@ class BlockchainManager {
    * @throws Any error occurred.
    */
   async getFileInfo(fileId, fileOwnerAddr) {
+    if (!GlobalValueManager.blockchain.enabled) return null
     if (!fileOwnerAddr) fileOwnerAddr = this.wallet.address
     const latestBlock = await this.provider.getBlockNumber()
     let toBlock = latestBlock
@@ -210,6 +213,7 @@ class BlockchainManager {
    * @throws Any error occurred.
    */
   async getFileVerification(fileId, fileOwnerAddr) {
+    if (!GlobalValueManager.blockchain.enabled) return null
     if (!fileOwnerAddr) fileOwnerAddr = this.wallet.address
     const latestBlock = await this.provider.getBlockNumber()
     let toBlock = latestBlock
@@ -246,6 +250,7 @@ class BlockchainManager {
    * @throws Any error occurred.
    */
   async getFileAuthRecord(fileId, requestorAddr) {
+    if (!GlobalValueManager.blockchain.enabled) return null
     if (!requestorAddr) requestorAddr = this.wallet.address
     const latestBlock = await this.provider.getBlockNumber()
     let toBlock = latestBlock
