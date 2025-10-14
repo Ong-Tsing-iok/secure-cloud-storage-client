@@ -40,6 +40,7 @@ class GlobalValueManager {
         config.get('blockchain.walletKeyFilename')
       )
       this.blockchain.blockRangeLimit = config.get('blockchain.blockRangeLimit')
+      this.blockchain.enabled = config.get('blockchain.enabled')
 
       // Trusted Authority
       this.trustedAuthority = {}

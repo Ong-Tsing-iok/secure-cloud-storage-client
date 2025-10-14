@@ -24,7 +24,8 @@
     "abi": [],
     "contractAddr" : "",
     "walletKeyFilename": "wallet.key",
-    "blockRangeLimit": 5000
+    "blockRangeLimit": 5000,
+    "enabled": true
   },
   "trustedAuthority":{
     "url": "localhost:2999"
