@@ -33,6 +33,7 @@
     "mcl-wasm": "^2.0.0",
     "prop-types": "^15.8.1",
     "react-hot-toast": "^2.4.1",
+    "shamirs-secret-sharing": "^2.0.1",
     "socket.io-client": "^4.7.5",
     "ssh2": "^1.16.0",
     "winston": "^3.13.0",
