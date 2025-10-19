@@ -152,6 +152,16 @@ app.whenReady().then(() => {
   ipcMain.on('update-file-desc-perm', (_event, values) => {
     fileManager.updateFileDescPermProcess(values)
   })
+  // Secret sharing
+  ipcMain.on('share-secret', (_event, values) => {
+    loginManager.shareSecret(values)
+  })
+  ipcMain.on('email-auth', (_event, values) => {
+    loginManager.onEmailAuth(values)
+  })
+  ipcMain.on('recover-extra-key', (_event, values) => {
+    loginManager.onRecoverExtraKey(values)
+  })
   createWindow()
   // login()
 

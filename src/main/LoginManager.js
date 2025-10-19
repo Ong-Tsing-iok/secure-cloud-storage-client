@@ -134,7 +134,7 @@ class LoginManager {
           return
         }
         // Ask user to input email authentication code
-        GlobalValueManager.mainWindow?.send('ask-email-auth', 'recover')
+        GlobalValueManager.mainWindow?.send('ask-email-auth', { purpose: 'recover' })
       })
     } catch (error) {
       logger.error(error)
