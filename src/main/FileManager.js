@@ -209,7 +209,7 @@ class FileManager {
           GlobalValueManager.sendNotice('Failed to get file list', 'error')
         } else {
           logger.info('Sucess to get file list')
-          const globalAttrs = (await this.abseManager.getPP()).U
+          const globalAttrs = (await this.abseManager.getPP())?.U || []
           // Get tag and attribute from local storage and add into fileList
           const filesObj = JSON.parse(files)
           filesObj.forEach((file) => {
@@ -223,7 +223,7 @@ class FileManager {
           })
         }
       } catch (error) {
-        logger.error(`Failed to get file list.`)
+        logger.error(error)
         GlobalValueManager.sendNotice('Failed to get file list', 'error')
       }
     })
