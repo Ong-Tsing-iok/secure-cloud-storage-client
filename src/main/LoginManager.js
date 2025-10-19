@@ -5,6 +5,7 @@ import KeyManager from './KeyManager'
 import RequestManager from './RequestManager'
 import FileManager from './FileManager'
 import BlockchainManager from './BlockchainManager'
+import { encryptDataShareKey, recoverDataShareKey } from './SecretSharing'
 
 class LoginManager {
   blockchainManager
@@ -69,6 +70,7 @@ class LoginManager {
       })
     } catch (error) {
       logger.error(`login failed because of following error: ${error}`)
+      GlobalValueManager.sendNotice('Failed to login', 'error')
     }
   }
 
@@ -92,7 +94,102 @@ class LoginManager {
       )
     } catch (error) {
       logger.error(`Register failed because of following error: ${error}`)
+      GlobalValueManager.sendNotice('Failed to register', 'error')
+    }
+  }
+
+  async shareSecret({ extraKey }) {
+    try {
+      const secretKeys = {
+        walletKey: this.blockchainManager.wallet.privateKey,
+        preKeys: this.keyManager.getKeyStrings()
+      }
+      logger.info('Generating secret shares...')
+      const shares = encryptDataShareKey(extraKey, JSON.stringify(secretKeys))
+      const sharesStr = []
+      for (const share of shares) {
+        sharesStr.push(share.toString('base64'))
+      }
+      logger.info('Asking to share secret keys.')
+      socket.emit('secret-share', { shares: sharesStr }, (response) => {
+        if (response.errorMsg) {
+          logger.error(`Secret share failed because of following error: ${response.errorMsg}`)
+          GlobalValueManager.sendNotice('Failed to share secret', 'error')
+          return
+        }
+        GlobalValueManager.sendNotice('Share secret succeeded', 'success')
+      })
+    } catch (error) {
+      logger.error(`Share secret failed because of following error: ${error}`)
+      GlobalValueManager.sendNotice('Failed to share secret', 'error')
+    }
+  }
+
+  async recoverSecret({ email }) {
+    try {
+      socket.emit('recover-secret', { email }, (response) => {
+        if (response.errorMsg) {
+          logger.error(`Secret recover failed because of following error: ${response.errorMsg}`)
+          GlobalValueManager.sendNotice('Failed to recover secret', 'error')
+          return
+        }
+        // Ask user to input email authentication code
+        GlobalValueManager.mainWindow?.send('ask-email-auth', 'recover')
+      })
+    } catch (error) {
+      logger.error(error)
+      GlobalValueManager.sendNotice('Failed to recover secret', 'error')
+    }
+  }
+
+  async onEmailAuth({ emailAuth, purpose }) {
+    try {
+      // const ActionStr = (purpose == 'recover') ? 'Secret recover' :
+      socket.emit('email-auth-res', { emailAuth }, (response) => {
+        if (response.errorMsg) {
+          logger.error(
+            `Email authentication failed because of following error: ${response.errorMsg}`
+          )
+          GlobalValueManager.sendNotice('Email authentication failed', 'error')
+          return
+        }
+        if (response.shares) {
+          const deserializedShares = []
+          for (const share of response.shares) {
+            deserializedShares.push(Buffer.from(share, 'base64'))
+          }
+          this.shares = deserializedShares
+          // Ask user to input extra key
+          GlobalValueManager.mainWindow?.send('ask-extra-key')
+        }
+      })
+    } catch (error) {
+      logger.error(error)
+      GlobalValueManager.sendNotice('Email authentication failed', 'error')
+    }
+  }
+
+  async onRecoverExtraKey({ extraKey }) {
+    try {
+      const decryptedStr = recoverDataShareKey(extraKey, this.shares)
+      if (!decryptedStr) {
+        logger.info('Secret key recover failed.')
+        GlobalValueManager.sendNotice(
+          'Secret keys could not be recovered because not enough shares were retrieved. Please contact the server manager.',
+          'error'
+        )
+        return
+      }
+      const secretKeys = JSON.parse(decryptedStr)
+      this.blockchainManager.restoreWallet(secretKeys.walletKey)
+      this.keyManager.restoreKeys(secretKeys.preKeys)
+      GlobalValueManager.sendNotice('Secret keys successfully recovered.', 'success')
+      this.login()
+    } catch (error) {
+      logger.error(error)
+      GlobalValueManager.sendNotice('Secret keys could not be recovered.', 'error')
     }
   }
 }
+
 export default LoginManager

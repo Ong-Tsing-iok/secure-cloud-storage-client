@@ -87,6 +87,12 @@ class BlockchainManager {
     }
   }
 
+  restoreWallet(privateKey) {
+    writeFileSync(GlobalValueManager.blockchain.walletKeyPath, privateKey)
+    this.wallet = new Wallet(privateKey, this.provider)
+    this.contract.connect(this.wallet)
+  }
+
   /**
    * Reads the wallet key and create wallet from path.
    * If key file not found, create a random wallet and store the key in key file.

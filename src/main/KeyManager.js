@@ -1,5 +1,6 @@
 import { logger } from './Logger'
 import { readFile, writeFile } from 'node:fs/promises'
+import { writeFileSync } from 'node:fs'
 import {
   pre_schema1_DecryptLevel1,
   pre_schema1_DecryptLevel2,
@@ -20,6 +21,27 @@ class KeyManager {
   checkInit() {
     if (!this.keys || !this.signingKeys) {
       throw new Error('Keys are not initialized')
+    }
+  }
+
+  restoreKeys({ pk, sk, spk, ssk }) {
+    const keysStr = `${pk}\n${sk}\n${spk}\n${ssk}`
+    writeFileSync(keyFilePath, keysStr)
+    this.keys = {
+      pk: new Uint8Array(Buffer.from(pk, 'base64')),
+      sk: new Uint8Array(Buffer.from(sk, 'base64'))
+    }
+    this.signingKeys = {
+      spk: new Uint8Array(Buffer.from(spk, 'base64')),
+      ssk: new Uint8Array(Buffer.from(ssk, 'base64'))
+    }
+    if (
+      this.keys.pk.length !== 48 ||
+      this.keys.sk.length !== 32 ||
+      this.signingKeys.spk.length !== 32 ||
+      this.signingKeys.ssk.length !== 64
+    ) {
+      throw new Error('Keys are not in correct format')
     }
   }
 
@@ -168,6 +190,16 @@ class KeyManager {
   getSigningKeys() {
     this.checkInit()
     return this.signingKeys
+  }
+
+  getKeyStrings() {
+    this.checkInit()
+    return {
+      pk: Buffer.from(this.keys.pk).toString('base64'),
+      sk: Buffer.from(this.keys.sk).toString('base64'),
+      spk: Buffer.from(this.signingKeys.spk).toString('base64'),
+      ssk: Buffer.from(this.signingKeys.ssk).toString('base64')
+    }
   }
 }
 
