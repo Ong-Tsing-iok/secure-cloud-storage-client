@@ -48,13 +48,10 @@ if (process.contextIsolated) {
       askDeleteRequest: (requestId) => ipcRenderer.send('delete-request', requestId),
       askRespondRequest: (responseInfo) => ipcRenderer.send('respond-request', responseInfo),
       // Secret Sharing
-      askShareSecret: (values) => ipcRenderer.send('share-secret', values),
-      onAskEmailAuth: (callback) =>
-        ipcRenderer.on('ask-email-auth', (_event, values) => callback(values)),
-      sendEmailAuth: (values) => ipcRenderer.send('email-auth', values),
-      onAskExtraKey: (callback) =>
-        ipcRenderer.on('ask-extra-key', (_event, values) => callback(values)),
-      sendRecoverExtraKey: (values) => ipcRenderer.send('recover-extra-key', values)
+      askShareSecret: (values) => ipcRenderer.invoke('share-secret', values),
+      askRecoverSecret: (values) => ipcRenderer.invoke('recover-secret', values),
+      sendEmailAuth: (values) => ipcRenderer.invoke('email-auth', values),
+      sendRecoverExtraKey: (values) => ipcRenderer.invoke('recover-extra-key', values)
     })
   } catch (error) {
     console.error(error)

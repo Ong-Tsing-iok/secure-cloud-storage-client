@@ -13,7 +13,8 @@ import {
   DocumentTextIcon,
   ClipboardDocumentCheckIcon,
   ClipboardDocumentListIcon,
-  PaperAirplaneIcon
+  PaperAirplaneIcon,
+  DocumentDuplicateIcon
 } from '@heroicons/react/24/outline'
 import PropTypes from 'prop-types'
 import { useState, useContext } from 'react'
@@ -22,10 +23,14 @@ import ProfileDialog from './ProfileDialog'
 import { PageType, ResponseType } from './Types'
 import { ProfileContext, RequestContext } from './Contexts'
 import { checkIsLoggedIn } from './Utils'
+import BackupDialog from './BackupDialog'
+import RecoverDialog from './RecoverDialog'
 
 function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
   const [profileOpen, setProfileOpen] = useState(false)
   const [requestOpen, setRequestOpen] = useState(false)
+  const [backupOpen, setBackupOpen] = useState(false)
+  const [recoverOpen, setRecoverOpen] = useState(false)
   const {
     requestListC: [requestList],
     requestedListC: [requestedList]
@@ -126,10 +131,24 @@ function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
             </ListItemPrefix>
             {checkIsLoggedIn(userId) ? '使用者資料' : '註冊帳號'}
           </ListItem>
+          <ListItem
+            onClick={() => {
+              checkIsLoggedIn(userId) ? setBackupOpen(!backupOpen) : setRecoverOpen(!recoverOpen)
+            }}
+            ripple={false}
+            className={checkIsLoggedIn(userId) ? 'focus:bg-white' : 'bg-red-100 focus:bg-red-100'}
+          >
+            <ListItemPrefix>
+              <DocumentDuplicateIcon className="h-5 w-5" />
+            </ListItemPrefix>
+            {checkIsLoggedIn(userId) ? '帳號備份' : '帳號復原'}
+          </ListItem>
         </List>
       </Card>
       <RequestDialog open={requestOpen} setOpen={setRequestOpen} />
       <ProfileDialog open={profileOpen} setOpen={setProfileOpen} />
+      <BackupDialog open={backupOpen} setOpen={setBackupOpen} />
+      <RecoverDialog open={recoverOpen} setOpen={setRecoverOpen} />
     </>
   )
 }

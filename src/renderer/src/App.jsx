@@ -122,7 +122,12 @@ function App() {
 
   return (
     <>
-      <Toaster position="bottom-left" containerClassName="font-sans" reverseOrder={false} />
+      <Toaster
+        position="bottom-left"
+        containerClassName="font-sans"
+        reverseOrder={false}
+        containerStyle={{ zIndex: 99999 }}
+      />
       <ProfileContext.Provider value={profileContextValue}>
         <PageContext.Provider value={pageContextValue}>
           <RequestContext.Provider value={requestContextValue}>

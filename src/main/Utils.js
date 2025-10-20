@@ -66,3 +66,4 @@ export const ContactManagerOrTryAgainMsg = 'Please contact the manager or try ag
 export const CheckDiskSizePermissionTryAgainMsg =
   'Please check disk size or permission and try again.'
 export const CheckLogForDetailMsg = 'Please check log for details.'
+export const UnexpectedErrorMsg = 'Unexpected error.'
