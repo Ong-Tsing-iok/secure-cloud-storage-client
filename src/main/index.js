@@ -43,7 +43,7 @@ function createWindow() {
   mainWindow.on('ready-to-show', async () => {
     mainWindow.show()
     const pp = await abseManager.getPP()
-    await loginManager.login()
+    // await loginManager.login()
     GlobalValueManager.mainWindow?.webContents.send('request-value', {
       seenReplies: GlobalValueManager.requestConfig.seenReplies,
       seenRequests: GlobalValueManager.requestConfig.seenRequests
@@ -95,7 +95,12 @@ app.whenReady().then(() => {
   //     console.log(result.export(false))
   //   })
   // )
-  ipcMain.on('login', () => loginManager.login())
+  ipcMain.handle('login', async () => {
+    return await loginManager.login()
+  })
+  ipcMain.handle('register', async (_event, registerInfo) => {
+    return await loginManager.register(registerInfo)
+  })
   ipcMain.on('upload', (_event, parentFolderId) => fileManager.uploadFileProcess(parentFolderId))
   ipcMain.on('change-cur-folder', (_event, curFolderId) => {
     GlobalValueManager.curFolderId = curFolderId
@@ -138,7 +143,6 @@ app.whenReady().then(() => {
   ipcMain.handle('search-files', async (_event, values) => {
     return await fileManager.searchFilesProcess(values)
   })
-  ipcMain.on('register', (_event, registerInfo) => loginManager.register(registerInfo))
   ipcMain.on('update-user-config', (_event, config) => {
     GlobalValueManager.updateUser(config)
   })
@@ -159,10 +163,10 @@ app.whenReady().then(() => {
   ipcMain.handle('recover-secret', (_event, values) => {
     return loginManager.recoverSecret(values)
   })
-  ipcMain.handle('email-auth',  (_event, values) => {
+  ipcMain.handle('email-auth', (_event, values) => {
     return loginManager.onEmailAuth(values)
   })
-  ipcMain.handle('recover-extra-key',  (_event, values) => {
+  ipcMain.handle('recover-extra-key', (_event, values) => {
     return loginManager.onRecoverExtraKey(values)
   })
   createWindow()

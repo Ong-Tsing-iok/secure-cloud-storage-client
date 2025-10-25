@@ -13,9 +13,11 @@ import { checkEmailValid, checkIsLoggedIn, checkNameValid } from './Utils'
 import toast, { Toaster } from 'react-hot-toast'
 
 function ProfileDialog({ open, setOpen }) {
-  const { storedNameC, storedEmailC, userIdC: userId } = useContext(ProfileContext)
-  const [storedName, setStoredName] = storedNameC
-  const [storedEmail, setStoredEmail] = storedEmailC
+  const {
+    storedNameC: [storedName, setStoredName],
+    storedEmailC: [storedEmail, setStoredEmail],
+    userIdC: [userId, setUserId]
+  } = useContext(ProfileContext)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
 

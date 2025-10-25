@@ -18,6 +18,7 @@ function RecoverDialog({ open, setOpen }) {
   const [emailAuth, setEmailAuth] = useState('')
   const [extraKey, setExtraKey] = useState('')
   const [currentState, setCurrentState] = useState(0)
+  const { login } = useContext(ProfileContext)
 
   function dialogHandler() {
     setOpen(!open)
@@ -27,7 +28,7 @@ function RecoverDialog({ open, setOpen }) {
     setCurrentState(0)
   }
 
-  function cancelDialog() {
+  function cancelHandler() {
     dialogHandler()
     toast.error('Recover canceled.')
   }
@@ -70,6 +71,7 @@ function RecoverDialog({ open, setOpen }) {
           .then(() => {
             dialogHandler()
             toast.success('Secret recover succeeded')
+            login()
           })
           .catch((error) => {
             dialogHandler()
@@ -96,7 +98,7 @@ function RecoverDialog({ open, setOpen }) {
   }
 
   return (
-    <Dialog open={open} handler={cancelDialog}>
+    <Dialog open={open} handler={cancelHandler}>
       <DialogHeader>帳號復原</DialogHeader>
       <DialogBody className="space-y-2">
         <Typography variant="lead">{renderText()}</Typography>
@@ -129,7 +131,7 @@ function RecoverDialog({ open, setOpen }) {
         )}
       </DialogBody>
       <DialogFooter>
-        <Button variant="text" color="red" onClick={cancelDialog}>
+        <Button variant="text" color="red" onClick={cancelHandler}>
           取消
         </Button>
         <Button variant="gradient" color="black" onClick={updateHandler}>

@@ -29,74 +29,101 @@ class LoginManager {
   async respondToAuth(cipher, spk) {
     logger.info('Getting login response from server. Decrypting auth key...')
     // console.log(cipher)
-    try {
-      const decryptedValue = await this.keyManager.decrypt(cipher, spk)
-      logger.debug(`decryptedValue: ${decryptedValue}`)
-      logger.info('Finish decrypting. Sending response back to server')
-      socket.emit('auth-res', { decryptedValue }, ({ errorMsg, userInfo }) => {
-        if (errorMsg) {
-          logger.error(`Authentication response failed because of following error: ${errorMsg}`)
-          GlobalValueManager.sendNotice('Failed to authenticate', 'error')
-          return
-        }
-        if (userInfo) {
-          logger.info('Login succeeded')
-          GlobalValueManager.userInfo = userInfo
-          GlobalValueManager.loggedIn = true
-          this.fileManager.getFileListProcess(null)
-          this.requestManager.getRequestListProcess()
-          this.requestManager.getRequestedListProcess()
-          // send userId and other stored name, email to renderer
-          GlobalValueManager.mainWindow?.webContents.send('user-info', userInfo)
-        }
-      })
-    } catch (error) {
-      logger.error(`Authentication response failed because of following error: ${error}`)
-      GlobalValueManager.sendNotice('Failed to authenticate', 'error')
-    }
+    return new Promise((resolve, reject) => {
+      this.keyManager
+        .decrypt(cipher, spk)
+        .then((decryptedValue) => {
+          // const decryptedValue = await this.keyManager.decrypt(cipher, spk)
+          logger.debug(`decryptedValue: ${decryptedValue}`)
+          logger.info('Finish decrypting. Sending response back to server')
+          socket.emit('auth-res', { decryptedValue }, ({ errorMsg, userInfo }) => {
+            if (errorMsg) {
+              logger.error(`Authentication response failed because of following error: ${errorMsg}`)
+              // GlobalValueManager.sendNotice('Failed to authenticate', 'error')
+              reject(new Error(errorMsg))
+              return
+            }
+            if (userInfo) {
+              logger.info('Login succeeded')
+              GlobalValueManager.userInfo = userInfo
+              GlobalValueManager.loggedIn = true
+              this.fileManager.getFileListProcess(null)
+              this.requestManager.getRequestListProcess()
+              this.requestManager.getRequestedListProcess()
+              // send userId and other stored name, email to renderer
+              // GlobalValueManager.mainWindow?.webContents.send('user-info', userInfo)
+            }
+            resolve(userInfo)
+          })
+        })
+        .catch((error) => {
+          logger.error(error)
+          reject(new Error(UnexpectedErrorMsg))
+        })
+    })
   }
   async login() {
-    // only login after window is ready to show
-    try {
-      // await initKeys()
-      const publicKey = this.keyManager.getPublicKeyString()
-      logger.info('Asking to login...')
-      socket.emit('login', { publicKey }, ({ errorMsg, cipher, spk }) => {
-        if (errorMsg) {
-          logger.error(`login failed because of following error: ${errorMsg}`)
-          GlobalValueManager.sendNotice('Failed to login', 'error')
-          return
-        }
-        this.respondToAuth(cipher, spk)
-      })
-    } catch (error) {
-      logger.error(`login failed because of following error: ${error}`)
-      GlobalValueManager.sendNotice('Failed to login', 'error')
-    }
+    return new Promise((resolve, reject) => {
+      // only login after window is ready to show
+      try {
+        // await initKeys()
+        const publicKey = this.keyManager.getPublicKeyString()
+        logger.info('Asking to login...')
+        socket.emit('login', { publicKey }, async ({ errorMsg, cipher, spk }) => {
+          if (errorMsg) {
+            logger.error(`login failed because of following error: ${errorMsg}`)
+            // GlobalValueManager.sendNotice('Failed to login', 'error')
+            reject(new Error(errorMsg))
+            return
+          }
+          try {
+            const result = await this.respondToAuth(cipher, spk)
+            resolve(result)
+          } catch (error2) {
+            // Logged in respondToAuth
+            reject(error2)
+          }
+        })
+      } catch (error) {
+        logger.error(`login failed because of following error: ${error}`)
+        // GlobalValueManager.sendNotice('Failed to login', 'error')
+        reject(new Error(UnexpectedErrorMsg))
+      }
+    })
   }
 
   async register({ name, email }) {
     // only register after window is ready to show
-    try {
-      // await initKeys()
-      const publicKey = this.keyManager.getPublicKeyString()
-      logger.info('Asking to register...')
-      socket.emit(
-        'register',
-        { publicKey, blockchainAddress: this.blockchainManager.wallet.address, name, email },
-        (response) => {
-          if (response.errorMsg) {
-            logger.error(`Register failed because of following error: ${response.errorMsg}`)
-            GlobalValueManager.sendNotice('Failed to register', 'error')
-            return
+    return new Promise((resolve, reject) => {
+      try {
+        // await initKeys()
+        const publicKey = this.keyManager.getPublicKeyString()
+        logger.info('Asking to register...')
+        socket.emit(
+          'register',
+          { publicKey, blockchainAddress: this.blockchainManager.wallet.address, name, email },
+          async (response) => {
+            if (response.errorMsg) {
+              logger.error(`Register failed because of following error: ${response.errorMsg}`)
+              reject(new Error(response.errorMsg))
+              // GlobalValueManager.sendNotice('Failed to register', 'error')
+              return
+            }
+            try {
+              const result = await this.respondToAuth(response.cipher, response.spk)
+              resolve(result)
+            } catch (error2) {
+              // Logged in respondToAuth
+              reject(error2)
+            }
           }
-          this.respondToAuth(response.cipher, response.spk)
-        }
-      )
-    } catch (error) {
-      logger.error(`Register failed because of following error: ${error}`)
-      GlobalValueManager.sendNotice('Failed to register', 'error')
-    }
+        )
+      } catch (error) {
+        logger.error(`Register failed because of following error: ${error}`)
+        // GlobalValueManager.sendNotice('Failed to register', 'error')
+        reject(new Error(UnexpectedErrorMsg))
+      }
+    })
   }
 
   async shareSecret({ extraKey }) {
@@ -116,7 +143,7 @@ class LoginManager {
         socket.emit('secret-share', { shares: sharesStr }, (response) => {
           if (response.errorMsg) {
             logger.error(`Secret share failed because of following error: ${response.errorMsg}`)
-            reject(response.errorMsg)
+            reject(new Error(response.errorMsg))
             // GlobalValueManager.sendNotice('Failed to share secret', 'error')
             return
           }
@@ -126,7 +153,7 @@ class LoginManager {
       } catch (error) {
         logger.error(error)
         // GlobalValueManager.sendNotice('Failed to share secret', 'error')
-        reject(UnexpectedErrorMsg)
+        reject(new Error(UnexpectedErrorMsg))
       }
     })
   }
@@ -139,7 +166,7 @@ class LoginManager {
           if (response.errorMsg) {
             logger.error(`Secret recover failed because of following error: ${response.errorMsg}`)
             // GlobalValueManager.sendNotice('Failed to recover secret', 'error')
-            reject(response.errorMsg)
+            reject(new Error(response.errorMsg))
             return
           }
           // Ask user to input email authentication code
@@ -149,7 +176,7 @@ class LoginManager {
       } catch (error) {
         logger.error(error)
         // GlobalValueManager.sendNotice('Failed to recover secret', 'error')
-        reject(UnexpectedErrorMsg)
+        reject(new Error(UnexpectedErrorMsg))
       }
     })
   }
@@ -165,7 +192,7 @@ class LoginManager {
               `Email authentication failed because of following error: ${response.errorMsg}`
             )
             // GlobalValueManager.sendNotice('Email authentication failed', 'error')
-            reject(response.errorMsg)
+            reject(new Error(response.errorMsg))
             return
           }
           if (response.shares) {
@@ -177,13 +204,13 @@ class LoginManager {
             // Ask user to input extra key
             // GlobalValueManager.mainWindow?.send('ask-extra-key')
             resolve({ purpose: 'recover' })
-          } else {
-            resolve()
+          } else if (response.userId) {
+            resolve({ userId: response.userId })
           }
         })
       } catch (error) {
         logger.error(error)
-        reject(UnexpectedErrorMsg)
+        reject(new Error(UnexpectedErrorMsg))
         // GlobalValueManager.sendNotice('Email authentication failed', 'error')
       }
     })
@@ -200,7 +227,9 @@ class LoginManager {
           //   'error'
           // )
           reject(
-            'Secret keys could not be recovered because not enough shares were retrieved or extra key is wrong.'
+            new Error(
+              'Secret keys could not be recovered because not enough shares were retrieved or extra key is wrong.'
+            )
           )
           return
         }
@@ -214,7 +243,7 @@ class LoginManager {
       } catch (error) {
         logger.error(error)
         // GlobalValueManager.sendNotice('Secret keys could not be recovered.', 'error')
-        reject(UnexpectedErrorMsg)
+        reject(new Error(UnexpectedErrorMsg))
       }
     })
   }

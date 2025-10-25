@@ -25,17 +25,21 @@ import { ProfileContext, RequestContext } from './Contexts'
 import { checkIsLoggedIn } from './Utils'
 import BackupDialog from './BackupDialog'
 import RecoverDialog from './RecoverDialog'
+import RegisterDialog from './RegisterDialog'
 
 function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
   const [profileOpen, setProfileOpen] = useState(false)
   const [requestOpen, setRequestOpen] = useState(false)
   const [backupOpen, setBackupOpen] = useState(false)
   const [recoverOpen, setRecoverOpen] = useState(false)
+  const [registerOpen, setRegisterOpen] = useState(false)
   const {
     requestListC: [requestList],
     requestedListC: [requestedList]
   } = useContext(RequestContext)
-  const { userIdC: userId } = useContext(ProfileContext)
+  const {
+    userIdC: [userId, setUserId]
+  } = useContext(ProfileContext)
 
   return (
     <>
@@ -122,7 +126,11 @@ function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
             請求檔案
           </ListItem>
           <ListItem
-            onClick={() => setProfileOpen(!profileOpen)}
+            onClick={() =>
+              checkIsLoggedIn(userId)
+                ? setProfileOpen(!profileOpen)
+                : setRegisterOpen(!registerOpen)
+            }
             ripple={false}
             className={checkIsLoggedIn(userId) ? 'focus:bg-white' : 'bg-red-100 focus:bg-red-100'}
           >
@@ -149,6 +157,7 @@ function NavBar({ pageType, setPageType, seenRequest, seenReply }) {
       <ProfileDialog open={profileOpen} setOpen={setProfileOpen} />
       <BackupDialog open={backupOpen} setOpen={setBackupOpen} />
       <RecoverDialog open={recoverOpen} setOpen={setRecoverOpen} />
+      <RegisterDialog open={registerOpen} setOpen={setRegisterOpen} />
     </>
   )
 }
