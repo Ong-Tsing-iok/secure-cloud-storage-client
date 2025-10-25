@@ -22,7 +22,9 @@ function FileDetailDialog({ open, setOpen, fileData }) {
   const [permission, setPermission] = useState(fileData.perm)
   const [selectedAttrs, setSelectedAttrs] = useState(fileData.attrs || [])
   const [tags, setTags] = useState(fileData.tags ? fileData.tags.join(' ') : '')
-  const { userIdC: userId } = useContext(ProfileContext)
+  const {
+    userIdC: [userId, setUserId]
+  } = useContext(ProfileContext)
 
   function dialogHandler(update = false) {
     if (update) {

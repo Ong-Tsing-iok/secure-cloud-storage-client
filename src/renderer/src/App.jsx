@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import NavBar, { PageType } from './components/NavBar.jsx'
 import MainView from './components/MainView.jsx'
 // import ProgressView from './components/ProgressView.jsx'
@@ -28,11 +28,28 @@ function App() {
   const [seenReplies, setSeenReplies] = useState(0)
   const [globalAttrs, setGlobalAttrs] = useState([])
 
+  const login = useCallback(() => {
+    window.electronAPI
+      .askLogin()
+      .then((userInfo) => {
+        if (userInfo) {
+          setStoredName(userInfo.name)
+          setStoredEmail(userInfo.email)
+          setUserId(userInfo.userId)
+          toast.success('Login success')
+        }
+      })
+      .catch((error) => {
+        toast.error(`Login error: ${error.message}`)
+      })
+  }, [])
+
   const profileContextValue = useMemo(
     () => ({
       storedNameC: [storedName, setStoredName],
       storedEmailC: [storedEmail, setStoredEmail],
-      userIdC: userId
+      userIdC: [userId, setUserId],
+      login: login
     }),
     [storedName, storedEmail, userId]
   )
@@ -59,6 +76,7 @@ function App() {
     [globalAttrs]
   )
   const pageContextValue = useMemo(() => [pageType, swapPageHandler], [pageType])
+
   useEffect(() => {
     window.electronAPI.onNotice((result, level) => {
       if (level === 'error') {
@@ -82,6 +100,7 @@ function App() {
     window.electronAPI.onGlobalAttrs(({ globalAttrs }) => {
       setGlobalAttrs(globalAttrs)
     })
+    login()
   }, [])
 
   function swapPageHandler(newPageType) {

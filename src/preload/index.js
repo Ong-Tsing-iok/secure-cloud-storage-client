@@ -12,6 +12,8 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
     contextBridge.exposeInMainWorld('electronAPI', {
+      askLogin: () => ipcRenderer.invoke('login'),
+      askRegister: (registerInfo) => ipcRenderer.invoke('register', registerInfo),
       changeCurFolder: (curFolderId) => ipcRenderer.send('change-cur-folder', curFolderId),
       onFileListRes: (callback) =>
         ipcRenderer.on('file-list-res', (_event, result) => callback(result)),
@@ -35,7 +37,6 @@ if (process.contextIsolated) {
       onSearchFiles: (callback) =>
         ipcRenderer.on('partial-search-files', (_event, result) => callback(result)),
       //
-      askRegister: (registerInfo) => ipcRenderer.send('register', registerInfo),
       onUserConfig: (callback) => ipcRenderer.on('user-info', (_event, result) => callback(result)),
       onRequestValue: (callback) =>
         ipcRenderer.on('request-value', (_event, result) => callback(result)),
