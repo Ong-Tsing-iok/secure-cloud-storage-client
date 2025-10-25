@@ -8,11 +8,11 @@ function SearchBar() {
   const {
     searchTypeC: [type, setType],
     searchTermC: [searchTerm, setSearchTerm],
+    publicSearchTermC: [publicSearchTerm, setPublicSearchTerm],
     searchTimesC: [searchTimes, setSearchTimes]
   } = useContext(SearchContext)
   const [pageType] = useContext(PageContext)
 
-  // TODO: remove some search (like public) incase to costly
   return (
     <div className="flex flex-row grow justify-center items-center">
       <Menu placement="bottom-start">
@@ -38,9 +38,10 @@ function SearchBar() {
       <Input
         label={pageType === PageType.public ? '輸入標籤搜尋，以空格隔開' : '搜尋'}
         labelProps={{ className: 'font-sans peer-focus:hidden' }}
-        value={searchTerm}
+        value={pageType === PageType.public ? publicSearchTerm : searchTerm}
         onChange={(e) => {
-          setSearchTerm(e.target.value)
+          if (pageType === PageType.public) setPublicSearchTerm(e.target.value)
+          else setSearchTerm(e.target.value)
         }}
         size="lg"
         className="grow rounded-none focus:!border-t-gray-900"

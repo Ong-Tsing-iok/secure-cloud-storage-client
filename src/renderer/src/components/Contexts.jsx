@@ -9,6 +9,7 @@ export const PageContext = createContext(['', null])
 export const SearchContext = createContext({
   searchTypeC: ['', null],
   searchTermC: ['', null],
+  publicSearchTermC: ['', null],
   searchTimesC: [0, null]
 })
 export const CurPathContext = createContext([[], null])

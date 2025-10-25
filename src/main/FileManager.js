@@ -52,6 +52,12 @@ class FileManager {
         this.getFileListProcess(GlobalValueManager.curFolderId)
       }
     })
+
+    socket.on('partial-search-files', (response) => {
+      const { files } = response
+      // logger.debug('get file', files)
+      GlobalValueManager.mainWindow?.webContents.send('partial-search-files', files)
+    })
   }
 
   /**
