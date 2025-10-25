@@ -20,6 +20,7 @@ function App() {
   const [userId, setUserId] = useState('')
   const [searchType, setSearchType] = useState(SearchType.name)
   const [searchTerm, setSearchTerm] = useState('')
+  const [publicSearchTerm, setPublicSearchTerm] = useState('')
   const [searchTimes, setSearchTimes] = useState(0)
   const [requestList, setRequestList] = useState([])
   const [requestedList, setRequestedList] = useState([])
@@ -46,9 +47,10 @@ function App() {
     () => ({
       searchTypeC: [searchType, setSearchType],
       searchTermC: [searchTerm, setSearchTerm],
+      publicSearchTermC: [publicSearchTerm, setPublicSearchTerm],
       searchTimesC: [searchTimes, setSearchTimes]
     }),
-    [searchType, searchTerm, searchTimes]
+    [searchType, searchTerm, publicSearchTerm, searchTimes]
   )
   const globalAttrsContextValue = useMemo(
     () => ({

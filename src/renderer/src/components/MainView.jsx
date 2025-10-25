@@ -9,7 +9,14 @@ import FileViewButtonGroup from './FileViewButtonGroup'
 import RequestViewButtonGroup from './RequestViewButtonGroup'
 import CurPathBreadcrumbs from './CurPathBreadcrumbs'
 import RequestTable from './RequestTable'
-import { CurPathContext, RequestContext, UserListContext, PageContext } from './Contexts'
+import {
+  CurPathContext,
+  RequestContext,
+  UserListContext,
+  PageContext,
+  SearchContext
+} from './Contexts'
+import toast from 'react-hot-toast'
 
 function MainView() {
   const [curPath, setCurPath] = useState([{ name: '', folderId: null }])
@@ -17,6 +24,11 @@ function MainView() {
   const [folderList, setFolderList] = useState([])
   const [whiteList, setWhiteList] = useState([])
   const [blackList, setBlackList] = useState([])
+  const [publicFileList, setPublicFileList] = useState([])
+  const {
+    publicSearchTermC: [publicSearchTerm],
+    searchTimesC: [searchTimes]
+  } = useContext(SearchContext)
 
   const {
     requestListC: [requestList, setRequestList],
@@ -58,6 +70,11 @@ function MainView() {
       setWhiteList(whiteList)
       setBlackList(blackList)
     })
+
+    window.electronAPI.onSearchFiles((result) => {
+      const searchedFileList = parseFileList(result, false)
+      setPublicFileList((prevList) => [...prevList, ...searchedFileList])
+    })
   }, [])
 
   useEffect(() => {
@@ -65,6 +82,27 @@ function MainView() {
       window.electronAPI.changeCurFolder(curPath.at(-1).folderId)
     }
   }, [pageType])
+
+  useEffect(() => {
+    async function searchFiles() {
+      console.log('search file')
+      setPublicFileList([])
+      const searchedFilesPromise = window.electronAPI.askSearchFiles({
+        tags: publicSearchTerm.split(' ').slice(0, 5)
+      })
+      toast.promise(searchedFilesPromise, {
+        loading: '搜尋中',
+        success: '搜尋成功',
+        error: '搜尋失敗'
+      })
+      try {
+        await searchedFilesPromise
+      } catch (error) {}
+    }
+    if (pageType === PageType.public && publicSearchTerm !== '') {
+      searchFiles()
+    }
+  }, [searchTimes])
 
   function setPathHandler(curPath) {
     setCurPath(curPath)
@@ -82,7 +120,7 @@ function MainView() {
   function renderTableView(pageType) {
     switch (pageType) {
       case PageType.public:
-        return <PublicTable />
+        return <PublicTable publicFileList={publicFileList} setPublicFileList={setPublicFileList} />
       case PageType.file:
         return <FileTable fileList={fileList} folderList={folderList} />
       case PageType.reply:

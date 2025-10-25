@@ -1,52 +1,17 @@
 import { Typography } from '@material-tailwind/react'
-import { useContext, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import FileOptionMenu from './FileOptionMenu'
 import TableView from './TableView'
-import { PageContext, SearchContext } from './Contexts'
-import { PageType, parseFileList, searchFilter, bytesToSize } from './Types'
-import toast from 'react-hot-toast'
+import { bytesToSize } from './Types'
+import PropTypes from 'prop-types'
 const TABLE_HEAD = ['name', 'size', 'date', 'owner', 'end']
 
-function PublicTable() {
-  const [publicFileList, setPublicFileList] = useState([])
+function PublicTable({ publicFileList }) {
   const [tableContent, setTableContent] = useState([])
-  const [pageType] = useContext(PageContext)
-  const {
-    searchTypeC: [searchType],
-    searchTermC: [searchTerm],
-    searchTimesC: [searchTimes]
-  } = useContext(SearchContext)
 
   useEffect(() => {
-    // async function getAllPublicFiles() {
-    //   const allPublicFiles = await window.electronAPI.askAllPublicFile()
-    //   const fileList = parseFileList(allPublicFiles)
-    //   setPublicFileList(fileList)
-    // }
-    async function searchFiles() {
-      const searchedFilesPromise = window.electronAPI.askSearchFiles({
-        tags: searchTerm.split(' ').slice(0, 5)
-      })
-      toast.promise(searchedFilesPromise, {
-        loading: '搜尋中',
-        success: '搜尋成功',
-        error: '搜尋失敗'
-      })
-      try {
-        const searchedFiles = await searchedFilesPromise
-        const fileList = parseFileList(searchedFiles)
-        // setPublicFileList(fileList)
-        setTableContent(fileList)
-      } catch (error) {}
-    }
-    if (pageType === PageType.public && searchTerm !== '') {
-      searchFiles()
-    }
-  }, [searchTimes])
-
-  // useEffect(() => {
-  //   setTableContent(searchFilter(publicFileList, searchType, searchTerm))
-  // }, [searchTerm, searchType, publicFileList])
+    setTableContent(publicFileList)
+  }, [publicFileList])
 
   return (
     <TableView tableHead={TABLE_HEAD}>
@@ -71,6 +36,10 @@ function PublicTable() {
       ))}
     </TableView>
   )
+}
+
+PublicTable.propTypes = {
+  publicFileList: PropTypes.array.isRequired
 }
 
 export default PublicTable

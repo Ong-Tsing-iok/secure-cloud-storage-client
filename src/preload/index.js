@@ -29,8 +29,12 @@ if (process.contextIsolated) {
       askDeleteFolder: (folderId) => ipcRenderer.send('delete-folder', folderId),
       askAllFolder: () => ipcRenderer.invoke('get-folders'),
       askMoveFile: (uuid, targetFolderId) => ipcRenderer.send('move-file', uuid, targetFolderId),
+      // Search
       askAllPublicFile: () => ipcRenderer.invoke('get-public-files'),
       askSearchFiles: (values) => ipcRenderer.invoke('search-files', values),
+      onSearchFiles: (callback) =>
+        ipcRenderer.on('partial-search-files', (_event, result) => callback(result)),
+      //
       askRegister: (registerInfo) => ipcRenderer.send('register', registerInfo),
       onUserConfig: (callback) => ipcRenderer.on('user-info', (_event, result) => callback(result)),
       onRequestValue: (callback) =>
@@ -42,6 +46,7 @@ if (process.contextIsolated) {
       updateRequestValue: (values) => ipcRenderer.send('update-request-value', values),
       updateUserList: (users) => ipcRenderer.send('update-user-list', users),
       updateFileDescPerm: (values) => ipcRenderer.send('update-file-desc-perm', values),
+      // Requests
       askRequestFile: (requestInfo) => ipcRenderer.send('request-file', requestInfo),
       askRequestList: () => ipcRenderer.send('get-request-list'),
       askRequestedList: () => ipcRenderer.send('get-requested-list'),
