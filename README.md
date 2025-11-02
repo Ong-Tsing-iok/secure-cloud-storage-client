@@ -35,6 +35,12 @@ keys:
 blockchain:
   walletKeyFilename: wallet2.key
 ```
+
+### 備註
+使用者相關資料會存在
+
+1. linux `~/.config/client-side`
+1. windows `%APPDATA%\client-side`
 ### Build
 
 ```bash
