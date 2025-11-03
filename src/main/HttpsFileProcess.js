@@ -1,3 +1,6 @@
+/**
+ * This file handles actual file upload and download using HTTPS protocol
+ */
 import { socket } from './MessageManager'
 // import { statSync } from 'node:fs'
 import { logger } from './Logger'
@@ -10,7 +13,7 @@ import FileUploadCoordinator from './FileUploadCoordinator'
 // import { createPipeProgress } from './util/PipeProgress'
 
 /**
- *
+ * Actually upload the file with HTTPS.
  * @param {ReadStream} fileStream
  * @param {string} filePath
  * @param {string} fileId
@@ -75,6 +78,13 @@ const uploadFileProcessHttps = async (
   })
 }
 
+/**
+ * Actually download the file with HTTPS.
+ * @param {*} fileId
+ * @param {*} writeStream
+ * @param {*} filePath
+ * @returns
+ */
 const downloadFileProcessHttps = (fileId, writeStream, filePath) => {
   return new Promise((resolve, reject) => {
     const request = net.request({

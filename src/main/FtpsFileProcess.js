@@ -1,3 +1,6 @@
+/**
+ * This file handles actual upload and download for using FTPS protocol.
+ */
 import { socket } from './MessageManager'
 import { logger } from './Logger'
 import { Client } from 'basic-ftp'

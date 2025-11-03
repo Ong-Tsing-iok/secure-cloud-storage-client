@@ -1,3 +1,6 @@
+/**
+ * This file handles actual file upload and download using SFTP protocol.
+ */
 import ssh2 from 'ssh2'
 import { logger } from './Logger'
 import GlobalValueManager from './GlobalValueManager'

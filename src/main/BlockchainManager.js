@@ -1,3 +1,6 @@
+/**
+ * This file handles operations related to blockchain. Including initializing wallet and communicate with smart contract.
+ */
 import { JsonRpcProvider, Contract, Wallet } from 'ethers'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { logger } from './Logger'
@@ -87,6 +90,10 @@ class BlockchainManager {
     }
   }
 
+  /**
+   * Restore the wallet with the provided private key
+   * @param {string} privateKey
+   */
   restoreWallet(privateKey) {
     writeFileSync(GlobalValueManager.blockchain.walletKeyPath, privateKey)
     this.wallet = new Wallet(privateKey, this.provider)

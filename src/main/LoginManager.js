@@ -1,3 +1,7 @@
+/**
+ * This file handles operation and communication with server related to authentication.
+ * Including login, register, secret share and secret recover.
+ */
 import { logger } from './Logger'
 import { socket } from './MessageManager'
 import GlobalValueManager from './GlobalValueManager'
@@ -26,6 +30,12 @@ class LoginManager {
     this.requestManager = requestManager
   }
 
+  /**
+   * Respond to server's authentication request.
+   * @param {*} cipher
+   * @param {*} spk
+   * @returns the user info
+   */
   async respondToAuth(cipher, spk) {
     logger.info('Getting login response from server. Decrypting auth key...')
     // console.log(cipher)
@@ -44,6 +54,7 @@ class LoginManager {
               return
             }
             if (userInfo) {
+              // Previous action is login, not register.
               logger.info('Login succeeded')
               GlobalValueManager.userInfo = userInfo
               GlobalValueManager.loggedIn = true
@@ -62,6 +73,10 @@ class LoginManager {
         })
     })
   }
+  /**
+   * Asks to login to server.
+   * @returns the user info
+   */
   async login() {
     return new Promise((resolve, reject) => {
       // only login after window is ready to show
@@ -92,6 +107,11 @@ class LoginManager {
     })
   }
 
+  /**
+   * Asks to register to server.
+   * @param {*} param0
+   * @returns
+   */
   async register({ name, email }) {
     // only register after window is ready to show
     return new Promise((resolve, reject) => {
@@ -111,7 +131,7 @@ class LoginManager {
             }
             try {
               const result = await this.respondToAuth(response.cipher, response.spk)
-              resolve(result)
+              resolve(result) // Will notice renderer to input email auth code.
             } catch (error2) {
               // Logged in respondToAuth
               reject(error2)
@@ -126,6 +146,11 @@ class LoginManager {
     })
   }
 
+  /**
+   * Asks to share secret keys (user private keys, wallet keys) which is encrypted by the extra key.
+   * @param {*} param0
+   * @returns
+   */
   async shareSecret({ extraKey }) {
     return new Promise((resolve, reject) => {
       try {
@@ -147,7 +172,7 @@ class LoginManager {
             // GlobalValueManager.sendNotice('Failed to share secret', 'error')
             return
           }
-          resolve()
+          resolve() // OK
           // GlobalValueManager.sendNotice('Share secret succeeded', 'success')
         })
       } catch (error) {
@@ -158,6 +183,11 @@ class LoginManager {
     })
   }
 
+  /**
+   * Ask to recover user's secret with the registered email
+   * @param {*} param0
+   * @returns
+   */
   async recoverSecret({ email }) {
     return new Promise((resolve, reject) => {
       try {
@@ -181,11 +211,16 @@ class LoginManager {
     })
   }
 
+  /**
+   * Called when user input email auth code.
+   * @param {*} param0
+   * @returns
+   */
   async onEmailAuth({ emailAuth, purpose }) {
     return new Promise((resolve, reject) => {
       try {
         // const ActionStr = (purpose == 'recover') ? 'Secret recover' :
-        logger.info('Asking to email auth')
+        logger.info('Asking to respond to email auth')
         socket.emit('email-auth-res', { emailAuth }, (response) => {
           if (response.errorMsg) {
             logger.error(
@@ -196,6 +231,7 @@ class LoginManager {
             return
           }
           if (response.shares) {
+            // Previously asked to recover secret
             const deserializedShares = []
             for (const share of response.shares) {
               deserializedShares.push(Buffer.from(share, 'base64'))
@@ -205,6 +241,7 @@ class LoginManager {
             // GlobalValueManager.mainWindow?.send('ask-extra-key')
             resolve({ purpose: 'recover' })
           } else if (response.userId) {
+            // Previous asked to register.
             resolve({ userId: response.userId })
           }
         })
@@ -216,6 +253,12 @@ class LoginManager {
     })
   }
 
+  /**
+   * Called when user entered extra key for secret recover.
+   * Will decrypt the retrieved secret shares and restore secret keys.
+   * @param {*} param0
+   * @returns
+   */
   async onRecoverExtraKey({ extraKey }) {
     return new Promise((resolve, reject) => {
       try {

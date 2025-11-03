@@ -1,3 +1,6 @@
+/**
+ * This file handles user private/public key initialization, storing and encryption/decryption.
+ */
 import { logger } from './Logger'
 import { readFile, writeFile } from 'node:fs/promises'
 import { writeFileSync } from 'node:fs'
@@ -24,6 +27,10 @@ class KeyManager {
     }
   }
 
+  /**
+   * Restore the keys and store to file.
+   * @param {*} param0
+   */
   restoreKeys({ pk, sk, spk, ssk }) {
     const keysStr = `${pk}\n${sk}\n${spk}\n${ssk}`
     writeFileSync(keyFilePath, keysStr)
@@ -45,6 +52,10 @@ class KeyManager {
     }
   }
 
+  /**
+   * Initialize the keys from file, or create keys and store to file.
+   * @returns
+   */
   async initKeys() {
     if (this.keys && this.signingKeys) {
       return
@@ -84,7 +95,7 @@ class KeyManager {
     logger.info('Keys initialized.')
   }
   /**
-   *
+   * Encrypt the message with the public key.
    * @param {string} message
    * @returns {Promise<string>} encrypted cipher
    */
@@ -102,7 +113,7 @@ class KeyManager {
   }
 
   /**
-   *
+   * Decrypt the cipher with the private key.
    * @param {string} cipher
    * @param {string} spk
    * @param {boolean} proxied proxied by server or not, default as false
@@ -132,7 +143,7 @@ class KeyManager {
   }
 
   /**
-   *
+   * Generate reencryption key based on requester's public key.
    * @param {string} requesterPublicKey
    * @param {string} spk
    * @returns {Promise<string>} rekey
@@ -152,7 +163,7 @@ class KeyManager {
   }
 
   /**
-   *
+   * Generate a random message and its corresponding cipher.
    * @returns {Promise<{ messageArray: Uint8Array, message: string, cipher: string, spk: string }>}
    */
   async randCipher() {
@@ -192,6 +203,10 @@ class KeyManager {
     return this.signingKeys
   }
 
+  /**
+   * Get the serialized keys
+   * @returns
+   */
   getKeyStrings() {
     this.checkInit()
     return {

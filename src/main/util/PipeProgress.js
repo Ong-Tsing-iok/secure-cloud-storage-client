@@ -1,3 +1,6 @@
+/**
+ * This file handles a pipe that calculate the progress
+ */
 import { PassThrough } from 'node:stream'
 
 const createPipeProgress = (options, logger) => {

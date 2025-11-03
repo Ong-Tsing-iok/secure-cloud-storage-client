@@ -1,3 +1,6 @@
+/**
+ * This file handles a local database which stores file tag and attribute settings.
+ */
 import Database from 'better-sqlite3'
 import GlobalValueManager from './GlobalValueManager'
 import path from 'node:path'

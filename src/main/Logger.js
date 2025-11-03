@@ -1,3 +1,6 @@
+/**
+ * This file handles logging to file and to renderer.
+ */
 import winston, { format } from 'winston'
 import ScreenTransport from './ScreenTransport'
 import { app } from 'electron'

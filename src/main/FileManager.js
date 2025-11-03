@@ -1,3 +1,7 @@
+/**
+ * This file handles operations and communication with server related to files.
+ * Including upload, download, delete, search.
+ */
 import { dialog } from 'electron'
 import { socket } from './MessageManager'
 import { createReadStream, createWriteStream } from 'node:fs'
@@ -41,6 +45,9 @@ class FileManager {
       .limit({ concurrency: queueConcurrency })
       .process(this.#uploadProcess.bind(this))
 
+    /**
+     * A message from server when upload verification finished.
+     */
     socket.on('upload-file-res', (response) => {
       if (response.errorMsg) {
         logger.error(
@@ -53,6 +60,9 @@ class FileManager {
       }
     })
 
+    /**
+     * Send the partial search result to renderer when receiving from server.
+     */
     socket.on('partial-search-files', (response) => {
       const { files } = response
       // logger.debug('get file', files)
@@ -75,12 +85,18 @@ class FileManager {
   }
 
   // can return promise, but not needed
+  /**
+   * The process of actually uploading the file.
+   * @param {*} param0
+   * @returns
+   */
   async #uploadProcess({ filePath, parentFolderId }) {
     let cipher = null
     let spk = null
     let encryptedStream = null
     let fileStream = null
     const originalFileName = basename(filePath)
+    // Read the file from disk and create an encrypt stream of the file.
     try {
       fileStream = createReadStream(filePath)
       // throw new Error('Test filestream creation error.') // Test for file stream creation error
@@ -98,6 +114,7 @@ class FileManager {
       )
       return
     }
+    // Pre-upload the file by sending the encrypted AES key, and get the generated fileId
     logger.info('Sending key and iv to server...')
     socket.emit('upload-file-pre', { cipher, spk, parentFolderId }, async (response) => {
       const { errorMsg, fileId } = response
@@ -107,8 +124,10 @@ class FileManager {
         return
       }
 
+      // Store the encrypted file to disk with name <fileId>
       const tempEncryptedFilePath = resolve(GlobalValueManager.tempPath, fileId)
       const writeStream = createWriteStream(tempEncryptedFilePath)
+      // Coordinator to make sure upload to blockchain only after hash is created and file is uploaded to server.
       const fileUploadCoordinator = new FileUploadCoordinator(
         this.blockchainManager,
         JSON.stringify({ filename: originalFileName })
@@ -122,10 +141,12 @@ class FileManager {
           logger.error(error)
           this.#sendUploadErrorNotice('File hash calculation failed.')
         })
+      // When the encrypted filestream successfully got written on disk, read it and actually uplaod to server.
       writeStream.on('close', async () => {
         logger.info(`Encrypted file finished writing.`, { tempEncryptedFilePath })
         const protocol = GlobalValueManager.serverConfig.protocol
         logger.info(`Uploading file ${basename(filePath)} with protocol ${protocol}`)
+        // Actually uploading file by the selected protocol
         try {
           switch (protocol) {
             case 'https':
@@ -162,6 +183,7 @@ class FileManager {
           this.#sendUploadErrorNotice(`Upload with ${protocol} failed.`, CheckLogForDetailMsg)
           return
         }
+        // Upload file info to blockchain
         try {
           await fileUploadCoordinator.uploadToBlockchainWhenReady()
           GlobalValueManager.sendNotice(
@@ -191,6 +213,10 @@ class FileManager {
     })
   }
 
+  /**
+   * Browse and select files to upload, and push to an upload queue for concurrent upload process.
+   * @param {*} parentFolderId
+   */
   async uploadFileProcess(parentFolderId) {
     logger.info('Browsing file...')
     const { filePaths } = await dialog.showOpenDialog({
@@ -205,6 +231,10 @@ class FileManager {
     }
   }
 
+  /**
+   * Get the file list under current folder.
+   * @param {*} parentFolderId
+   */
   getFileListProcess(parentFolderId) {
     logger.info(`Getting file list for ${parentFolderId || 'home'}...`)
     socket.emit('get-file-list', { parentFolderId }, async (response) => {
@@ -235,8 +265,15 @@ class FileManager {
     })
   }
 
+  /**
+   * Ask the server to download file.
+   * @param {string} fileId the file to download
+   */
   downloadFileProcess(fileId) {
     logger.info(`Asking for file ${fileId}...`)
+    /**
+     * Pre-download request to get the fileInfo
+     */
     socket.emit('download-file-pre', { fileId }, async (response) => {
       try {
         if (response.errorMsg) {
@@ -251,6 +288,7 @@ class FileManager {
           return
         }
         // console.log(fileInfo)
+        // Get the verification info of this file from blockchain.
         try {
           const blockchainVerification = await this.blockchainManager.getFileVerification(fileId)
           if (!blockchainVerification || blockchainVerification.verificationInfo != 'success') {
@@ -273,7 +311,7 @@ class FileManager {
 
         const proxied = response.fileInfo.ownerId !== response.fileInfo.originOwnerId
 
-        // Get blockchain verification and file information
+        // Get file information from blockchain. Will be used later to chekc for hash.
         let blockchainFileInfo = null
         try {
           blockchainFileInfo = await this.blockchainManager.getFileInfo(fileId)
@@ -296,6 +334,7 @@ class FileManager {
         }
 
         const { id, name, cipher, spk, size } = response.fileInfo
+        // Second download process for actually downloading the file.
         this.downloadFileProcess2(id, name, cipher, spk, size, proxied, blockchainFileInfo)
       } catch (error) {
         logger.error(error)
@@ -304,8 +343,20 @@ class FileManager {
     })
   }
 
+  /**
+   * The second dowload process for actually downloading the file.
+   * @param {*} fileId
+   * @param {*} filename
+   * @param {*} cipher
+   * @param {*} spk
+   * @param {*} size
+   * @param {*} proxied
+   * @param {*} blockchainFileInfo
+   * @returns
+   */
   async downloadFileProcess2(fileId, filename, cipher, spk, size, proxied, blockchainFileInfo) {
     try {
+      // Let the user select where to store the file. TODO: move to process 1.
       const { filePath, canceled } = await dialog.showSaveDialog({
         defaultPath: filename,
         properties: ['showOverwriteConfirmation', 'createDirectory']
@@ -316,7 +367,7 @@ class FileManager {
         return
       }
 
-      //-- Write file --//
+      //-- Write stream for writing file later --//
       let writeStream
       try {
         writeStream = createWriteStream(filePath)
@@ -442,6 +493,10 @@ class FileManager {
     }
   }
 
+  /**
+   * Ask to delete a file on server.
+   * @param {string} fileId
+   */
   deleteFileProcess(fileId) {
     logger.info(`Asking to delete file ${fileId}...`)
     socket.emit('delete-file', { fileId }, (response) => {
@@ -457,6 +512,11 @@ class FileManager {
     })
   }
 
+  /**
+   * Ask to add a folder.
+   * @param {*} parentFolderId
+   * @param {*} folderName
+   */
   addFolderProcess(parentFolderId, folderName) {
     logger.info(`Asking to add folder ${folderName}...`)
     socket.emit('add-folder', { parentFolderId, folderName }, (response) => {
@@ -472,6 +532,10 @@ class FileManager {
     })
   }
 
+  /**
+   * Ask to delete a folder
+   * @param {*} folderId
+   */
   deleteFolderProcess(folderId) {
     logger.info(`Asking to delete folder ${folderId}...`)
     socket.emit('delete-folder', { folderId }, (response) => {
@@ -487,6 +551,10 @@ class FileManager {
     })
   }
 
+  /**
+   * Ask to get all folders. Used for selecting destination for moving files.
+   * @returns
+   */
   getAllFoldersProcess() {
     logger.info('Asking for all folders...')
     return new Promise((resolve) => {
@@ -503,6 +571,11 @@ class FileManager {
     })
   }
 
+  /**
+   * Ask to move file to a certain folder.
+   * @param {*} fileId
+   * @param {*} targetFolderId
+   */
   moveFileProcess(fileId, targetFolderId) {
     logger.info(`Asking to move file ${fileId} to ${targetFolderId}...`)
     socket.emit('move-file', { fileId, targetFolderId }, (response) => {
@@ -518,6 +591,10 @@ class FileManager {
     })
   }
 
+  /**
+   * Ask to get all public files. Should not be called.
+   * @returns
+   */
   getAllPublicFilesProcess() {
     logger.info('Asking for all public files...')
     return new Promise((resolve) => {
@@ -534,6 +611,11 @@ class FileManager {
     })
   }
 
+  /**
+   * Ask to search files with the provided tags.
+   * @param {*} param0
+   * @returns
+   */
   async searchFilesProcess({ tags }) {
     logger.info(`Searching with tags ${tags}`)
     try {
@@ -563,6 +645,10 @@ class FileManager {
     }
   }
 
+  /**
+   * Ask to update file description, permission, attribute and tags.
+   * @param {*} param0
+   */
   async updateFileDescPermProcess({ fileId, desc, perm, selectedAttrs, tags }) {
     const actionStr = `update file ${fileId} description, permission and index`
     try {

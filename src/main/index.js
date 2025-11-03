@@ -95,6 +95,8 @@ app.whenReady().then(() => {
   //     console.log(result.export(false))
   //   })
   // )
+  
+  // IPC methods. Should correspond to preload/index.js
   ipcMain.handle('login', async () => {
     return await loginManager.login()
   })
@@ -183,6 +185,7 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
+  // encrypt database and upload to server
   if (process.platform !== 'darwin') {
     app.quit()
   }

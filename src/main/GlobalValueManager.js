@@ -1,3 +1,6 @@
+/**
+ * This file handles config and global value settings.
+ */
 import { logger } from './Logger'
 import { writeFileSync, readFileSync } from 'node:original-fs'
 import path, { join, dirname, resolve } from 'node:path'
@@ -21,11 +24,11 @@ const config = require('config')
 class GlobalValueManager {
   constructor() {
     try {
-      this.serverConfig = config.server
+      this.serverConfig = config.get('server')
       this.keysConfig = config.get('keys')
       this.userConfig = config.get('user')
-      this.requestConfig = config.request
-      this.userListConfig = config.userList
+      this.requestConfig = config.get('request')
+      this.userListConfig = config.get('userList')
       this.tempPath = app.getPath('temp')
 
       this.keyPath = resolve(app.getPath('userData'), config.get('keys.path'))
@@ -76,6 +79,11 @@ class GlobalValueManager {
   //   return resolve(app.getPath('userData'), 'user.keys')
   // }
 
+  /**
+   * Update the config file with value for a certain field
+   * @param {string} field
+   * @param {*} value
+   */
   updateConfigFile(field, value) {
     try {
       const filepath = join(app.getPath('userData'), 'config', 'local.json')
@@ -102,6 +110,10 @@ class GlobalValueManager {
     }
   }
 
+  /**
+   * Update user info to config. Actually not called anymore.
+   * @param {*} user
+   */
   updateUser(user) {
     try {
       this.updateConfigFile('user', user)
@@ -113,6 +125,10 @@ class GlobalValueManager {
     }
   }
 
+  /**
+   * Update white list and black list to config
+   * @param {*} users
+   */
   updateUserList(users) {
     //? Maybe should handle checks here
     try {
@@ -126,6 +142,10 @@ class GlobalValueManager {
     }
   }
 
+  /**
+   * Update the number of seen request/response
+   * @param {*} req
+   */
   updateRequest(req) {
     try {
       this.updateConfigFile('request', req)

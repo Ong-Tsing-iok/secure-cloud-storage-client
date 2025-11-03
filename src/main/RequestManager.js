@@ -1,3 +1,7 @@
+/**
+ * This file handles operation and communication with server related to requests.
+ * Including requesting file, responding to request, deleting request, get request list.
+ */
 import { socket } from './MessageManager'
 import { logger } from './Logger'
 import GlobalValueManager from './GlobalValueManager'
@@ -26,6 +30,10 @@ class RequestManager {
     })
   }
 
+  /**
+   * Ask to request certain file.
+   * @param {*} requestInfo
+   */
   requestFileProcess(requestInfo) {
     logger.info(`Asking to request file ${requestInfo.fileId}...`)
     socket.emit('request-file', requestInfo, (response) => {
@@ -41,6 +49,9 @@ class RequestManager {
     })
   }
 
+  /**
+   * Ask to get all request list (client is requester)
+   */
   getRequestListProcess() {
     logger.info('Getting request list...')
     socket.emit('get-request-list', (response) => {
@@ -55,6 +66,9 @@ class RequestManager {
     })
   }
 
+  /**
+   * Ask to get all requested list (client is file owner.)
+   */
   getRequestedListProcess() {
     socket.emit('get-requested-list', (response) => {
       const { requests, errorMsg } = response
@@ -70,6 +84,10 @@ class RequestManager {
     })
   }
 
+  /**
+   * Auto reply to requests based on the set whitelist and blacklist.
+   * @param {*} result
+   */
   async autoReplyProcess(result) {
     let changed = false
     const resultList = JSON.parse(result)
@@ -94,7 +112,7 @@ class RequestManager {
           // item.agreed = 0
         } else if (GlobalValueManager.userListConfig.whiteList.includes(item.requester)) {
           changed = true
-          console.log('whitelist item')
+          // console.log('whitelist item')
           await this.respondRequestProcess(
             {
               requestId: item.requestId,
@@ -114,6 +132,10 @@ class RequestManager {
     }
   }
 
+  /**
+   * Ask to delete request.
+   * @param {*} requestId
+   */
   deleteRequestProcess(requestId) {
     logger.info(`Deleting request for ${requestId}...`)
     socket.emit('delete-request', { requestId }, (response) => {
@@ -129,8 +151,15 @@ class RequestManager {
     })
   }
 
+  /**
+   * Ask to respond to request.
+   * @param {*} responseInfo
+   * @param {*} refresh
+   * @returns
+   */
   async respondRequestProcess(responseInfo, refresh = true) {
     logger.info(`Respond request for ${responseInfo.requestId}...`)
+    // If agreed, we generate rekey for the requester.
     let rekey = null
     if (responseInfo.agreed) {
       try {

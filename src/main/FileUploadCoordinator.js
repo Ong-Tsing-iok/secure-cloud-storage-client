@@ -1,3 +1,7 @@
+/**
+ * This file coordinates for both file upload and hash completion,
+ * then is able to upload file info to blockchain.
+ */
 import { logger } from './Logger'
 import BlockchainManager from './BlockchainManager'
 import GlobalValueManager from './GlobalValueManager'
@@ -24,6 +28,12 @@ export default class FileUploadCoordinator {
     })
   }
 
+  /**
+   * Called when the file is uploaded to the server successfully.
+   * Will remove the temporate encrypted file.
+   * @param {string} fileId
+   * @param {string} tempEncryptedFilePath
+   */
   finishUpload(fileId, tempEncryptedFilePath) {
     this.uploadFinished = true
     this.fileId = fileId
@@ -36,7 +46,7 @@ export default class FileUploadCoordinator {
   }
 
   /**
-   *
+   * Called when hash calculation is finished.
    * @param {string} digest sha256 hash in hex format
    */
   finishHash(digest) {
@@ -45,6 +55,9 @@ export default class FileUploadCoordinator {
     this.#checkReady()
   }
 
+  /**
+   * Check if both upload and hash calculation have finished.
+   */
   #checkReady() {
     if (this.uploadFinished && this.hashFinished && !this.uploadInstantiated) {
       this.uploadInstantiated = true
@@ -53,7 +66,7 @@ export default class FileUploadCoordinator {
   }
 
   /**
-   * Will throw error.
+   * Upload file info to blockchain. Will throw error.
    */
   async uploadToBlockchainWhenReady() {
     await this.readyPromise

@@ -1,3 +1,6 @@
+/**
+ * This file handles socket initialization and connection events.
+ */
 import io from 'socket.io-client'
 import { logger } from './Logger'
 import GlobalValueManager from './GlobalValueManager'
@@ -36,7 +39,7 @@ socket.io.on('reconnect_failed', () => {
 socket.io.on('reconnect', () => {
   logger.info('server reconnected')
   GlobalValueManager.sendNotice('Server reconnected', 'success')
-  // login()
+  // login() <- could cause circular reference problem.
 })
 
 socket.io.on('close', () => {

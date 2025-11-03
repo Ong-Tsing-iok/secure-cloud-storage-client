@@ -1,9 +1,17 @@
+/**
+ * This file handles secret sharing encryption and decryption.
+ */
 import sss from 'shamirs-secret-sharing'
 import crypto from 'crypto'
 import { logger } from './Logger'
 
 const algorithm = 'aes-256-cbc'
 
+/**
+ * Create an AES key based on the provided extra key.
+ * @param {string} sk the extra key
+ * @returns the AES key
+ */
 function getKeyIv(sk) {
   const hash = crypto.createHash('sha512')
   hash.update(sk)
@@ -13,6 +21,12 @@ function getKeyIv(sk) {
   return { key, iv }
 }
 
+/**
+ * Encrypt the data string with extra key and split it into shares.
+ * @param {*} sk
+ * @param {*} dataStr
+ * @returns
+ */
 export function encryptDataShareKey(sk, dataStr) {
   // Encrypt data and share sk
   const { key, iv } = getKeyIv(sk)
@@ -25,6 +39,12 @@ export function encryptDataShareKey(sk, dataStr) {
   return shares
 }
 
+/**
+ * Recover shares and decrypt it with the extra key.
+ * @param {*} sk
+ * @param {*} shares
+ * @returns
+ */
 export function recoverDataShareKey(sk, shares) {
   const { key, iv } = getKeyIv(sk)
   const recovered = sss.combine(shares).toString()

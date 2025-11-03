@@ -1,9 +1,11 @@
+/**
+ * This file handles file encryption/decryption with AES and creating file hash.
+ */
 import crypto from 'crypto'
 import Stream, { Readable } from 'stream'
 import KeyManager from './KeyManager'
 import { logger } from './Logger'
 
-// TODO: change the name
 class AESModule {
   keyManager
   /**
@@ -14,6 +16,11 @@ class AESModule {
     this.keyManager = keyManager
   }
 
+  /**
+   * Encrypt the readstream with random AES key, and encrypt the AES key with user public key.
+   * @param {*} readstream
+   * @returns
+   */
   async encrypt(readstream) {
     const { messageArray, cipher, spk } = await this.keyManager.randCipher()
     const key = messageArray.buffer.slice(0, 32)
@@ -33,7 +40,7 @@ class AESModule {
   }
 
   /**
-   *
+   *  Decrypt the encrypted AES key with user's public key and create a decipher stream with the AES key.
    * @param {string} cipher
    * @param {string} spk
    * @param {boolean} proxied
@@ -52,7 +59,7 @@ class AESModule {
   }
 
   /**
-   *
+   * Create a hash for the cipher stream with callback.
    * @param {Stream} cipherStream the stream to hash
    * @param {(digest:string)=>void | Promise<void>} callback the callback to call with digest
    */
@@ -71,6 +78,11 @@ class AESModule {
     })
   }
 
+  /**
+   * Create a hash for the cipher stream with promise.
+   * @param {Stream} cipherStream the stream to hash
+   * @returns {Promise<string>} the stream to hash
+   */
   makeHashPromise(cipherStream) {
     return new Promise((resolve, reject) => {
       const hash = crypto.createHash('sha256')

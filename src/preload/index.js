@@ -12,6 +12,9 @@ if (process.contextIsolated) {
     contextBridge.exposeInMainWorld('electron', electronAPI)
     contextBridge.exposeInMainWorld('api', api)
     contextBridge.exposeInMainWorld('electronAPI', {
+      // Corresponds to main/index.js
+      // In renderer, the functions should be called as window.electronAPI.askLogin()
+      // In main process, the functions should be called as GlobalValueManager.mainWindow?.webContents.send('', )
       askLogin: () => ipcRenderer.invoke('login'),
       askRegister: (registerInfo) => ipcRenderer.invoke('register', registerInfo),
       changeCurFolder: (curFolderId) => ipcRenderer.send('change-cur-folder', curFolderId),

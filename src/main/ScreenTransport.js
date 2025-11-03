@@ -1,3 +1,6 @@
+/**
+ * This file handles a logging transport to log to renderer.
+ */
 const Transport = require('winston-transport')
 // const EventEmitter = require('events')
 const { BrowserWindow } = require('electron')

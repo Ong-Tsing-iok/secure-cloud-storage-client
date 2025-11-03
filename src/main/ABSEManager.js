@@ -1,3 +1,6 @@
+/**
+ * This file handles ABSE related operations
+ */
 import * as mcl from 'mcl-wasm'
 import { logger } from './Logger'
 import GlobalValueManager from './GlobalValueManager'
@@ -18,6 +21,9 @@ class ABSEManager {
   constructor(keyManager) {
     this.keyManager = keyManager
   }
+  /**
+   * Initialize mcl and get public parameter and search key from trusted authority
+   */
   async init() {
     try {
       await mcl.init(mcl.BLS12_381)
@@ -27,6 +33,10 @@ class ABSEManager {
       logger.error(error)
     }
   }
+  /**
+   * Tries to get public parameter from trusted authority.
+   * @returns public parameters
+   */
   async getPP() {
     if (this.pp) return this.pp
     try {
@@ -56,9 +66,14 @@ class ABSEManager {
       return null
     }
   }
+  /**
+   * Tries to get search key from trusted authority.
+   * @returns {Promise<{SK: {sk1: mcl.G2, sk2: mcl.G2, sk3: mcl.G2, sky: mcl.G2}, y: Array<0|1>}>|undefined} the search key
+   */
   async getKey() {
     const globalAttrs = (await this.getPP()).U
     return new Promise((resolve, reject) => {
+      // A helper function to deal with error
       function getSearchKeyError(error) {
         if (error.stack) {
           logger.error(error)
@@ -69,6 +84,7 @@ class ABSEManager {
         socket.close()
         reject('Cannot get search key.')
       }
+      // Return if already have search key
       if (this.SK && this.y) {
         resolve({ SK: this.SK, y: this.y })
         return
@@ -80,6 +96,7 @@ class ABSEManager {
       socket.on('connect', () => {
         try {
           logger.info('Asking to get search key...')
+          // First ask for authentication
           socket.emit(
             'auth',
             { publicKey: this.keyManager.getPublicKeyString() },
@@ -133,6 +150,12 @@ class ABSEManager {
     })
   }
 
+  /**
+   * Create an encrypted index for a tag list and attribute list.
+   * @param {Array<string>} W the tag list
+   * @param {Array<string>} P the attribute list
+   * @returns the encrypted file index
+   */
   async Enc(W, P) {
     const pp = await this.getPP()
     // Access policy vector x
@@ -172,6 +195,11 @@ class ABSEManager {
     // console.log(CTw);
     return CTw
   }
+  /**
+   * Create a search trapdoor with the search key and tag list to search for.
+   * @param {Array<string>} WPrime the tag list to search for
+   * @returns the search trapdoor
+   */
   async Trapdoor(WPrime) {
     const { SK, y } = await this.getKey()
     let sum = new mcl.Fr()
@@ -209,6 +237,12 @@ class ABSEManager {
     }
     return TK
   }
+  /**
+   * A testing function to make sure the created TK and file index matches
+   * @param {*} serializedTK
+   * @param {*} files
+   * @returns
+   */
   async Search(serializedTK, files) {
     // console.log(serializedTK)
     try {
