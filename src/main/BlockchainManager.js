@@ -155,36 +155,38 @@ class BlockchainManager {
   /**
    * Get hash and metadata of a file.
    * @param {string} fileId UUID of the file.
+   * @param {number} blockNumber the block number where the event is at.
    * @param {string | undefined} fileOwnerAddr Blockchain address of the file owner. Leave blank to use this client's address.
    * @returns Latest event arguments or null if not found.
    * @throws Any error occurred.
    */
-  async getFileInfo(fileId, fileOwnerAddr) {
+  async getFileInfo(fileId, blockNumber, fileOwnerAddr) {
     if (!GlobalValueManager.blockchain.enabled) return null
     if (!fileOwnerAddr) fileOwnerAddr = this.wallet.address
-    const latestBlock = await this.provider.getBlockNumber()
-    let toBlock = latestBlock
-    while (toBlock > 0) {
-      const fromBlock = Math.max(0, toBlock - BLOCK_RANGE_LIMIT)
-      const events = await this.contract.queryFilter(
-        this.contract.filters.FileUploaded(uuidToBigInt(fileId), fileOwnerAddr),
-        fromBlock,
-        toBlock
-      )
-      logger.debug(`Retriving fileInfo from block ${fromBlock} to block ${toBlock}.`)
-      if (events.length > 0) {
-        logger.info(`Retrived fileInfo for fileId ${fileId}.`)
-        const eventArgs = events[events.length - 1].args
-        return {
-          fileId: bigIntToUuid(eventArgs.fileId),
-          fileHash: BigInt(eventArgs.fileHash),
-          metadata: String(eventArgs.metadata),
-          fileOwnerAddr: String(eventArgs.fileOwner),
-          timestamp: BigInt(eventArgs.timestamp)
-        }
+    // const latestBlock = await this.provider.getBlockNumber()
+    // let toBlock = latestBlock
+    // while (toBlock > 0) {
+    // const fromBlock = Math.max(0, toBlock - BLOCK_RANGE_LIMIT)
+
+    const events = await this.contract.queryFilter(
+      this.contract.filters.FileUploaded(uuidToBigInt(fileId), fileOwnerAddr),
+      blockNumber,
+      blockNumber
+    )
+    // logger.debug(`Retriving fileInfo from block ${fromBlock} to block ${toBlock}.`)
+    if (events.length > 0) {
+      logger.info(`Retrived fileInfo for fileId ${fileId}.`)
+      const eventArgs = events[events.length - 1].args
+      return {
+        fileId: bigIntToUuid(eventArgs.fileId),
+        fileHash: BigInt(eventArgs.fileHash),
+        metadata: String(eventArgs.metadata),
+        fileOwnerAddr: String(eventArgs.fileOwner),
+        timestamp: BigInt(eventArgs.timestamp)
       }
-      toBlock = fromBlock - 1
     }
+    // toBlock = fromBlock - 1
+    // }
 
     logger.info(`FileInfo not found for fileId ${fileId}.`)
     return null
@@ -221,36 +223,37 @@ class BlockchainManager {
   /**
    * Get verification information of a file.
    * @param {string} fileId UUID of the file.
+   * @param {number} blockNumber the block number where the event is at.
    * @param {string  | undefined} fileOwnerAddr blockchain address of the file owner. Leave blank to use this client's address.
    * @returns Latest event arguments or null if not found.
    * @throws Any error occurred.
    */
-  async getFileVerification(fileId, fileOwnerAddr) {
+  async getFileVerification(fileId, blockNumber, fileOwnerAddr) {
     if (!GlobalValueManager.blockchain.enabled) return null
     if (!fileOwnerAddr) fileOwnerAddr = this.wallet.address
-    const latestBlock = await this.provider.getBlockNumber()
-    let toBlock = latestBlock
-    while (toBlock > 0) {
-      const fromBlock = Math.max(0, toBlock - BLOCK_RANGE_LIMIT)
-      const events = await this.contract.queryFilter(
-        this.contract.filters.FileVerified(uuidToBigInt(fileId), fileOwnerAddr),
-        fromBlock,
-        toBlock
-      )
-      logger.debug(`Retriving file verification info from block ${fromBlock} to block ${toBlock}.`)
-      if (events.length > 0) {
-        logger.info(`Retrieved file verification info for fileId ${fileId}.`)
-        const eventArgs = events[events.length - 1].args
-        return {
-          fileId: bigIntToUuid(eventArgs.fileId),
-          fileOwnerAddr: String(eventArgs.fileOwner),
-          verificationInfo: String(eventArgs.verificationInfo),
-          verifierAddr: String(eventArgs.verifier),
-          timestamp: BigInt(eventArgs.timestamp)
-        }
+    // const latestBlock = await this.provider.getBlockNumber()
+    // let toBlock = latestBlock
+    // while (toBlock > 0) {
+    // const fromBlock = Math.max(0, toBlock - BLOCK_RANGE_LIMIT)
+    const events = await this.contract.queryFilter(
+      this.contract.filters.FileVerified(uuidToBigInt(fileId), fileOwnerAddr),
+      blockNumber,
+      blockNumber
+    )
+    // logger.debug(`Retriving file verification info from block ${fromBlock} to block ${toBlock}.`)
+    if (events.length > 0) {
+      logger.info(`Retrieved file verification info for fileId ${fileId}.`)
+      const eventArgs = events[events.length - 1].args
+      return {
+        fileId: bigIntToUuid(eventArgs.fileId),
+        fileOwnerAddr: String(eventArgs.fileOwner),
+        verificationInfo: String(eventArgs.verificationInfo),
+        verifierAddr: String(eventArgs.verifier),
+        timestamp: BigInt(eventArgs.timestamp)
       }
-      toBlock = fromBlock - 1
     }
+    // toBlock = fromBlock - 1
+    // }
     logger.info(`File verification info not found for fileId ${fileId}.`)
     return null
   }

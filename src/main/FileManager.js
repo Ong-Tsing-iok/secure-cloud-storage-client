@@ -290,7 +290,10 @@ class FileManager {
         // console.log(fileInfo)
         // Get the verification info of this file from blockchain.
         try {
-          const blockchainVerification = await this.blockchainManager.getFileVerification(fileId)
+          const blockchainVerification = await this.blockchainManager.getFileVerification(
+            fileId,
+            response.fileInfo.verifyblocknumber
+          )
           if (!blockchainVerification || blockchainVerification.verificationInfo != 'success') {
             logger.error(`File ${fileId} not verified.`)
             this.#sendDownloadErrorNotice(
@@ -314,7 +317,10 @@ class FileManager {
         // Get file information from blockchain. Will be used later to chekc for hash.
         let blockchainFileInfo = null
         try {
-          blockchainFileInfo = await this.blockchainManager.getFileInfo(fileId)
+          blockchainFileInfo = await this.blockchainManager.getFileInfo(
+            fileId,
+            response.fileInfo.infoblocknumber
+          )
           logger.debug(blockchainFileInfo)
           if (!blockchainFileInfo) {
             logger.error(`File ${fileId} info not on blockchain.`)
