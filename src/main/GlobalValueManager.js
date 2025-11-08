@@ -55,7 +55,7 @@ class GlobalValueManager {
     // global values
     this.mainWindow = null
     this.curFolderId = null
-    this._userInfo = null
+    this._userInfo = {}
     this._loggedIn = false
     logger.info('Global value manager initialized')
   }
@@ -100,6 +100,11 @@ class GlobalValueManager {
   // get keyPath() {
   //   return resolve(app.getPath('userData'), 'user.keys')
   // }
+
+  reLogin() {
+    // Should be injected by LoginManager.
+    this.loginManager?.login()
+  }
 
   /**
    * Update the config file with value for a certain field

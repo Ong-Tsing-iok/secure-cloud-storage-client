@@ -81,10 +81,6 @@ function App() {
 
   useEffect(() => {
     window.electronAPI.onNotice((result, level) => {
-      // Ad hoc solution for login when reconnect
-      if (result === 'Server reconnected') {
-        login()
-      }
       if (level === 'error') {
         toast.error(result)
       } else if (level === 'success') {

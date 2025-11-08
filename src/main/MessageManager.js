@@ -39,6 +39,7 @@ socket.io.on('reconnect_failed', () => {
 socket.io.on('reconnect', () => {
   logger.info('server reconnected')
   GlobalValueManager.sendNotice('Server reconnected', 'success')
+  GlobalValueManager.reLogin()
   // login() <- could cause circular reference problem.
 })
 

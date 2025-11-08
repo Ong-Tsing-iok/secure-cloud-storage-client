@@ -12,7 +12,7 @@ import BlockchainManager from './BlockchainManager'
 import { encryptDataShareKey, recoverDataShareKey } from './SecretSharing'
 import { UnexpectedErrorMsg } from './Utils'
 import DatabaseManager from './DatabaseManager'
-import { unlinkSync } from 'original-fs'
+import { unlinkSync } from 'fs'
 
 class LoginManager {
   blockchainManager
@@ -32,6 +32,7 @@ class LoginManager {
     this.keyManager = keyManager
     this.requestManager = requestManager
     this.databaseManager = databaseManager
+    GlobalValueManager.loginManager = this
   }
 
   /**
@@ -54,6 +55,8 @@ class LoginManager {
             if (errorMsg) {
               logger.error(`Authentication response failed because of following error: ${errorMsg}`)
               // GlobalValueManager.sendNotice('Failed to authenticate', 'error')
+              GlobalValueManager.userInfo = {}
+              GlobalValueManager.loggedIn = false
               reject(new Error(errorMsg))
               return
             }
