@@ -25,7 +25,7 @@ import {
 } from './Utils'
 import { downloadFileProcessSftp, uploadFileProcessSftp } from './SftpFileProcess'
 import ABSEManager from './ABSEManager'
-import { getAttrIds, getTags, storeTagAttr } from './Database'
+import DatabaseManager from './DatabaseManager'
 
 class FileManager {
   aesModule
@@ -35,12 +35,14 @@ class FileManager {
    * @param {AESModule} aesModule
    * @param {BlockchainManager} blockchainManager
    * @param {ABSEManager} abseManager
+   * @param {DatabaseManager} databaseManager
    * @param {number} queueConcurrency
    */
-  constructor(aesModule, blockchainManager, abseManager, queueConcurrency = 1) {
+  constructor(aesModule, blockchainManager, abseManager, databaseManager, queueConcurrency = 1) {
     this.aesModule = aesModule
     this.blockchainManager = blockchainManager
     this.abseManager = abseManager
+    this.databaseManager = databaseManager
     this.uploadQueue = cq()
       .limit({ concurrency: queueConcurrency })
       .process(this.#uploadProcess.bind(this))
@@ -249,8 +251,10 @@ class FileManager {
           // Get tag and attribute from local storage and add into fileList
           const filesObj = JSON.parse(files)
           filesObj.forEach((file) => {
-            file.tags = getTags.all(file.id).map((row) => row.tag)
-            file.attrs = getAttrIds.all(file.id).map((row) => globalAttrs.at(row.attrid))
+            file.tags = this.databaseManager.getTagsOfFile(file.id).map((row) => row.tag)
+            file.attrs = this.databaseManager
+              .getAttrIdsOfFile(file.id)
+              .map((row) => globalAttrs.at(row.attrid))
             logger.debug(`attrs for file ${file.id}`, { attrs: file.attrs })
           })
           GlobalValueManager.mainWindow?.webContents.send('file-list-res', {
@@ -688,7 +692,7 @@ class FileManager {
             // Turn attrs into IDs
             const attrIds = selectedAttrs.map((attr) => globalAttrs.indexOf(attr))
             logger.debug(`store attrids`, { attrIds })
-            storeTagAttr(fileId, tags, attrIds)
+            this.databaseManager.storeTagAttr(fileId, tags, attrIds)
             logger.info(`Success to ${actionStr}`)
             GlobalValueManager.sendNotice(`Success to ${actionStr}`, 'success')
             this.getFileListProcess(GlobalValueManager.curFolderId)

@@ -12,6 +12,7 @@ import AESModule from './AESModule'
 import BlockchainManager from './BlockchainManager'
 import KeyManager from './KeyManager'
 import ABSEManager from './ABSEManager'
+import DatabaseManager from './DatabaseManager'
 
 // Initilize class instances
 const keyManager = new KeyManager()
@@ -21,7 +22,8 @@ const aesModule = new AESModule(keyManager)
 const blockchainManager = new BlockchainManager()
 const abseManager = new ABSEManager(keyManager)
 abseManager.init()
-const fileManager = new FileManager(aesModule, blockchainManager, abseManager)
+const databaseManager = new DatabaseManager()
+const fileManager = new FileManager(aesModule, blockchainManager, abseManager, databaseManager)
 const loginManager = new LoginManager(blockchainManager, fileManager, keyManager, requestManager)
 
 function createWindow() {
@@ -95,7 +97,7 @@ app.whenReady().then(() => {
   //     console.log(result.export(false))
   //   })
   // )
-  
+
   // IPC methods. Should correspond to preload/index.js
   ipcMain.handle('login', async () => {
     return await loginManager.login()
@@ -185,7 +187,6 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
-  // encrypt database and upload to server
   if (process.platform !== 'darwin') {
     app.quit()
   }
@@ -193,6 +194,11 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+app.on('will-quit', async () => {
+  // encrypt database and upload to server
+  console.log('app will quit.')
+})
 
 // TODO: might need to remove in production
 app.commandLine.appendSwitch('ignore-certificate-errors')
