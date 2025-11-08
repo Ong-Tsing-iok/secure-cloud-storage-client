@@ -1,4 +1,4 @@
-import crypto, { subtle } from 'node:crypto'
+import { subtle } from 'node:crypto'
 /**
  * Converts a UUID string to a BigInt for use in smart contracts.
  * The UUID string should be in the standard format (e.g., "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx").

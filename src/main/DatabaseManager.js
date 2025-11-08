@@ -3,14 +3,28 @@
  */
 import Database from 'better-sqlite3'
 import GlobalValueManager from './GlobalValueManager'
-import path from 'node:path'
+import path, { basename } from 'node:path'
+import KeyManager from './KeyManager'
+import { deriveAESKeyIvFromBuffer } from './Utils'
+import { createReadStream } from 'node:fs'
+import { net } from 'electron'
+import { socket } from './MessageManager'
+import { logger } from './Logger'
+import crypto from 'crypto'
+import FormData from 'form-data'
 
 class DatabaseManager {
-  constructor() {
+  keyManager
+  /**
+   *
+   * @param {KeyManager} keyManager
+   */
+  constructor(keyManager) {
+    this.keyManager = keyManager
     this.init()
   }
   init() {
-    this.db = Database(path.resolve(GlobalValueManager.userDataPath, 'database.db'))
+    this.db = Database(GlobalValueManager.dbPath)
     // Tags
     this.db
       .prepare(
@@ -56,6 +70,65 @@ class DatabaseManager {
     attrIds.forEach((attrId) => {
       this.insertAttrId.run(fileId, attrId)
     })
+  }
+
+  /**
+   * Encrypt the database and store on server.
+   */
+  async encryptToServer() {
+    try {
+      this.db.close()
+      const sk = this.keyManager.getKeys().sk
+      const { key, iv } = await deriveAESKeyIvFromBuffer(sk)
+      const cipher = crypto.createCipheriv('aes-256-cbc', key, iv)
+      const fileStream = createReadStream(GlobalValueManager.dbPath)
+      fileStream.pipe(cipher)
+      // Upload with HTTPS. Maybe combine with HttpsFileProcess?
+      logger.info('Upload encrypted database to server.')
+      const form = new FormData()
+      form.append('file', cipher, basename(GlobalValueManager.dbPath))
+      const request = net.request({
+        method: 'POST',
+        url: `${GlobalValueManager.httpsUrl}/uploadDb`,
+        headers: {
+          ...form.getHeaders(),
+          socketid: socket.id,
+          fileid: basename(GlobalValueManager.dbPath)
+        }
+      })
+      request.chunkedEncoding = true
+      form.pipe(request)
+
+      return new Promise((resolve, reject) => {
+        request.on('response', (response) => {
+          logger.info(`STATUS: ${response.statusCode}`)
+          response.on('data', (chunk) => {
+            logger.debug(`BODY: ${chunk}`)
+          })
+          response.on('end', () => {
+            if (response.statusCode === 200) {
+              logger.info('Succesfully upload encrypted database to server.')
+            } else {
+              logger.error(
+                `Https received status code ${response.statusCode} and status message ${response.statusMessage}.`
+              )
+            }
+          })
+          resolve()
+        })
+
+        request.on('error', (error) => {
+          logger.error(error)
+          resolve()
+        })
+        form.on('error', (error) => {
+          logger.error(error)
+          resolve()
+        })
+      })
+    } catch (error) {
+      logger.error(error)
+    }
   }
 }
 

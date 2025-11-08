@@ -22,7 +22,7 @@ const aesModule = new AESModule(keyManager)
 const blockchainManager = new BlockchainManager()
 const abseManager = new ABSEManager(keyManager)
 abseManager.init()
-const databaseManager = new DatabaseManager()
+const databaseManager = new DatabaseManager(keyManager)
 const fileManager = new FileManager(aesModule, blockchainManager, abseManager, databaseManager)
 const loginManager = new LoginManager(blockchainManager, fileManager, keyManager, requestManager)
 
@@ -186,19 +186,26 @@ app.whenReady().then(() => {
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  await databaseManager.encryptToServer()
   if (process.platform !== 'darwin') {
     app.quit()
+  } else {
+    databaseManager.init()
   }
 })
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
 
-app.on('will-quit', async () => {
-  // encrypt database and upload to server
-  console.log('app will quit.')
-})
+// app.on('will-quit', async (event) => {
+//   // encrypt database and upload to server
+//   console.log('app will quit.')
+//   event.preventDefault()
+//   await databaseManager.encryptToServer()
+//   console.log('app going to quit')
+//   app.exit(0)
+// })
 
 // TODO: might need to remove in production
 app.commandLine.appendSwitch('ignore-certificate-errors')

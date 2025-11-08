@@ -75,6 +75,10 @@ class GlobalValueManager {
     return null
   }
 
+  get dbPath() {
+    return path.resolve(this.userDataPath, 'database.db')
+  }
+
   // get keyPath() {
   //   return resolve(app.getPath('userData'), 'user.keys')
   // }
