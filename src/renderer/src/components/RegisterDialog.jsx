@@ -17,7 +17,7 @@ function RegisterDialog({ open, setOpen }) {
   const {
     storedNameC: [storedName, setStoredName],
     storedEmailC: [storedEmail, setStoredEmail],
-    userIdC: [userId, setUserId],
+    userIdC: [userId, setUserId]
   } = useContext(ProfileContext)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -40,20 +40,24 @@ function RegisterDialog({ open, setOpen }) {
   function updateHandler() {
     switch (currentState) {
       case 0:
-        if (!checkNameValid(name) || !checkEmailValid(email)) {
-          toast.error('請檢查輸入格式')
-          return
+        {
+          if (!checkNameValid(name) || !checkEmailValid(email)) {
+            toast.error('請檢查輸入格式')
+            return
+          }
+          // Ask to register
+          const askRegisterPromise = window.electronAPI.askRegister({ name, email })
+          toast.promise(askRegisterPromise)
+          askRegisterPromise
+            .then(() => {
+              setCurrentState((prevState) => prevState + 1)
+            })
+            .catch((error) => {
+              dialogHandler()
+              toast.error(`Failed to register: ${error.message}`)
+            })
         }
-        // Ask to register
-        window.electronAPI
-          .askRegister({ name, email })
-          .then(() => {
-            setCurrentState((prevState) => prevState + 1)
-          })
-          .catch((error) => {
-            dialogHandler()
-            toast.error(`Failed to register: ${error.message}`)
-          })
+
         break
       case 1:
         // input email auth

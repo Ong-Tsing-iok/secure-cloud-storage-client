@@ -36,19 +36,23 @@ function RecoverDialog({ open, setOpen }) {
   function updateHandler() {
     switch (currentState) {
       case 0: // Input email
-        if (!checkEmailValid(email)) {
-          toast.error('請檢查輸入格式')
-          return
+        {
+          if (!checkEmailValid(email)) {
+            toast.error('請檢查輸入格式')
+            return
+          }
+          const askRecoverSecretPromise = window.electronAPI.askRecoverSecret({ email })
+          toast.promise(askRecoverSecretPromise)
+          askRecoverSecretPromise
+            .then(() => {
+              setCurrentState(currentState + 1)
+            })
+            .catch((error) => {
+              dialogHandler()
+              toast.error('Failed to recover secrets.')
+            })
         }
-        window.electronAPI
-          .askRecoverSecret({ email })
-          .then(() => {
-            setCurrentState(currentState + 1)
-          })
-          .catch((error) => {
-            dialogHandler()
-            toast.error('Failed to recover secrets.')
-          })
+
         break
       case 1: // Input email auth
         window.electronAPI
