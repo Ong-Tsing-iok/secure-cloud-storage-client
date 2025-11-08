@@ -71,7 +71,7 @@ function RecoverDialog({ open, setOpen }) {
           .then(() => {
             dialogHandler()
             toast.success('Secret recover succeeded')
-            login()
+            // login()
           })
           .catch((error) => {
             dialogHandler()

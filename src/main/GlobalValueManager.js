@@ -55,8 +55,8 @@ class GlobalValueManager {
     // global values
     this.mainWindow = null
     this.curFolderId = null
-    this.userInfo = null
-    this.loggedIn = false
+    this._userInfo = null
+    this._loggedIn = false
     logger.info('Global value manager initialized')
   }
 
@@ -77,6 +77,24 @@ class GlobalValueManager {
 
   get dbPath() {
     return path.resolve(this.userDataPath, 'database.db')
+  }
+
+  set loggedIn(loggedIn) {
+    this._loggedIn = loggedIn
+    this.mainWindow?.webContents.send('login-status', { loggedIn })
+  }
+
+  get loggedIn() {
+    return this._loggedIn
+  }
+
+  set userInfo(userInfo) {
+    this._userInfo = userInfo
+    this.mainWindow?.webContents.send('user-info', userInfo)
+  }
+
+  get userInfo() {
+    return this._userInfo
   }
 
   // get keyPath() {

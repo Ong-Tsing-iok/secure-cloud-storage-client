@@ -17,6 +17,7 @@ function App() {
   const [pageType, setPageType] = useState(PageType.file)
   const [storedName, setStoredName] = useState('')
   const [storedEmail, setStoredEmail] = useState('')
+  const [loggedIn, setLoggedIn] = useState(false)
   const [userId, setUserId] = useState('')
   const [searchType, setSearchType] = useState(SearchType.name)
   const [searchTerm, setSearchTerm] = useState('')
@@ -49,7 +50,8 @@ function App() {
       storedNameC: [storedName, setStoredName],
       storedEmailC: [storedEmail, setStoredEmail],
       userIdC: [userId, setUserId],
-      login: login
+      login: login,
+      loggedIn
     }),
     [storedName, storedEmail, userId]
   )
@@ -97,6 +99,9 @@ function App() {
       setStoredEmail(email)
       setUserId(userId)
     })
+    window.electronAPI.onLoginStatus(({ loggedIn }) => {
+      setLoggedIn(loggedIn)
+    })
     window.electronAPI.onRequestValue(({ seenRequests, seenReplies }) => {
       setSeenRequests(seenRequests)
       setSeenReplies(seenReplies)
@@ -104,7 +109,7 @@ function App() {
     window.electronAPI.onGlobalAttrs(({ globalAttrs }) => {
       setGlobalAttrs(globalAttrs)
     })
-    login()
+    // login()
   }, [])
 
   function swapPageHandler(newPageType) {

@@ -39,8 +39,10 @@ if (process.contextIsolated) {
       askSearchFiles: (values) => ipcRenderer.invoke('search-files', values),
       onSearchFiles: (callback) =>
         ipcRenderer.on('partial-search-files', (_event, result) => callback(result)),
-      //
+      // UI info
       onUserConfig: (callback) => ipcRenderer.on('user-info', (_event, result) => callback(result)),
+      onLoginStatus: (callback) =>
+        ipcRenderer.on('login-status', (_event, result) => callback(result)),
       onRequestValue: (callback) =>
         ipcRenderer.on('request-value', (_event, result) => callback(result)),
       onUserList: (callback) => ipcRenderer.on('user-list', (_event, result) => callback(result)),

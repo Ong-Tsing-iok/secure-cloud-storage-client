@@ -6,7 +6,7 @@ import GlobalValueManager from './GlobalValueManager'
 import path, { basename } from 'node:path'
 import KeyManager from './KeyManager'
 import { deriveAESKeyIvFromBuffer } from './Utils'
-import { createReadStream } from 'node:fs'
+import { createReadStream, createWriteStream } from 'node:fs'
 import { net } from 'electron'
 import { socket } from './MessageManager'
 import { logger } from './Logger'
@@ -92,8 +92,7 @@ class DatabaseManager {
         url: `${GlobalValueManager.httpsUrl}/uploadDb`,
         headers: {
           ...form.getHeaders(),
-          socketid: socket.id,
-          fileid: basename(GlobalValueManager.dbPath)
+          socketid: socket.id
         }
       })
       request.chunkedEncoding = true
@@ -124,6 +123,68 @@ class DatabaseManager {
         form.on('error', (error) => {
           logger.error(error)
           resolve()
+        })
+      })
+    } catch (error) {
+      logger.error(error)
+    }
+  }
+
+  async recoverFromServer() {
+    try {
+      this.db.close()
+      // Create file streams
+      const sk = this.keyManager.getKeys().sk
+      const { key, iv } = await deriveAESKeyIvFromBuffer(sk)
+      const decipher = crypto.createDecipheriv('aes-256-cbc', key, iv)
+      const fileStream = createWriteStream(GlobalValueManager.dbPath)
+      decipher.pipe(fileStream)
+      // Download from server
+      const request = net.request({
+        method: 'GET',
+        url: `${GlobalValueManager.httpsUrl}/downloadDb`,
+        headers: { socketid: socket.id }
+      })
+      request.end()
+
+      request.on('response', (response) => {
+        logger.info(`STATUS: ${response.statusCode}`)
+        // logger.info(`HEADERS: ${JSON.stringify(response.headers)}`)
+
+        response.on('data', (chunk) => {
+          if (response.statusCode === 200) {
+            decipher.write(chunk)
+          } else {
+            logger.info(`BODY: ${chunk}`)
+          }
+        })
+
+        response.on('end', () => {
+          logger.info('No more data in response.')
+          decipher.end()
+          if (response.statusCode !== 200) {
+            logger.error(
+              `Https received status code ${response.statusCode} and status message ${response.statusMessage}.`
+            )
+          }
+        })
+      })
+
+      request.on('error', (error) => {
+        logger.error(`ERROR: ${error.message}`)
+        decipher.end()
+      })
+
+      return new Promise((resolve, reject) => {
+        fileStream.on('finish', () => {
+          logger.info('Database successfully recovered')
+          resolve()
+        })
+        fileStream.on('error', (err) => {
+          reject(err)
+        })
+        decipher.on('error', (err) => {
+          reject(err)
         })
       })
     } catch (error) {

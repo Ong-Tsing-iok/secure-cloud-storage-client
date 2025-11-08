@@ -4,7 +4,8 @@ export const ProfileContext = createContext({
   storedNameC: ['', null],
   storedEmailC: ['', null],
   userIdC: ['', null],
-  login: null
+  login: null,
+  loggedIn: false
 })
 export const PageContext = createContext(['', null])
 export const SearchContext = createContext({

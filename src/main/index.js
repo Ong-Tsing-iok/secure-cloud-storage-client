@@ -13,6 +13,7 @@ import BlockchainManager from './BlockchainManager'
 import KeyManager from './KeyManager'
 import ABSEManager from './ABSEManager'
 import DatabaseManager from './DatabaseManager'
+import { unlinkSync } from 'fs'
 
 // Initilize class instances
 const keyManager = new KeyManager()
@@ -24,7 +25,13 @@ const abseManager = new ABSEManager(keyManager)
 abseManager.init()
 const databaseManager = new DatabaseManager(keyManager)
 const fileManager = new FileManager(aesModule, blockchainManager, abseManager, databaseManager)
-const loginManager = new LoginManager(blockchainManager, fileManager, keyManager, requestManager)
+const loginManager = new LoginManager(
+  blockchainManager,
+  fileManager,
+  keyManager,
+  requestManager,
+  databaseManager
+)
 
 function createWindow() {
   // Create the browser window.
@@ -45,7 +52,16 @@ function createWindow() {
   mainWindow.on('ready-to-show', async () => {
     mainWindow.show()
     const pp = await abseManager.getPP()
-    // await loginManager.login()
+    await loginManager.login()
+    fileManager.getFileListProcess(null)
+    // try {
+    //   await databaseManager.recoverFromServer()
+    // } catch (error) {
+    //   logger.error(error)
+    //   unlinkSync(GlobalValueManager.dbPath)
+    // } finally {
+    //   databaseManager.init()
+    // }
     GlobalValueManager.mainWindow?.webContents.send('request-value', {
       seenReplies: GlobalValueManager.requestConfig.seenReplies,
       seenRequests: GlobalValueManager.requestConfig.seenRequests
@@ -55,7 +71,7 @@ function createWindow() {
       blackList: GlobalValueManager.userListConfig.blackList
     })
     GlobalValueManager.mainWindow?.webContents.send('global-attrs', {
-      globalAttrs: pp.U.filter((attr) => attr != 'None')
+      globalAttrs: pp ? pp.U.filter((attr) => attr != 'None') : []
     })
     // blockchainManager.printContractOwner().catch((error) => logger.error(error))
   })

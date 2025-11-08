@@ -11,6 +11,8 @@ import FileManager from './FileManager'
 import BlockchainManager from './BlockchainManager'
 import { encryptDataShareKey, recoverDataShareKey } from './SecretSharing'
 import { UnexpectedErrorMsg } from './Utils'
+import DatabaseManager from './DatabaseManager'
+import { unlinkSync } from 'original-fs'
 
 class LoginManager {
   blockchainManager
@@ -22,12 +24,14 @@ class LoginManager {
    * @param {FileManager} fileManager
    * @param {KeyManager} keyManager
    * @param {RequestManager} requestManager
+   * @param {DatabaseManager} databaseManager
    */
-  constructor(blockchainManager, fileManager, keyManager, requestManager) {
+  constructor(blockchainManager, fileManager, keyManager, requestManager, databaseManager) {
     this.blockchainManager = blockchainManager
     this.fileManager = fileManager
     this.keyManager = keyManager
     this.requestManager = requestManager
+    this.databaseManager = databaseManager
   }
 
   /**
@@ -58,9 +62,9 @@ class LoginManager {
               logger.info('Login succeeded')
               GlobalValueManager.userInfo = userInfo
               GlobalValueManager.loggedIn = true
-              this.fileManager.getFileListProcess(null)
-              this.requestManager.getRequestListProcess()
-              this.requestManager.getRequestedListProcess()
+              // this.fileManager.getFileListProcess(null)
+              // this.requestManager.getRequestListProcess()
+              // this.requestManager.getRequestedListProcess()
               // send userId and other stored name, email to renderer
               // GlobalValueManager.mainWindow?.webContents.send('user-info', userInfo)
             }
@@ -277,11 +281,16 @@ class LoginManager {
       this.keyManager.restoreKeys(secretKeys.preKeys)
       logger.info('Secret key recovered')
       // GlobalValueManager.sendNotice('Secret keys successfully recovered.', 'success')
-      this.login()
+      await this.login()
+      await this.databaseManager.recoverFromServer()
+      this.fileManager.getFileListProcess(null)
     } catch (error) {
       logger.error(error)
+      unlinkSync(GlobalValueManager.dbPath)
       // GlobalValueManager.sendNotice('Secret keys could not be recovered.', 'error')
       throw new Error(UnexpectedErrorMsg)
+    } finally {
+      this.databaseManager.init()
     }
   }
 }
