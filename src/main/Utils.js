@@ -1,3 +1,4 @@
+import crypto, { subtle } from 'node:crypto'
 /**
  * Converts a UUID string to a BigInt for use in smart contracts.
  * The UUID string should be in the standard format (e.g., "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx").
@@ -59,6 +60,28 @@ export function bigIntToUuid(uuidBigInt) {
  */
 export function bigIntToHex(hashBigInt, maxLength = 0) {
   return '0x' + hashBigInt.toString(16).padStart(maxLength, '0')
+}
+
+/**
+ * Derive AES key and iv from the provided base buffer.
+ * @param {ArrayBufferLike} baseMaterial The base buffer for derivation.
+ * @returns The derive AES key and iv.
+ */
+export async function deriveAESKeyIvFromBuffer(baseMaterial) {
+  const baseKey = await subtle.importKey('raw', baseMaterial, 'HKDF', false, ['deriveBits'])
+  const derivedBits = await subtle.deriveBits(
+    {
+      name: 'HKDF',
+      hash: 'sha-256',
+      info: new Uint8Array(),
+      salt: new Uint8Array()
+    },
+    baseKey,
+    48 * 8
+  )
+  const key = derivedBits.slice(0, 32)
+  const iv = derivedBits.slice(32, 48)
+  return { key, iv }
 }
 
 export const TryAgainMsg = 'Please try again.'

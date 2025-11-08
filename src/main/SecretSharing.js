@@ -4,32 +4,19 @@
 import sss from 'shamirs-secret-sharing'
 import crypto from 'crypto'
 import { logger } from './Logger'
+import { deriveAESKeyIvFromBuffer } from './Utils'
 
 const algorithm = 'aes-256-cbc'
 
 /**
- * Create an AES key based on the provided extra key.
- * @param {string} sk the extra key
- * @returns the AES key
- */
-function getKeyIv(sk) {
-  const hash = crypto.createHash('sha512')
-  hash.update(sk)
-  const digest = hash.digest()
-  const key = digest.subarray(0, 32)
-  const iv = digest.subarray(32, 48)
-  return { key, iv }
-}
-
-/**
  * Encrypt the data string with extra key and split it into shares.
- * @param {*} sk
- * @param {*} dataStr
+ * @param {string} sk
+ * @param {string} dataStr
  * @returns
  */
 export function encryptDataShareKey(sk, dataStr) {
   // Encrypt data and share sk
-  const { key, iv } = getKeyIv(sk)
+  const { key, iv } = deriveAESKeyIvFromBuffer(new TextEncoder().encode(sk))
   const cipher = crypto.createCipheriv(algorithm, key, iv)
   let encrypted = cipher.update(dataStr, 'utf8', 'hex')
   encrypted += cipher.final('hex')
@@ -41,12 +28,12 @@ export function encryptDataShareKey(sk, dataStr) {
 
 /**
  * Recover shares and decrypt it with the extra key.
- * @param {*} sk
- * @param {*} shares
+ * @param {string} sk
+ * @param {Array<Buffer>} shares
  * @returns
  */
 export function recoverDataShareKey(sk, shares) {
-  const { key, iv } = getKeyIv(sk)
+  const { key, iv } = deriveAESKeyIvFromBuffer(new TextEncoder().encode(sk))
   const recovered = sss.combine(shares).toString()
 
   try {
