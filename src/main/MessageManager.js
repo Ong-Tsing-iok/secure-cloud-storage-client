@@ -12,7 +12,8 @@ const socket = io(GlobalValueManager.httpsUrl, {
 
 socket.on('message', (message) => {
   // console.log(message)
-  logger.log('info', `received message from server: ${message}`)
+  // logger.log('info', `received message from server: ${message}`)
+  GlobalValueManager.sendNotice(message, 'normal')
 })
 
 socket.on('connect', () => {

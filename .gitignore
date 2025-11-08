@@ -6,5 +6,4 @@ out
 *.key*
 downloads
 .scannerwork
-/config/local.json
 sonar-project.properties
