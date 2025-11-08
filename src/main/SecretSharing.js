@@ -14,9 +14,9 @@ const algorithm = 'aes-256-cbc'
  * @param {string} dataStr
  * @returns
  */
-export function encryptDataShareKey(sk, dataStr) {
+export async function encryptDataShareKey(sk, dataStr) {
   // Encrypt data and share sk
-  const { key, iv } = deriveAESKeyIvFromBuffer(new TextEncoder().encode(sk))
+  const { key, iv } = await deriveAESKeyIvFromBuffer(new TextEncoder().encode(sk))
   const cipher = crypto.createCipheriv(algorithm, key, iv)
   let encrypted = cipher.update(dataStr, 'utf8', 'hex')
   encrypted += cipher.final('hex')
@@ -32,8 +32,8 @@ export function encryptDataShareKey(sk, dataStr) {
  * @param {Array<Buffer>} shares
  * @returns
  */
-export function recoverDataShareKey(sk, shares) {
-  const { key, iv } = deriveAESKeyIvFromBuffer(new TextEncoder().encode(sk))
+export async function recoverDataShareKey(sk, shares) {
+  const { key, iv } = await deriveAESKeyIvFromBuffer(new TextEncoder().encode(sk))
   const recovered = sss.combine(shares).toString()
 
   try {

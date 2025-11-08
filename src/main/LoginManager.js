@@ -152,18 +152,18 @@ class LoginManager {
    * @returns
    */
   async shareSecret({ extraKey }) {
-    return new Promise((resolve, reject) => {
-      try {
-        const secretKeys = {
-          walletKey: this.blockchainManager.wallet.privateKey,
-          preKeys: this.keyManager.getKeyStrings()
-        }
-        logger.info('Generating secret shares...')
-        const shares = encryptDataShareKey(extraKey, JSON.stringify(secretKeys))
-        const sharesStr = []
-        for (const share of shares) {
-          sharesStr.push(share.toString('base64'))
-        }
+    try {
+      const secretKeys = {
+        walletKey: this.blockchainManager.wallet.privateKey,
+        preKeys: this.keyManager.getKeyStrings()
+      }
+      logger.info('Generating secret shares...')
+      const shares = await encryptDataShareKey(extraKey, JSON.stringify(secretKeys))
+      const sharesStr = []
+      for (const share of shares) {
+        sharesStr.push(share.toString('base64'))
+      }
+      return new Promise((resolve, reject) => {
         logger.info('Asking to share secret keys.')
         socket.emit('secret-share', { shares: sharesStr }, (response) => {
           if (response.errorMsg) {
@@ -175,12 +175,12 @@ class LoginManager {
           resolve() // OK
           // GlobalValueManager.sendNotice('Share secret succeeded', 'success')
         })
-      } catch (error) {
-        logger.error(error)
-        // GlobalValueManager.sendNotice('Failed to share secret', 'error')
-        reject(new Error(UnexpectedErrorMsg))
-      }
-    })
+      })
+    } catch (error) {
+      logger.error(error)
+      // GlobalValueManager.sendNotice('Failed to share secret', 'error')
+      throw new Error(UnexpectedErrorMsg)
+    }
   }
 
   /**
@@ -260,35 +260,29 @@ class LoginManager {
    * @returns
    */
   async onRecoverExtraKey({ extraKey }) {
-    return new Promise((resolve, reject) => {
-      try {
-        const decryptedStr = recoverDataShareKey(extraKey, this.shares)
-        if (!decryptedStr) {
-          logger.info('Secret key recover failed.')
-          // GlobalValueManager.sendNotice(
-          //   'Secret keys could not be recovered because not enough shares were retrieved. Please contact the server manager.',
-          //   'error'
-          // )
-          reject(
-            new Error(
-              'Secret keys could not be recovered because not enough shares were retrieved or extra key is wrong.'
-            )
-          )
-          return
-        }
-        const secretKeys = JSON.parse(decryptedStr)
-        this.blockchainManager.restoreWallet(secretKeys.walletKey)
-        this.keyManager.restoreKeys(secretKeys.preKeys)
-        logger.info('Secret key recovered')
-        // GlobalValueManager.sendNotice('Secret keys successfully recovered.', 'success')
-        this.login()
-        resolve()
-      } catch (error) {
-        logger.error(error)
-        // GlobalValueManager.sendNotice('Secret keys could not be recovered.', 'error')
-        reject(new Error(UnexpectedErrorMsg))
+    try {
+      const decryptedStr = await recoverDataShareKey(extraKey, this.shares)
+      if (!decryptedStr) {
+        logger.info('Secret key recover failed.')
+        // GlobalValueManager.sendNotice(
+        //   'Secret keys could not be recovered because not enough shares were retrieved. Please contact the server manager.',
+        //   'error'
+        // )
+        throw new Error(
+          'Secret keys could not be recovered because not enough shares were retrieved or extra key is wrong.'
+        )
       }
-    })
+      const secretKeys = JSON.parse(decryptedStr)
+      this.blockchainManager.restoreWallet(secretKeys.walletKey)
+      this.keyManager.restoreKeys(secretKeys.preKeys)
+      logger.info('Secret key recovered')
+      // GlobalValueManager.sendNotice('Secret keys successfully recovered.', 'success')
+      this.login()
+    } catch (error) {
+      logger.error(error)
+      // GlobalValueManager.sendNotice('Secret keys could not be recovered.', 'error')
+      throw new Error(UnexpectedErrorMsg)
+    }
   }
 }
 
