@@ -51,17 +51,19 @@ function createWindow() {
 
   mainWindow.on('ready-to-show', async () => {
     mainWindow.show()
-    const pp = await abseManager.getPP()
-    await loginManager.login()
-    fileManager.getFileListProcess(null)
-    // try {
-    //   await databaseManager.recoverFromServer()
-    // } catch (error) {
-    //   logger.error(error)
-    //   unlinkSync(GlobalValueManager.dbPath)
-    // } finally {
-    //   databaseManager.init()
-    // }
+    let pp
+    try {
+      pp = await abseManager.getPP()
+    } catch (error) {
+      logger.error(error)
+    }
+    try {
+      await loginManager.login()
+      fileManager.getFileListProcess(null)
+    } catch (error) {
+      logger.error(error)
+      GlobalValueManager.sendNotice(error.message, 'error')
+    }
     GlobalValueManager.mainWindow?.webContents.send('request-value', {
       seenReplies: GlobalValueManager.requestConfig.seenReplies,
       seenRequests: GlobalValueManager.requestConfig.seenRequests
