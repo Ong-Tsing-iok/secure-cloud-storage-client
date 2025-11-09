@@ -2,10 +2,9 @@
  * This file handles config and global value settings.
  */
 import { logger } from './Logger'
-import { writeFileSync, readFileSync } from 'node:original-fs'
 import path, { join, dirname, resolve } from 'node:path'
 import { app } from 'electron'
-import { mkdirSync } from 'node:fs'
+import { mkdirSync, writeFileSync, readFileSync } from 'node:fs'
 import yaml from 'js-yaml'
 
 // const localDir = '' // For linux, running from where this file is located as portable
@@ -49,6 +48,16 @@ class GlobalValueManager {
       // Trusted Authority
       this.trustedAuthority = {}
       this.trustedAuthority.url = `https://${config.get('trustedAuthority.url')}`
+
+      // Create and store some setting in local.yaml
+      this.updateConfigFile('blockchain', {
+        jsonRpcUrl: this.blockchain.jsonRpcUrl,
+        contractAddr: this.blockchain.contractAddr
+      })
+      this.updateConfigFile('server', {
+        protocol: this.serverConfig.protocol,
+        host: this.serverConfig.host
+      })
     } catch (error) {
       logger.error(`Failed to load config: ${error}`)
     }
@@ -115,25 +124,21 @@ class GlobalValueManager {
   updateConfigFile(field, value) {
     try {
       const filepath = join(app.getPath('userData'), 'config', 'local.yaml')
-      let configStr = ''
+      let currentStr = '{}'
       try {
-        configStr = readFileSync(filepath)
+        currentStr = readFileSync(filepath, 'utf-8')
       } catch (error) {
         if (error.code === 'ENOENT') {
           logger.info('Creating config file at ' + filepath)
           mkdirSync(dirname(filepath), { recursive: true })
-          // writeFileSync(filepath, JSON.stringify({}, null, 2))
         } else {
           throw error
         }
       }
 
-      // const current = JSON.parse(configStr)
-      const current = yaml.load(filepath)
-
+      const current = yaml.load(currentStr)
       current[field] = value
       writeFileSync(filepath, yaml.dump(current))
-      // config.set(field, value)
     } catch (error) {
       logger.error(`Failed to update config: ${error}`)
     }
