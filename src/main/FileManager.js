@@ -4,7 +4,7 @@
  */
 import { dialog } from 'electron'
 import { socket } from './MessageManager'
-import { createReadStream, createWriteStream } from 'node:fs'
+import { createReadStream, createWriteStream, unlinkSync } from 'node:fs'
 import { unlink } from 'node:fs/promises'
 import { logger } from './Logger'
 import { uploadFileProcessHttps, downloadFileProcessHttps } from './HttpsFileProcess'
@@ -397,7 +397,7 @@ class FileManager {
         logger.error(`Failed to write file ${filename}: ${err}. Download aborted.`)
         this.#sendDownloadErrorNotice('Failed to write file.', CheckDiskSizePermissionTryAgainMsg)
         try {
-          unlink(filePath)
+          unlinkSync(filePath)
         } catch (error) {
           if (error.code !== 'ENOENT') {
             logger.error(error)
@@ -418,7 +418,10 @@ class FileManager {
       const decipher = await this.aesModule.decrypt(cipher, spk, proxied)
       decipher.on('error', (err) => {
         logger.error(err)
-        this.#sendDownloadErrorNotice('Failed to decrypt file.', ContactManagerOrTryAgainMsg)
+        this.#sendDownloadErrorNotice(
+          'Failed to decrypt file. The file could be corrupted or modified.',
+          ContactManagerOrTryAgainMsg
+        )
       })
       // Test decrypt error
       // decipher.emit('error')
@@ -472,7 +475,10 @@ class FileManager {
               blockchainHash
             })
             logger.error(`File hash did not meet for file ${fileId}`)
-            this.#sendDownloadErrorNotice('File hash did not meet.', ContactManagerOrTryAgainMsg)
+            this.#sendDownloadErrorNotice(
+              'File hash did not meet. The file could be modified.',
+              ContactManagerOrTryAgainMsg
+            )
             socket.emit('download-file-hash-error', {
               fileId,
               fileHash,
