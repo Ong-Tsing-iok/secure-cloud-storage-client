@@ -6,6 +6,7 @@ import { writeFileSync, readFileSync } from 'node:original-fs'
 import path, { join, dirname, resolve } from 'node:path'
 import { app } from 'electron'
 import { mkdirSync } from 'node:fs'
+import yaml from 'js-yaml'
 
 // const localDir = '' // For linux, running from where this file is located as portable
 logger.debug(`app path: ${app.getAppPath()}`)
@@ -113,24 +114,25 @@ class GlobalValueManager {
    */
   updateConfigFile(field, value) {
     try {
-      const filepath = join(app.getPath('userData'), 'config', 'local.json')
-      let configStr = '{}'
+      const filepath = join(app.getPath('userData'), 'config', 'local.yaml')
+      let configStr = ''
       try {
         configStr = readFileSync(filepath)
       } catch (error) {
         if (error.code === 'ENOENT') {
           logger.info('Creating config file at ' + filepath)
           mkdirSync(dirname(filepath), { recursive: true })
-          writeFileSync(filepath, JSON.stringify({}, null, 2))
+          // writeFileSync(filepath, JSON.stringify({}, null, 2))
         } else {
           throw error
         }
       }
 
-      const current = JSON.parse(configStr)
+      // const current = JSON.parse(configStr)
+      const current = yaml.load(filepath)
 
       current[field] = value
-      writeFileSync(filepath, JSON.stringify(current, null, 2))
+      writeFileSync(filepath, yaml.dump(current))
       // config.set(field, value)
     } catch (error) {
       logger.error(`Failed to update config: ${error}`)

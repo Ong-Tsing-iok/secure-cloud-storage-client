@@ -14,7 +14,8 @@ files:
   - '!{test/**,jest.config.js}'
   - '!*.log'
   - '!*.keys'
-  - '!config/local.json'
+  - '!config/local*.yaml'
+  - '!dist/**'
 asarUnpack:
   - resources/**
 win:
