@@ -7,3 +7,4 @@ out
 downloads
 .scannerwork
 sonar-project.properties
+config/local.yaml
