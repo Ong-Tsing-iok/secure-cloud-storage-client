@@ -11,7 +11,7 @@ import PropTypes from 'prop-types'
 import { useState, useContext, useEffect } from 'react'
 import { ProfileContext } from './Contexts'
 import { checkEmailValid, checkIsLoggedIn, checkNameValid, validatePassword } from './Utils'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 
 function RecoverDialog({ open, setOpen }) {
   const [email, setEmail] = useState('')

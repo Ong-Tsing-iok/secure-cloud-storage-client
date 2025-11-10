@@ -14,7 +14,7 @@ import {
 
 import PropTypes from 'prop-types'
 import { useState, useContext } from 'react'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 import { UserListContext } from './Contexts'
 
 function BlackListDialog({ open, setOpen }) {
@@ -49,7 +49,6 @@ function BlackListDialog({ open, setOpen }) {
       handler={dialogHandler}
       className="flex flex-col max-h-screen overflow-auto"
     >
-      <Toaster position="bottom-left" />
       <DialogHeader>
         <NoSymbolIcon className="size-6" />
         黑名單

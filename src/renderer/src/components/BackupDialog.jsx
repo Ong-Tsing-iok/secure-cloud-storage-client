@@ -11,7 +11,7 @@ import PropTypes from 'prop-types'
 import { useState, useContext, useEffect } from 'react'
 import { ProfileContext } from './Contexts'
 import { checkEmailValid, checkIsLoggedIn, checkNameValid, validatePassword } from './Utils'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 
 function BackupDialog({ open, setOpen }) {
   const [extraKey, setExtraKey] = useState('')
@@ -40,7 +40,6 @@ function BackupDialog({ open, setOpen }) {
 
   return (
     <Dialog open={open} handler={dialogHandler}>
-      <Toaster position="bottom-left" />
       <DialogHeader>帳號備份</DialogHeader>
       <DialogBody className="space-y-2">
         <Typography variant="lead">使用額外的密碼讓帳號可被安全的復原。</Typography>

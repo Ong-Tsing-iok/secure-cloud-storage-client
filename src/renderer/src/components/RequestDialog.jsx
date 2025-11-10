@@ -9,7 +9,7 @@ import {
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
 import { useState } from 'react'
-import toast, { Toaster } from 'react-hot-toast'
+import toast  from 'react-hot-toast'
 
 function RequestDialog({ open, setOpen, defaultId = '' }) {
   const [fileId, setFileId] = useState(defaultId)
@@ -43,7 +43,6 @@ function RequestDialog({ open, setOpen, defaultId = '' }) {
 
   return (
     <Dialog open={open} handler={() => setOpen(!open)}>
-      <Toaster position="bottom-left" reverseOrder={false} />
       <DialogHeader>請求檔案</DialogHeader>
       <DialogBody className="space-y-2">
         {/* <Typography>檔案ID</Typography> */}

@@ -11,7 +11,7 @@ import PropTypes from 'prop-types'
 import { useContext, useState } from 'react'
 import { PageContext, UserListContext } from './Contexts'
 import { PageType, ResponseType } from './Types'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 import {
   BookmarkSquareIcon,
   InformationCircleIcon,
@@ -76,7 +76,6 @@ function RequestDetailDialog({ open, setOpen, requestData }) {
 
   return (
     <Dialog open={open} handler={() => setOpen(!open)}>
-      <Toaster position="bottom-left" />
       <DialogHeader>請求詳情</DialogHeader>
       <DialogBody className="flex flex-row">
         <div className="flex flex-col w-1/2 pl-4">

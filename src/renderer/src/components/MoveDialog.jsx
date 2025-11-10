@@ -12,7 +12,6 @@ import {
 import { FolderIcon } from '@heroicons/react/24/outline'
 import PropTypes from 'prop-types'
 import { useState, useEffect } from 'react'
-import { Toaster } from 'react-hot-toast'
 
 const homeFolder = { name: 'home', id: null }
 
@@ -39,7 +38,6 @@ function MoveDialog({ open, setOpen, fileData }) {
       handler={() => setOpen(!open)}
       className="flex flex-col max-h-screen overflow-auto"
     >
-      {<Toaster position="bottom-left" /> && open}
       <DialogHeader>{`移動「${fileData.name}」至`}</DialogHeader>
       {/* <CurPathBreadcrumbs /> */}
       <DialogBody className="flex w-full grow overflow-auto">

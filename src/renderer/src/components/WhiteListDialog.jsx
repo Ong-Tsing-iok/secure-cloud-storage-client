@@ -14,7 +14,7 @@ import {
 
 import PropTypes from 'prop-types'
 import { useState, useContext } from 'react'
-import toast, { Toaster } from 'react-hot-toast'
+import toast from 'react-hot-toast'
 import { UserListContext } from './Contexts'
 
 function WhiteListDialog({ open, setOpen }) {
@@ -48,7 +48,6 @@ function WhiteListDialog({ open, setOpen }) {
       handler={dialogHandler}
       className="flex flex-col max-h-screen overflow-auto"
     >
-      <Toaster position="bottom-left" />
       <DialogHeader>
         <BookmarkSquareIcon className="size-6" />
         白名單
