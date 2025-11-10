@@ -228,7 +228,7 @@ class LoginManager {
       try {
         // const ActionStr = (purpose == 'recover') ? 'Secret recover' :
         logger.info('Asking to respond to email auth')
-        socket.emit('email-auth-res', { emailAuth }, (response) => {
+        socket.emit('email-auth-res', { emailAuth }, async (response) => {
           if (response.errorMsg) {
             logger.error(
               `Email authentication failed because of following error: ${response.errorMsg}`
@@ -249,6 +249,7 @@ class LoginManager {
             resolve({ purpose: 'recover' })
           } else if (response.userId) {
             // Previous asked to register.
+            await this.login()
             this.fileManager.getFileListProcess(null)
             resolve({ userId: response.userId })
           }
