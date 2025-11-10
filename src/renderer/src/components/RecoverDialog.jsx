@@ -59,32 +59,48 @@ function RecoverDialog({ open, setOpen }) {
 
         break
       case 1: // Input email auth
-        window.electronAPI
-          .sendEmailAuth({ emailAuth })
-          .then(() => {
-            setCurrentState(currentState + 1)
+        {
+          const sendEmailAuthPromise = window.electronAPI.sendEmailAuth({ emailAuth })
+          toast.promise(sendEmailAuthPromise, {
+            loading: '驗證中',
+            success: '驗證成功',
+            error: '驗證失敗'
           })
-          .catch((error) => {
-            dialogHandler()
-            toast.error('Failed to recover secrets.')
-          })
+          sendEmailAuthPromise
+            .then(() => {
+              setCurrentState(currentState + 1)
+            })
+            .catch((error) => {
+              dialogHandler()
+              toast.error('Failed to recover secrets.')
+            })
+        }
+
         break
       case 2: // Input extra key
         if (!validatePassword(extraKey)) {
           toast.error('密碼需至少八位，包含大小寫英文、數字、特殊符號')
           return
         }
-        window.electronAPI
-          .sendRecoverExtraKey({ extraKey })
-          .then(() => {
-            dialogHandler()
-            toast.success('Secret recover succeeded')
-            // login()
+        {
+          const sendRecoverExtraKeyPromise = window.electronAPI.sendRecoverExtraKey({ extraKey })
+          toast.promise(sendRecoverExtraKeyPromise, {
+            loading: '解密中',
+            success: '解密成功',
+            error: '解密失敗'
           })
-          .catch((error) => {
-            dialogHandler()
-            toast.error('Failed to recover secrets.')
-          })
+          sendRecoverExtraKeyPromise
+            .then(() => {
+              dialogHandler()
+              toast.success('Secret recover succeeded')
+              // login()
+            })
+            .catch((error) => {
+              dialogHandler()
+              toast.error('Failed to recover secrets.')
+            })
+        }
+
         break
       default:
         dialogHandler()

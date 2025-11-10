@@ -64,28 +64,36 @@ function RegisterDialog({ open, setOpen }) {
 
         break
       case 1:
+        {
+          const sendEmailAuthPromise = window.electronAPI.sendEmailAuth({ emailAuth })
+          toast.promise(sendEmailAuthPromise, {
+            loading: '驗證中',
+            success: '驗證成功',
+            error: '驗證失敗'
+          })
+          sendEmailAuthPromise
+            .then(({ userId }) => {
+              if (userId) {
+                setStoredName(name)
+                setStoredEmail(email)
+                setUserId(userId)
+                dialogHandler()
+                toast.success('Register success')
+              } else {
+                throw new Error('UserId not returned')
+              }
+            })
+            .catch((error) => {
+              if (error.message.includes('did not match')) {
+                toast.error('Authentication code did not match')
+              } else {
+                dialogHandler()
+                toast.error(`Failed to register: ${error.message}.`)
+              }
+            })
+        }
         // input email auth
-        window.electronAPI
-          .sendEmailAuth({ emailAuth })
-          .then(({ userId }) => {
-            if (userId) {
-              setStoredName(name)
-              setStoredEmail(email)
-              setUserId(userId)
-              dialogHandler()
-              toast.success('Register success')
-            } else {
-              throw new Error('UserId not returned')
-            }
-          })
-          .catch((error) => {
-            if (error.message.includes('did not match')) {
-              toast.error('Authentication code did not match')
-            } else {
-              dialogHandler()
-              toast.error(`Failed to register: ${error.message}.`)
-            }
-          })
+
         break
     }
   }
