@@ -47,7 +47,11 @@ function RegisterDialog({ open, setOpen }) {
           }
           // Ask to register
           const askRegisterPromise = window.electronAPI.askRegister({ name, email })
-          toast.promise(askRegisterPromise)
+          toast.promise(askRegisterPromise, {
+            loading: '確認中',
+            success: '確認成功',
+            error: '確認失敗'
+          })
           askRegisterPromise
             .then(() => {
               setCurrentState((prevState) => prevState + 1)

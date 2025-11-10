@@ -42,7 +42,11 @@ function RecoverDialog({ open, setOpen }) {
             return
           }
           const askRecoverSecretPromise = window.electronAPI.askRecoverSecret({ email })
-          toast.promise(askRecoverSecretPromise)
+          toast.promise(askRecoverSecretPromise, {
+            loading: '確認中',
+            success: '確認成功',
+            error: '確認失敗'
+          })
           askRecoverSecretPromise
             .then(() => {
               setCurrentState(currentState + 1)
