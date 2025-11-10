@@ -65,7 +65,9 @@ function RegisterDialog({ open, setOpen }) {
         break
       case 1:
         {
-          const sendEmailAuthPromise = window.electronAPI.sendEmailAuth({ emailAuth })
+          const sendEmailAuthPromise = window.electronAPI.sendEmailAuth({
+            emailAuth: emailAuth.trim()
+          })
           toast.promise(sendEmailAuthPromise, {
             loading: '驗證中',
             success: '驗證成功',
