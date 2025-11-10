@@ -97,7 +97,7 @@ class BlockchainManager {
   restoreWallet(privateKey) {
     writeFileSync(GlobalValueManager.blockchain.walletKeyPath, privateKey)
     this.wallet = new Wallet(privateKey, this.provider)
-    this.contract.connect(this.wallet)
+    this.contract = this.contract.connect(this.wallet)
   }
 
   /**
