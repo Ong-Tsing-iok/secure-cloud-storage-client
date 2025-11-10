@@ -160,7 +160,7 @@ class FileManager {
               )
               break
             case 'ftps':
-              await uploadFileProcessHttps(
+              await uploadFileProcessFtps(
                 tempEncryptedFilePath,
                 originalFileName,
                 fileId,

@@ -249,6 +249,7 @@ class LoginManager {
             resolve({ purpose: 'recover' })
           } else if (response.userId) {
             // Previous asked to register.
+            this.fileManager.getFileListProcess(null)
             resolve({ userId: response.userId })
           }
         })
