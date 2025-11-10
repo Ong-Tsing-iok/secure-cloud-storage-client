@@ -422,6 +422,13 @@ class FileManager {
           'Failed to decrypt file. The file could be corrupted or modified.',
           ContactManagerOrTryAgainMsg
         )
+        try {
+          unlinkSync(filePath)
+        } catch (error) {
+          if (error.code !== 'ENOENT') {
+            logger.error(error)
+          }
+        }
       })
       // Test decrypt error
       // decipher.emit('error')
