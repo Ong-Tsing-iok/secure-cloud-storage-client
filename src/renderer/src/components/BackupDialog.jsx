@@ -8,10 +8,9 @@ import {
   Typography
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
-import { useState, useContext, useEffect } from 'react'
-import { ProfileContext } from './Contexts'
-import { checkEmailValid, checkIsLoggedIn, checkNameValid, validatePassword } from './Utils'
+import { useState } from 'react'
 import toast from 'react-hot-toast'
+import { Validators } from './Validator'
 
 function BackupDialog({ open, setOpen }) {
   const [extraKey, setExtraKey] = useState('')
@@ -22,8 +21,9 @@ function BackupDialog({ open, setOpen }) {
   }
 
   function updateHandler() {
-    if (!validatePassword(extraKey)) {
-      toast.error('密碼需至少八位，包含大小寫英文、數字、特殊符號')
+    const result = Validators.password(extraKey)
+    if (result.valid) {
+      toast.error(result.message)
       return
     }
     // Send extrakey to main process
@@ -51,7 +51,7 @@ function BackupDialog({ open, setOpen }) {
         <Input
           label="密碼"
           size="lg"
-          error={!validatePassword(extraKey)}
+          error={!Validators.password(extraKey).valid}
           value={extraKey}
           onChange={(e) => setExtraKey(e.target.value)}
         />

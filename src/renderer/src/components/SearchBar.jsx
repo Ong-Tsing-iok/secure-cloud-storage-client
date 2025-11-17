@@ -3,6 +3,7 @@ import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useContext } from 'react'
 import { PageContext, SearchContext } from './Contexts'
 import { PageType, SearchType } from './Types'
+import { Validators } from './Validator'
 
 function SearchBar() {
   const {
@@ -39,6 +40,11 @@ function SearchBar() {
         label={pageType === PageType.public ? '輸入標籤搜尋，以空格隔開' : '搜尋'}
         labelProps={{ className: 'font-sans peer-focus:hidden' }}
         value={pageType === PageType.public ? publicSearchTerm : searchTerm}
+        error={
+          pageType === PageType.public
+            ? !Validators.tags(publicSearchTerm).valid
+            : !Validators.search(searchTerm).valid
+        }
         onChange={(e) => {
           if (pageType === PageType.public) setPublicSearchTerm(e.target.value)
           else setSearchTerm(e.target.value)

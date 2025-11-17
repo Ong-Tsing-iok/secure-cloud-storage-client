@@ -9,12 +9,18 @@ import {
 import PropTypes from 'prop-types'
 import { useState, useContext } from 'react'
 import { CurPathContext } from './Contexts'
+import { Validators } from './Validator'
+import toast from 'react-hot-toast'
 
 function AddFolderDialog({ open, setOpen }) {
   const [folderName, setFolderName] = useState('')
   const { curPath } = useContext(CurPathContext)
   function addFolderHandler() {
-    // TODO: check folder name format and length
+    const result = Validators.folderName(folderName)
+    if (!result.valid) {
+      toast.error(result.message)
+      return
+    }
     window.electronAPI.askAddFolder(curPath.at(-1).folderId, folderName)
     setOpen(!open)
   }
@@ -29,6 +35,7 @@ function AddFolderDialog({ open, setOpen }) {
           onChange={(e) => {
             setFolderName(e.target.value)
           }}
+          error={!Validators.folderName(folderName).valid}
         ></Input>
       </DialogBody>
       <DialogFooter>

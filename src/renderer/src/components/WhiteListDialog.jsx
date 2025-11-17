@@ -16,6 +16,7 @@ import PropTypes from 'prop-types'
 import { useState, useContext } from 'react'
 import toast from 'react-hot-toast'
 import { UserListContext } from './Contexts'
+import { Validators } from './Validator'
 
 function WhiteListDialog({ open, setOpen }) {
   const [text, setText] = useState('')
@@ -27,15 +28,18 @@ function WhiteListDialog({ open, setOpen }) {
     setOpen(!open)
   }
   function addWhiteListHandler() {
-    if (text !== '') {
-      if (whiteList.includes(text)) {
-        toast('該使用者已存在')
-      } else {
-        setWhiteList([...whiteList, text])
-        toast.success('成功新增白名單')
-      }
-      setText('')
+    const result = Validators.uuidv4(text)
+    if (!result.valid) {
+      toast.error(result.message)
+      return
     }
+    if (whiteList.includes(text)) {
+      toast.error('該使用者已存在')
+    } else {
+      setWhiteList([...whiteList, text])
+      toast.success('成功新增白名單')
+    }
+    setText('')
   }
   function removeWhiteListHandler(index) {
     setWhiteList(whiteList.slice(0, index).concat(whiteList.slice(index + 1)))
@@ -59,6 +63,7 @@ function WhiteListDialog({ open, setOpen }) {
             labelProps={{ className: 'peer-focus:hidden' }}
             size="lg"
             value={text}
+            error={!Validators.uuidv4(text).valid}
             onChange={(e) => {
               setText(e.target.value)
             }}

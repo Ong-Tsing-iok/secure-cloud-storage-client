@@ -15,6 +15,8 @@ import { useContext, useState } from 'react'
 import { PageContext, ProfileContext } from './Contexts'
 import { PageType, PermissionType, bytesToSize } from './Types'
 import ComboBox from './ComboBox'
+import { Validators } from './Validator'
+import toast from 'react-hot-toast'
 
 function FileDetailDialog({ open, setOpen, fileData }) {
   const [desc, setDesc] = useState(fileData.desc)
@@ -28,10 +30,20 @@ function FileDetailDialog({ open, setOpen, fileData }) {
 
   function dialogHandler(update = false) {
     if (update) {
+      const tagsResult = Validators.tags(tags)
+      if (!tagsResult.valid) {
+        toast.error(tagsResult.message)
+        return
+      }
+      const descResult = Validators.fileDescription(desc)
+      if (!descResult.valid) {
+        toast.error(descResult.message)
+        return
+      }
       window.electronAPI.updateFileDescPerm({
         fileId: fileData.fileId,
         desc,
-        perm: parseInt(permission),
+        perm: Number.parseInt(permission),
         selectedAttrs,
         tags: tags.split(' ').slice(0, 5)
       })
@@ -129,8 +141,9 @@ function FileDetailDialog({ open, setOpen, fileData }) {
               value={tags}
               onChange={(e) => {
                 if ((e.target.value.match(/ /g) || []).length < 5)
-                  setTags(e.target.value.replace(/\s+/g, ' '))
+                  setTags(e.target.value.replaceAll(/\s+/g, ' '))
               }}
+              error={!Validators.tags(tags).valid}
               size="lg"
               className="grow rounded-none focus:!border-t-gray-900"
             ></Input>
@@ -145,6 +158,7 @@ function FileDetailDialog({ open, setOpen, fileData }) {
             value={desc}
             onChange={(e) => setDesc(e.target.value)}
             labelProps={{ className: 'peer-focus:hidden' }}
+            error={!Validators.fileDescription(desc).valid}
             className="focus:!border-t-gray-900"
           ></Textarea>
         ) : (
@@ -180,7 +194,9 @@ FileDetailDialog.propTypes = {
     date: PropTypes.string.isRequired,
     originOwner: PropTypes.string.isRequired,
     perm: PropTypes.number.isRequired,
-    desc: PropTypes.string.isRequired
+    desc: PropTypes.string.isRequired,
+    attrs: PropTypes.array,
+    tags: PropTypes.array
   })
 }
 

@@ -16,6 +16,7 @@ import PropTypes from 'prop-types'
 import { useState, useContext } from 'react'
 import toast from 'react-hot-toast'
 import { UserListContext } from './Contexts'
+import { Validators } from './Validator'
 
 function BlackListDialog({ open, setOpen }) {
   const [text, setText] = useState('')
@@ -28,15 +29,19 @@ function BlackListDialog({ open, setOpen }) {
     setOpen(!open)
   }
   function addBlackListHandler() {
-    if (text !== '') {
-      if (blackList.includes(text)) {
-        toast('該使用者已存在')
-      } else {
-        setBlackList([...blackList, text])
-        toast.success('成功新增黑名單')
-      }
-      setText('')
+    const result = Validators.uuidv4(text)
+    if (!result.valid) {
+      toast.error(result.message)
+      return
     }
+
+    if (blackList.includes(text)) {
+      toast.error('該使用者已存在')
+    } else {
+      setBlackList([...blackList, text])
+      toast.success('成功新增黑名單')
+    }
+    setText('')
   }
   function removeBlackListHandler(index) {
     setBlackList(blackList.slice(0, index).concat(blackList.slice(index + 1)))
@@ -60,6 +65,7 @@ function BlackListDialog({ open, setOpen }) {
             labelProps={{ className: 'peer-focus:hidden' }}
             size="lg"
             value={text}
+            error={!Validators.uuidv4(text).valid}
             onChange={(e) => {
               setText(e.target.value)
             }}

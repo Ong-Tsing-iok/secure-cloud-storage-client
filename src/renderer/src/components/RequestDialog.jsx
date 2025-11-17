@@ -10,18 +10,11 @@ import {
 import PropTypes from 'prop-types'
 import { useState } from 'react'
 import toast  from 'react-hot-toast'
+import { Validators } from './Validator'
 
 function RequestDialog({ open, setOpen, defaultId = '' }) {
   const [fileId, setFileId] = useState(defaultId)
   const [description, setDescription] = useState('')
-
-  function checkFileId(fileId) {
-    return String(fileId).match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)
-  }
-
-  function checkDescription(remark) {
-    return String(remark).length <= 500
-  }
 
   function dialogHandler() {
     setFileId(defaultId)
@@ -31,10 +24,17 @@ function RequestDialog({ open, setOpen, defaultId = '' }) {
   }
 
   function submitHandler() {
-    if (!checkFileId(fileId) || !checkDescription(description)) {
-      toast.error('請檢查輸入格式')
+    const fileIdResult = Validators.uuidv4(fileId)
+    if (!fileIdResult.valid) {
+      toast.error(fileIdResult.message)
       return
     }
+    const descResult = Validators.message(description)
+    if (!descResult.valid) {
+      toast.error(descResult.message)
+      return
+    }
+
     // console.log(fileId, name, email, remark)
     window.electronAPI.askRequestFile({ fileId, description })
     dialogHandler()
@@ -49,7 +49,7 @@ function RequestDialog({ open, setOpen, defaultId = '' }) {
         <Input
           className="pb-2"
           label="檔案ID"
-          error={!checkFileId(fileId)}
+          error={!Validators.uuidv4(fileId).valid}
           value={fileId}
           onChange={(e) => setFileId(e.target.value)}
         />
@@ -59,7 +59,7 @@ function RequestDialog({ open, setOpen, defaultId = '' }) {
           type="text"
           label="備註"
           //   maxLength={200}
-          error={!checkDescription(description)}
+          error={!Validators.message(description).valid}
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />

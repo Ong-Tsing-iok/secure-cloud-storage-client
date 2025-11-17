@@ -8,10 +8,10 @@ import {
   Typography
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext } from 'react'
 import { ProfileContext } from './Contexts'
-import { checkEmailValid, checkIsLoggedIn, checkNameValid, validatePassword } from './Utils'
 import toast from 'react-hot-toast'
+import { Validators } from './Validator'
 
 function RecoverDialog({ open, setOpen }) {
   const [email, setEmail] = useState('')
@@ -37,8 +37,9 @@ function RecoverDialog({ open, setOpen }) {
     switch (currentState) {
       case 0: // Input email
         {
-          if (!checkEmailValid(email)) {
-            toast.error('請檢查輸入格式')
+          const result = Validators.email(email)
+          if (!result.valid) {
+            toast.error(result.message)
             return
           }
           const askRecoverSecretPromise = window.electronAPI.askRecoverSecret({ email })
@@ -60,8 +61,13 @@ function RecoverDialog({ open, setOpen }) {
         break
       case 1: // Input email auth
         {
+          const result = Validators.verificationCode(emailAuth)
+          if (!result.valid) {
+            toast.error(result.message)
+            return
+          }
           const sendEmailAuthPromise = window.electronAPI.sendEmailAuth({
-            emailAuth: emailAuth.trim()
+            emailAuth
           })
           toast.promise(sendEmailAuthPromise, {
             loading: '驗證中',
@@ -80,11 +86,12 @@ function RecoverDialog({ open, setOpen }) {
 
         break
       case 2: // Input extra key
-        if (!validatePassword(extraKey)) {
-          toast.error('密碼需至少八位，包含大小寫英文、數字、特殊符號')
-          return
-        }
         {
+          const result = Validators.password(extraKey)
+          if (!result.valid) {
+            toast.error(result.message)
+            return
+          }
           const sendRecoverExtraKeyPromise = window.electronAPI.sendRecoverExtraKey({ extraKey })
           toast.promise(sendRecoverExtraKeyPromise, {
             loading: '解密中',
@@ -133,7 +140,7 @@ function RecoverDialog({ open, setOpen }) {
           label="電子信箱"
           size="lg"
           value={email}
-          error={!checkEmailValid(email)}
+          error={!Validators.email(email).valid}
           readOnly={currentState != 0}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -142,15 +149,16 @@ function RecoverDialog({ open, setOpen }) {
             label="驗證碼"
             size="lg"
             value={emailAuth}
+            error={!Validators.verificationCode(emailAuth).valid}
             readOnly={currentState != 1}
-            onChange={(e) => setEmailAuth(e.target.value)}
+            onChange={(e) => setEmailAuth(e.target.value.trim())}
           />
         )}
         {currentState > 1 && (
           <Input
             label="密碼"
             size="lg"
-            error={!validatePassword(extraKey)}
+            error={!Validators.password(extraKey).valid}
             value={extraKey}
             onChange={(e) => setExtraKey(e.target.value)}
           />

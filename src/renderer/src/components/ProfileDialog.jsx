@@ -11,6 +11,7 @@ import { useState, useContext, useEffect } from 'react'
 import { ProfileContext } from './Contexts'
 import { checkEmailValid, checkIsLoggedIn, checkNameValid } from './Utils'
 import toast from 'react-hot-toast'
+import { Validators } from './Validator'
 
 function ProfileDialog({ open, setOpen }) {
   const {
@@ -31,10 +32,17 @@ function ProfileDialog({ open, setOpen }) {
   }
 
   function updateHandler() {
-    if (!checkNameValid(name) || !checkEmailValid(email)) {
-      toast.error('請檢查輸入格式')
+    const nameResult = Validators.name(name)
+    if (!nameResult.valid) {
+      toast.error(nameResult.message)
       return
     }
+    const emailResult = Validators.email(email)
+    if (!emailResult.valid) {
+      toast.error(emailResult.message)
+      return
+    }
+
     setStoredName(name)
     setStoredEmail(email)
     if (!checkIsLoggedIn(userId)) {
@@ -53,7 +61,7 @@ function ProfileDialog({ open, setOpen }) {
           label="名字"
           size="lg"
           value={name}
-          error={!checkNameValid(name)}
+          error={!Validators.name(name).valid}
           readOnly={checkIsLoggedIn(userId)}
           onChange={(e) => setName(e.target.value)}
         />
@@ -61,7 +69,7 @@ function ProfileDialog({ open, setOpen }) {
           label="電子信箱"
           size="lg"
           value={email}
-          error={!checkEmailValid(email)}
+          error={!Validators.email(email).valid}
           readOnly={checkIsLoggedIn(userId)}
           onChange={(e) => setEmail(e.target.value)}
         />

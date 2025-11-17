@@ -12,6 +12,7 @@ import { useState, useContext, useEffect } from 'react'
 import { ProfileContext } from './Contexts'
 import { checkEmailValid, checkIsLoggedIn, checkNameValid } from './Utils'
 import toast from 'react-hot-toast'
+import { Validators } from './Validator'
 
 function RegisterDialog({ open, setOpen }) {
   const {
@@ -41,10 +42,17 @@ function RegisterDialog({ open, setOpen }) {
     switch (currentState) {
       case 0:
         {
-          if (!checkNameValid(name) || !checkEmailValid(email)) {
-            toast.error('請檢查輸入格式')
+          const nameResult = Validators.name(name)
+          if (!nameResult.valid) {
+            toast.error(nameResult.message)
             return
           }
+          const emailResult = Validators.email(email)
+          if (!emailResult.valid) {
+            toast.error(emailResult.message)
+            return
+          }
+
           // Ask to register
           const askRegisterPromise = window.electronAPI.askRegister({ name, email })
           toast.promise(askRegisterPromise, {
@@ -65,8 +73,13 @@ function RegisterDialog({ open, setOpen }) {
         break
       case 1:
         {
+          const result = Validators.verificationCode(emailAuth)
+          if (!result.valid) {
+            toast.error(result.message)
+            return
+          }
           const sendEmailAuthPromise = window.electronAPI.sendEmailAuth({
-            emailAuth: emailAuth.trim()
+            emailAuth
           })
           toast.promise(sendEmailAuthPromise, {
             loading: '驗證中',
@@ -94,7 +107,6 @@ function RegisterDialog({ open, setOpen }) {
               }
             })
         }
-        // input email auth
 
         break
     }
@@ -106,11 +118,16 @@ function RegisterDialog({ open, setOpen }) {
         <Typography variant="lead">
           {currentState == 0 ? '輸入名字與電子信箱' : '輸入驗證碼'}
         </Typography>
+        {currentState == 0 && (
+          <Typography variant="lead" color="red">
+            注意！註冊即是認知並同意您的名字與電子信箱將會被蒐集與處理，並在請求檔案與公開檔案時顯示給其他使用者。
+          </Typography>
+        )}
         <Input
           label="名字"
           size="lg"
           value={name}
-          error={!checkNameValid(name)}
+          error={!Validators.name(name).valid}
           readOnly={currentState != 0}
           onChange={(e) => setName(e.target.value)}
         />
@@ -118,7 +135,7 @@ function RegisterDialog({ open, setOpen }) {
           label="電子信箱"
           size="lg"
           value={email}
-          error={!checkEmailValid(email)}
+          error={!Validators.email(email).valid}
           readOnly={currentState != 0}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -127,8 +144,9 @@ function RegisterDialog({ open, setOpen }) {
             label="驗證碼"
             size="lg"
             value={emailAuth}
+            error={!Validators.verificationCode(emailAuth).valid}
             readOnly={currentState != 1}
-            onChange={(e) => setEmailAuth(e.target.value)}
+            onChange={(e) => setEmailAuth(e.target.value.trim())}
           />
         )}
       </DialogBody>
@@ -137,7 +155,7 @@ function RegisterDialog({ open, setOpen }) {
           取消
         </Button>
         <Button variant="gradient" color="black" onClick={updateHandler}>
-          {currentState != 0 ? '確定' : '註冊'}
+          {currentState == 0 ? '註冊' : '確定'}
         </Button>
       </DialogFooter>
     </Dialog>

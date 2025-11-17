@@ -17,6 +17,7 @@ import {
   SearchContext
 } from './Contexts'
 import toast from 'react-hot-toast'
+import { Validators } from './Validator'
 
 function MainView() {
   const [curPath, setCurPath] = useState([{ name: '', folderId: null }])
@@ -26,7 +27,7 @@ function MainView() {
   const [blackList, setBlackList] = useState([])
   const [publicFileList, setPublicFileList] = useState([])
   const {
-    publicSearchTermC: [publicSearchTerm],
+    publicSearchTermC: [publicSearchTerm, setPublicSearchTerm],
     searchTimesC: [searchTimes]
   } = useContext(SearchContext)
 
@@ -85,10 +86,16 @@ function MainView() {
 
   useEffect(() => {
     async function searchFiles() {
-      console.log('search file')
+      const result = Validators.tags(publicSearchTerm)
+      if (!result.valid) {
+        toast.error(result.message)
+        return
+      }
       setPublicFileList([])
+      const searchTerm = publicSearchTerm.replaceAll(/\s+/g, ' ')
+      setPublicSearchTerm(searchTerm)
       const searchedFilesPromise = window.electronAPI.askSearchFiles({
-        tags: publicSearchTerm.split(' ').slice(0, 5)
+        tags: searchTerm.split(' ').slice(0, 5)
       })
       toast.promise(searchedFilesPromise, {
         loading: '搜尋中',
