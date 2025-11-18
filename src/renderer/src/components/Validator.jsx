@@ -26,7 +26,8 @@ export const Validators = {
 
   fileDescription(input) {
     const pattern = /^(?!.*[<>={}])[\p{L}\p{N}\p{P}\p{Zs}]{1,500}$/u
-    if (!input) return { valid: false, message: 'Description is required.' }
+    // if (!input) return { valid: false, message: 'Description is required.' }
+    if (!input) return { valid: true }
     if (!pattern.test(input)) {
       return {
         valid: false,
