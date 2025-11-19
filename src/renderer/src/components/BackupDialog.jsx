@@ -22,7 +22,7 @@ function BackupDialog({ open, setOpen }) {
 
   function updateHandler() {
     const result = Validators.password(extraKey)
-    if (result.valid) {
+    if (!result.valid) {
       toast.error(result.message)
       return
     }
