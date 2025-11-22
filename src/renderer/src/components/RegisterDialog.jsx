@@ -11,9 +11,8 @@ import {
   Typography
 } from '@material-tailwind/react'
 import PropTypes from 'prop-types'
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext } from 'react'
 import { ProfileContext } from './Contexts'
-import { checkEmailValid, checkIsLoggedIn, checkNameValid } from './Utils'
 import toast from 'react-hot-toast'
 import { Validators } from './Validator'
 
