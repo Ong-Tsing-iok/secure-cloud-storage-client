@@ -1,3 +1,6 @@
+/**
+ * This file create and store the contexts
+ */
 import { createContext } from 'react'
 
 export const ProfileContext = createContext({

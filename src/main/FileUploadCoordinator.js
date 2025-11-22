@@ -4,14 +4,12 @@
  */
 import { logger } from './Logger'
 import BlockchainManager from './BlockchainManager'
-import GlobalValueManager from './GlobalValueManager'
-import { unlinkSync } from 'fs'
+import { unlinkSync } from 'node:fs'
 
-// Maybe choose a better name...
 export default class FileUploadCoordinator {
   #resolveReadyPromise
   /**
-   *
+   * Initialize
    * @param {BlockchainManager} blockchainManager
    * @param {string} metadata
    */

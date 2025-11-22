@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog for adding folder
+ */
 import {
   Dialog,
   DialogBody,

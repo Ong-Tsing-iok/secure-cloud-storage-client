@@ -1,3 +1,6 @@
+/**
+ * This component is a wrapper to render different table views (public, file, reply, request)
+ */
 import { Card } from '@material-tailwind/react'
 // import { TableHeadContent } from "./Settings";
 import PropTypes from 'prop-types'

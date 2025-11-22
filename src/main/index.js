@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import { join } from 'node:path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { sendMessage } from './MessageManager'
@@ -13,7 +13,7 @@ import BlockchainManager from './BlockchainManager'
 import KeyManager from './KeyManager'
 import ABSEManager from './ABSEManager'
 import DatabaseManager from './DatabaseManager'
-import { unlinkSync } from 'fs'
+import { unlinkSync } from 'node:fs'
 
 // Initilize class instances
 const keyManager = new KeyManager()

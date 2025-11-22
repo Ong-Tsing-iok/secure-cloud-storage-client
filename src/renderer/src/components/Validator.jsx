@@ -1,3 +1,6 @@
+/**
+ * This file handles input validations
+ */
 export const Validators = {
   name(input) {
     const pattern = /^[\p{L}\p{M}\s'-]{1,50}$/u

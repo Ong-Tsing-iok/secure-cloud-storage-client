@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog for deleteing requests
+ */
 import {
   Dialog,
   DialogBody,

@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog for showing and modifying file details
+ */
 import {
   Dialog,
   DialogBody,

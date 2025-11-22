@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog for recover user account
+ */
 import {
   Dialog,
   DialogHeader,

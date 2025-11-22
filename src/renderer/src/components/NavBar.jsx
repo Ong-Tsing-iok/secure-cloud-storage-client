@@ -1,3 +1,6 @@
+/**
+ * This component is the navigation bar to navigate to different pages (public, file, reply, request)
+ */
 import {
   Card,
   Typography,

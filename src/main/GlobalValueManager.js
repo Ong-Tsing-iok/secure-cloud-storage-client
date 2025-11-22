@@ -22,6 +22,9 @@ process.env['NODE_CONFIG_DIR'] =
 const config = require('config')
 
 class GlobalValueManager {
+  /**
+   * Initialize global values from config file
+   */
   constructor() {
     try {
       this.serverConfig = config.get('server')

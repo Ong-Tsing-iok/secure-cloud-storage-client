@@ -20,7 +20,6 @@ const keyFilePath = GlobalValueManager.keyPath
 class KeyManager {
   keys
   signingKeys
-  constructor() {}
   checkInit() {
     if (!this.keys || !this.signingKeys) {
       throw new Error('Keys are not initialized')
@@ -185,7 +184,7 @@ class KeyManager {
     }
   }
   /**
-   *
+   * get public key as strings
    * @returns {string} public key
    */
   getPublicKeyString() {
@@ -193,11 +192,19 @@ class KeyManager {
     return Buffer.from(this.keys.pk).toString('base64')
   }
 
+  /**
+   * Get keys
+   * @returns 
+   */
   getKeys() {
     this.checkInit()
     return this.keys
   }
 
+  /**
+   * Get signing keys
+   * @returns 
+   */
   getSigningKeys() {
     this.checkInit()
     return this.signingKeys

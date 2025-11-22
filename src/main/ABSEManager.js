@@ -4,7 +4,7 @@
 import * as mcl from 'mcl-wasm'
 import { logger } from './Logger'
 import GlobalValueManager from './GlobalValueManager'
-import assert from 'assert'
+import assert from 'node:assert'
 import io from 'socket.io-client'
 import KeyManager from './KeyManager'
 
@@ -82,7 +82,7 @@ class ABSEManager {
         }
         GlobalValueManager.sendNotice('Failed to get search key', 'error')
         socket.close()
-        reject('Cannot get search key.')
+        reject(new Error('Cannot get search key.'))
       }
       // Return if already have search key
       if (this.SK && this.y) {
@@ -191,8 +191,6 @@ class ABSEManager {
       ct[i] = mcl.add(mcl.mul(pp.h_i[i], t), mcl.mul(pp.g1, x[i])).serializeToHexStr()
     }
     const CTw = { ctStar, ctw, ct }
-    // console.log(CTm);
-    // console.log(CTw);
     return CTw
   }
   /**
@@ -205,9 +203,9 @@ class ABSEManager {
     let sum = new mcl.Fr()
     const dPrime = new mcl.Fr()
     dPrime.setInt(WPrime.length)
-    WPrime.forEach((w) => {
+    for (const w of WPrime) {
       sum = mcl.add(sum, mcl.hashToFr(w))
-    })
+    }
     const T0 = mcl.mul(SK.sk2, sum)
     const TStar = mcl.add(mcl.mul(SK.sk1, dPrime), T0).serializeToHexStr()
     const T = new Array(y.length)
@@ -221,8 +219,6 @@ class ABSEManager {
       }
     }
     const TK = { TStar, T, sky: SK.sky.serializeToHexStr(), dPrime: WPrime.length }
-    // console.log(TK)
-    // console.log(T)
     return TK
   }
   parseTK(serializedTK) {

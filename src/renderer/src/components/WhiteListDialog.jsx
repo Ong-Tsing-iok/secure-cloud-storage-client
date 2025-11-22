@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog for modifying request whitelists
+ */
 import { BookmarkSquareIcon, MinusIcon, PlusIcon } from '@heroicons/react/24/outline'
 import {
   Dialog,

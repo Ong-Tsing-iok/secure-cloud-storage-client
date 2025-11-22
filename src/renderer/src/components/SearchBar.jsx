@@ -1,3 +1,6 @@
+/**
+ * This component is a search bar, used for searching from server (public) or filtering files (file, reply, request)
+ */
 import { Button, Menu, MenuHandler, MenuList, MenuItem, Input } from '@material-tailwind/react'
 import { MagnifyingGlassIcon } from '@heroicons/react/24/outline'
 import { useContext } from 'react'

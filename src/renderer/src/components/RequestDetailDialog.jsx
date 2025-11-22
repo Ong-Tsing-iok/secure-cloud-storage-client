@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog for showing request details
+ */
 import {
   Dialog,
   DialogBody,

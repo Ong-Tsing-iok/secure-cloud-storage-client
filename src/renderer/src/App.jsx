@@ -1,3 +1,6 @@
+/**
+ * This file is the parent of all other components
+ */
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import NavBar, { PageType } from './components/NavBar.jsx'
 import MainView from './components/MainView.jsx'

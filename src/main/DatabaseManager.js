@@ -3,14 +3,14 @@
  */
 import Database from 'better-sqlite3'
 import GlobalValueManager from './GlobalValueManager'
-import path, { basename } from 'node:path'
+import { basename } from 'node:path'
 import KeyManager from './KeyManager'
 import { deriveAESKeyIvFromBuffer } from './Utils'
 import { createReadStream, createWriteStream } from 'node:fs'
 import { net } from 'electron'
 import { socket } from './MessageManager'
 import { logger } from './Logger'
-import crypto from 'crypto'
+import crypto from 'node:crypto'
 import FormData from 'form-data'
 
 class DatabaseManager {
@@ -23,6 +23,9 @@ class DatabaseManager {
     this.keyManager = keyManager
     this.init()
   }
+  /**
+   * Initialize database scheme and statements
+   */
   init() {
     this.db = Database(GlobalValueManager.dbPath)
     // Tags
@@ -53,23 +56,39 @@ class DatabaseManager {
     this.deleteAttrId = this.db.prepare(`DELETE FROM attr_table WHERE fileid = ?;`)
   }
 
+  /**
+   * Get tags of file
+   * @param {string} fileId
+   * @returns {Array<string>} tags
+   */
   getTagsOfFile(fileId) {
     return this.getTags.all(fileId)
   }
 
+  /**
+   * Get attribute Ids of file
+   * @param {string} fileId
+   * @returns {Array<string>} attribute Ids
+   */
   getAttrIdsOfFile(fileId) {
     return this.getAttrIds.all(fileId)
   }
 
+  /**
+   * Store tags and attribute Ids into database
+   * @param {string} fileId
+   * @param {Array<string>} tags
+   * @param {Array<number>} attrIds
+   */
   storeTagAttr(fileId, tags, attrIds) {
     this.deleteTags.run(fileId)
     this.deleteAttrId.run(fileId)
-    tags.forEach((tag) => {
+    for (const tag of tags) {
       this.insertTag.run(fileId, tag)
-    })
-    attrIds.forEach((attrId) => {
+    }
+    for (const attrId of attrIds) {
       this.insertAttrId.run(fileId, attrId)
-    })
+    }
   }
 
   /**
@@ -130,6 +149,10 @@ class DatabaseManager {
     }
   }
 
+  /**
+   * Retrieve encrypted database and recover from server
+   * @returns
+   */
   async recoverFromServer() {
     try {
       this.db.close()

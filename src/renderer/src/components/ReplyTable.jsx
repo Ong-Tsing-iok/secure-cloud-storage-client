@@ -1,3 +1,6 @@
+/**
+ * This component is a table showing reply list
+ */
 import { Typography } from '@material-tailwind/react'
 import TableView from './TableView'
 import { searchFilter } from './Types'

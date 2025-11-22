@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog for sending requests
+ */
 import {
   Dialog,
   DialogHeader,

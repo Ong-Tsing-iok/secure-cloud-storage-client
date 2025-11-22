@@ -1,3 +1,6 @@
+/**
+ * This component is a breadcrumb for showing current folder path
+ */
 import {
   Breadcrumbs,
   Menu,

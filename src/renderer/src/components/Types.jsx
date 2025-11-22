@@ -1,3 +1,6 @@
+/**
+ * This file record types and some parsing functions
+ */
 export const PageType = Object.freeze({
   public: 'public',
   file: 'file',

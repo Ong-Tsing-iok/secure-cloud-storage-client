@@ -1,3 +1,6 @@
+/**
+ * This component is for showing user profile
+ */
 import {
   Dialog,
   DialogHeader,

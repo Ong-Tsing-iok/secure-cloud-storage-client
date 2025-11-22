@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog for moving file to different folders
+ */
 import {
   Dialog,
   DialogBody,

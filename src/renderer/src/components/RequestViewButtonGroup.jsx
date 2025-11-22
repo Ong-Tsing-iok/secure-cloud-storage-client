@@ -1,3 +1,6 @@
+/**
+ * This component is a button group for modifying white or black list
+ */
 import { BookmarkSquareIcon, NoSymbolIcon } from '@heroicons/react/24/outline'
 import { Button, ButtonGroup, Typography } from '@material-tailwind/react'
 import WhiteListDialog from './WhiteListDialog'

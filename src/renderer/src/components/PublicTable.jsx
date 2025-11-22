@@ -1,3 +1,6 @@
+/**
+ * This component is a table for showing public searched files
+ */
 import { Typography } from '@material-tailwind/react'
 import { useEffect, useState } from 'react'
 import FileOptionMenu from './FileOptionMenu'

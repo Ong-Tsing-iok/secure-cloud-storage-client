@@ -1,3 +1,6 @@
+/**
+ * This component show the logs from main process
+ */
 import { Card, Typography } from '@material-tailwind/react'
 import { useState, useEffect, useRef } from 'react'
 

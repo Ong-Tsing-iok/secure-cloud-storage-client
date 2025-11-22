@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog to delete file or folder
+ */
 import {
   Dialog,
   DialogBody,
@@ -10,10 +13,10 @@ import PropTypes from 'prop-types'
 
 function DeleteDialog({ open, setOpen, fileData, isFolder = false }) {
   function deleteHandler(isFolder) {
-    if (!isFolder) {
-      window.electronAPI.askDeleteFile(fileData.fileId)
-    } else {
+    if (isFolder) {
       window.electronAPI.askDeleteFolder(fileData.folderId)
+    } else {
+      window.electronAPI.askDeleteFile(fileData.fileId)
     }
 
     setOpen(!open)

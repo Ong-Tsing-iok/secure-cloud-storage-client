@@ -1,3 +1,6 @@
+/**
+ * This compoment is a table for showing user's files
+ */
 import { Typography } from '@material-tailwind/react'
 import { FolderIcon, DocumentTextIcon } from '@heroicons/react/24/outline'
 import FileOptionMenu from './FileOptionMenu'

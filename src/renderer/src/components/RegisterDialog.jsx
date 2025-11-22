@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog for register
+ */
 import {
   Dialog,
   DialogHeader,

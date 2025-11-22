@@ -73,7 +73,7 @@ class FileManager {
   }
 
   /**
-   *
+   * Send upload error notice to renderer
    * @param {String} errorMsg
    * @param {String} treatmentMsg
    * @example this.#sendUploadErrorNotice('File encryption failed.', TryAgainMsg)
@@ -82,6 +82,12 @@ class FileManager {
     GlobalValueManager.sendNotice(`Failed to upload file: ${errorMsg} ${treatmentMsg}`, 'error')
   }
 
+  /**
+   * Send download error notice to renderer
+   * @param {String} errorMsg
+   * @param {String} treatmentMsg
+   * @example this.#sendDownloadErrorNotice('File decryption failed.', TryAgainMsg)
+   */
   #sendDownloadErrorNotice(errorMsg, treatmentMsg = TryAgainMsg) {
     GlobalValueManager.sendNotice(`Failed to download file: ${errorMsg} ${treatmentMsg}`, 'error')
   }
@@ -89,7 +95,7 @@ class FileManager {
   // can return promise, but not needed
   /**
    * The process of actually uploading the file.
-   * @param {*} param0
+   * @param {{ filePath: string, parentFolderId: string }} info
    * @returns
    */
   async #uploadProcess({ filePath, parentFolderId }) {
@@ -148,6 +154,7 @@ class FileManager {
         logger.info(`Encrypted file finished writing.`, { tempEncryptedFilePath })
         const protocol = GlobalValueManager.serverConfig.protocol
         logger.info(`Uploading file ${basename(filePath)} with protocol ${protocol}`)
+
         // Actually uploading file by the selected protocol
         try {
           switch (protocol) {
@@ -217,7 +224,7 @@ class FileManager {
 
   /**
    * Browse and select files to upload, and push to an upload queue for concurrent upload process.
-   * @param {*} parentFolderId
+   * @param {string} parentFolderId
    */
   async uploadFileProcess(parentFolderId) {
     logger.info('Browsing file...')
@@ -235,7 +242,7 @@ class FileManager {
 
   /**
    * Get the file list under current folder.
-   * @param {*} parentFolderId
+   * @param {string} parentFolderId
    */
   getFileListProcess(parentFolderId) {
     logger.info(`Getting file list for ${parentFolderId || 'home'}...`)

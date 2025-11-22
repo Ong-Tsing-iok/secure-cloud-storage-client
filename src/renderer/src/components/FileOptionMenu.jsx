@@ -1,3 +1,6 @@
+/**
+ * This component is a menu for file options
+ */
 import { Menu, MenuHandler, MenuList, MenuItem, Button, Typography } from '@material-tailwind/react'
 import {
   EllipsisVerticalIcon,

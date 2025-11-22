@@ -1,3 +1,6 @@
+/**
+ * This compomnent is a button group for adding folders and upload files
+ */
 import { ButtonGroup, Button, Typography } from '@material-tailwind/react'
 import AddFolderDialog from './AddFolderDialog'
 import { ArrowUpTrayIcon, FolderPlusIcon } from '@heroicons/react/24/outline'

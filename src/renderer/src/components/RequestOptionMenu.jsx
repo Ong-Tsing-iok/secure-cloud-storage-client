@@ -1,3 +1,6 @@
+/**
+ * This component is a menu for selecting different request options (delete, detail)
+ */
 import { Menu, MenuHandler, Button, MenuList, MenuItem, Typography } from '@material-tailwind/react'
 import { InformationCircleIcon, TrashIcon, EllipsisVerticalIcon } from '@heroicons/react/24/outline'
 import { useContext, useState } from 'react'

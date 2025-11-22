@@ -1,3 +1,6 @@
+/**
+ * This component is a dialog for adding request black list
+ */
 import { MinusIcon, NoSymbolIcon, PlusIcon } from '@heroicons/react/24/outline'
 import {
   Dialog,

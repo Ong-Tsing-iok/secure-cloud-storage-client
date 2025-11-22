@@ -1,3 +1,6 @@
+/**
+ * This component represent a multi-select check box
+ */
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
 import {
   Button,
@@ -40,7 +43,7 @@ function ComboBox({ selectedAttrs, setSelectedAttrs }) {
       <MenuList className="z-[9999] w-[36rem] max-h-72">
         {globalAttrs.map((attr) => {
           return (
-            <MenuItem>
+            <MenuItem key={attr}>
               <Checkbox
                 ripple={false}
                 key={attr}

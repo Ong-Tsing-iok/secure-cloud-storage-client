@@ -1,3 +1,6 @@
+/**
+ * This component is a wrapper to render the main view
+ */
 import { useContext, useState, useEffect, useMemo } from 'react'
 import { PageType, parseFileList, parseRequestList } from './Types'
 import PublicTable from './PublicTable'
