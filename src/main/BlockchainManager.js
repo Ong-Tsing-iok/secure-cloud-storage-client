@@ -24,7 +24,7 @@ function uuidToBigInt(uuidString) {
   }
 
   // Remove hyphens and convert to BigInt
-  const hexString = uuidString.replace(/-/g, '')
+  const hexString = uuidString.replaceAll('-', '')
   return BigInt('0x' + hexString)
 }
 
