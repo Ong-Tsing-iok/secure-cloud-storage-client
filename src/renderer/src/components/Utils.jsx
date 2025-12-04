@@ -1,7 +1,7 @@
 import { ResponseType } from './Types'
 
 export function checkIsLoggedIn(userId) {
-  return userId !== ''
+  return userId && userId !== ''
 }
 
 export function checkNameValid(name) {
